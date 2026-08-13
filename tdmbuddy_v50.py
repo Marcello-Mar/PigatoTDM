@@ -414,7 +414,7 @@ def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
     bnd = [(np.log(CL_p*0.05), np.log(CL_p*8)), (np.log(V_p*0.15), np.log(V_p*5))]
     r = minimize(f, [np.log(CL_p),np.log(V_p)], method='L-BFGS-B', bounds=bnd,
                 options={'maxiter':2000,'ftol':1e-12})
-    return np.exp(r.x[0]), np.exp(r.x[1]), f"MAP Bayesiano 1-cmt su {n} livell{'o' if n==1 else 'i'}"
+    return float(np.exp(r.x[0])), float(np.exp(r.x[1])), f"MAP Bayesiano 1-cmt su {n} livell{'o' if n==1 else 'i'}"
 
 
 def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia, livelli, t_inf):
@@ -437,7 +437,7 @@ def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia, livelli, t_i
                 method='L-BFGS-B', bounds=bnd, options={'maxiter':2000,'ftol':1e-12})
     nota_id = ("Q e V2 ancorati stretti al prior (pochi campioni)" if n<=2
               else f"Q e V2 con vincolo allentato ({n} campioni)")
-    return (np.exp(r.x[0]),np.exp(r.x[1]),np.exp(r.x[2]),np.exp(r.x[3]),
+    return (float(np.exp(r.x[0])),float(np.exp(r.x[1])),float(np.exp(r.x[2])),float(np.exp(r.x[3])),
             f"MAP Bayesiano 2-cmt su {n} livelli — {nota_id}")
 
 
@@ -454,7 +454,7 @@ def map_dalba(CL_p, V1_p, Q_p, V2_p, oCL, sig, storia, livelli, t_inf):
         return 0.5*(prior+lik)
     r = minimize(f, [np.log(CL_p)], method='L-BFGS-B',
                 bounds=[(np.log(CL_p*0.05),np.log(CL_p*10.0))], options={'maxiter':2000,'ftol':1e-12})
-    return np.exp(r.x[0]), f"MAP Bayesiano su CL, {n} livell{'o' if n==1 else 'i'} (V1/Q/V2 fissi)"
+    return float(np.exp(r.x[0])), f"MAP Bayesiano su CL, {n} livell{'o' if n==1 else 'i'} (V1/Q/V2 fissi)"
 
 
 def trova_tempo_soglia(CL, V1, Q, V2, storia, soglia, t_inf, t_partenza=0.0, t_max=2000.0, passo=1.0):
@@ -907,6 +907,12 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
         dt_val = (max((l['dt'] for l in livelli_completi), default=None) or
                  max((s['dt'] for s in storia_completa), default=datetime.now())
                  ).strftime('%Y-%m-%d %H:%M')
+
+        # Rimuove la chiave 'dt' (oggetto datetime, non serializzabile in
+        # JSON): da qui in avanti servono solo 'ore' e 'dose'/'conc'.
+        storia_completa = [{'ore': s['ore'], 'dose': float(s['dose'])} for s in storia_completa]
+        livelli_completi = [{'ore': l['ore'], 'conc': float(l['conc']), 'nota': l.get('nota', '')}
+                            for l in livelli_completi]
 
         with st.spinner("Calcolo MAP Bayesiano in corso…"):
             dose_mg = storia_completa[-1]['dose']
