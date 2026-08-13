@@ -918,6 +918,7 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
             dose_mg = storia_completa[-1]['dose']
             dose_mg_kg = dose_mg / peso
             tau_h_display = tau_mediano(storia_completa)
+            ok_staph = ok_ent = ok_target = tox = None
 
             if farmaco == "Daptomicina":
                 prior = prior_dapto(sesso, gg, peso, crea, crrt, Sc, Qef, dialisi)
@@ -929,7 +930,7 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
                 AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(
                     pk_1cmt, (CL_ind, V_ind), storia_completa, prior['t_inf'])
                 auc_mic = AUC24_v / mic
-                emivita = np.log(2)*V_ind/CL_ind
+                emivita = float(np.log(2)*V_ind/CL_ind)
                 ok_staph = auc_mic >= PD_DAPTO['AUC_MIC_staph']
                 ok_ent   = auc_mic >= PD_DAPTO['AUC_MIC_entero']
                 tox      = Cmin_ss >= PD_DAPTO['Cmin_tox']
@@ -944,7 +945,7 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
                 AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(
                     pk_2cmt, (CL_ind, V_ind, Q_ind, V2_ind), storia_completa, prior['t_inf'])
                 auc_mic = AUC24_v / mic
-                emivita = np.log(2)*Vss_d/CL_ind
+                emivita = float(np.log(2)*Vss_d/CL_ind)
                 target_riferimento = list(DALBA_TARGETS.values())[0]
                 ok_target = auc_mic >= target_riferimento
                 tox = False
@@ -959,80 +960,138 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
                 AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(
                     pk_2cmt, (CL_ind, V_ind, Q_ind, V2_ind), storia_completa, prior['t_inf'])
                 auc_mic = AUC24_v / mic
-                emivita = np.log(2)*Vss_d/CL_ind
+                emivita = float(np.log(2)*Vss_d/CL_ind)
                 ok_target = auc_mic >= PD_CIPRO['AUC_MIC_target']
                 tox = AUC24_v >= PD_CIPRO['AUC_alta']
 
-            # ---- RISULTATI ----
-            st.markdown("---")
-            st.subheader("🔬 Risultati PK/PD")
-            st.caption(f"**Modello di popolazione:** {prior['nm']}")
-            if prior['note']:
-                st.info(prior['note'])
+            # Tutto ciò che serve alla visualizzazione viene salvato in
+            # session_state: il pannello Forecast (sotto) legge da qui,
+            # cosi' i suoi controlli si possono toccare liberamente senza
+            # far sparire il calcolo (st.button torna False ad ogni rerun
+            # successivo al click).
+            st.session_state['risultati'] = {
+                'farmaco': farmaco, 'id_paz': id_paz,
+                'CL_ind': CL_ind, 'V_ind': V_ind, 'Q_ind': Q_ind, 'V2_ind': V2_ind,
+                'Vss_d': Vss_d, 'AUC24_v': AUC24_v, 'Cmax_ss': Cmax_ss, 'Cmin_ss': Cmin_ss,
+                'auc_mic': auc_mic, 'emivita': emivita, 'tipo_fit': tipo_fit, 'prior': prior,
+                'storia_completa': storia_completa, 'livelli_completi': livelli_completi,
+                't0_assoluto': t0_assoluto, 'dt_val': dt_val, 'dose_mg': dose_mg,
+                'dose_mg_kg': dose_mg_kg, 'tau_h_display': tau_h_display, 'mic': mic,
+                'ok_staph': ok_staph, 'ok_ent': ok_ent, 'ok_target': ok_target, 'tox': tox,
+                't_ultimo_storico': t_ultimo_storico, 'sesso': sesso, 'eta': eta, 'gg': gg,
+                'peso': peso, 'crea': crea, 'dialisi': dialisi, 'modello_dalba': modello_dalba,
+            }
 
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Clearance (CL) del paziente", f"{CL_ind:.3f} L/h",
-                     delta=f"Popolazione: {prior['CL_p']:.3f} L/h", delta_color="off")
-            c2.metric("Volume di distribuzione (Vss)", f"{Vss_d:.1f} L",
-                     delta=f"Popolazione: {(prior['V_p'] + prior.get('V2_p',0)):.1f} L", delta_color="off")
-            c3.metric("Emivita (T½)", f"{emivita:.1f} h")
+            # ---- SALVATAGGIO NELLO STORICO (una sola volta per click) ----
+            record = {
+                'data_val': dt_val, 'farmaco': farmaco, 'eta_giorni': gg, 'peso': peso,
+                'creatinina': crea, 'crrt': bool(crrt), 'Sc': Sc, 'Qef': Qef, 'dialisi_tipo': dialisi,
+                'dose_mg': dose_mg, 'dose_mg_kg': dose_mg_kg, 'tau_h': tau_h_display,
+                'n_dosi': len(storia_completa), 'mic': mic, 'n_livelli': len(livelli_completi),
+                'CL_ind': CL_ind, 'V_ind': Vss_d, 'AUC24': AUC24_v, 'AUC_MIC': auc_mic,
+                'Cmin_ss': Cmin_ss, 'modello': prior['nm'], 'modello_dalba': modello_dalba,
+                'storia_dosi': storia_completa, 'livelli': livelli_completi,
+                'data_prima_dose': t0_assoluto.strftime('%Y-%m-%d %H:%M'),
+            }
+            st.session_state['storico']['monitoraggi'].append(record)
+            st.session_state['storico']['codice_paziente'] = id_paz
+            st.session_state['storico']['sesso'] = sesso
+            st.session_state['storico']['farmaco'] = farmaco
+            st.success("💾 Analisi calcolata e aggiunta allo storico di questa sessione. "
+                      "Scarica il JSON dalla barra laterale per conservarla.")
 
-            c4, c5, c6 = st.columns(3)
-            c4.metric("AUC₂₄ stimata", f"{AUC24_v:.0f} mg·h/L")
+# ------------------------------------------------------------
+# VISUALIZZAZIONE PERSISTENTE DEI RISULTATI
+# (fuori dal blocco del bottone: i controlli del pannello Forecast
+# possono essere modificati liberamente senza far sparire il calcolo)
+# ------------------------------------------------------------
 
-            if farmaco == "Daptomicina":
-                c5.metric("AUC₂₄/MIC (target ≥ 666)", f"{auc_mic:.0f}",
-                         delta="✅ Target raggiunto" if ok_staph else "⚠️ Sotto target",
-                         delta_color="normal" if ok_staph else "inverse")
-                c6.metric("Cmin prevista (soglia CPK ≥ 24.3)", f"{Cmin_ss:.1f} mg/L",
-                         delta="⚠️ Rischio CPK" if tox else "✅ Sicuro",
-                         delta_color="inverse" if tox else "normal")
-            elif farmaco == "Dalbavancina":
-                c5.metric("fAUC₂₄h/MIC (target minimo ≥ 27.1)", f"{auc_mic:.0f}",
-                         delta="✅ Target raggiunto" if ok_target else "⚠️ Sotto target",
-                         delta_color="normal" if ok_target else "inverse")
-                c6.metric("Cmax / Cmin previste", f"{Cmax_ss:.1f} / {Cmin_ss:.1f} mg/L",
-                         help="Target su infezioni complesse e pianificazione redose "
-                              "nel pannello Forecast qui sotto.")
-            else:
-                c5.metric("AUC₂₄/MIC (target ≥ 125)", f"{auc_mic:.0f}",
-                         delta="✅ Target raggiunto" if ok_target else "⚠️ Sotto target",
-                         delta_color="normal" if ok_target else "inverse")
-                c6.metric("AUC₂₄ (soglia neurotossicità ≥ 400)", f"{AUC24_v:.0f} mg·h/L",
-                         delta="⚠️ Esposizione elevata" if tox else "✅ Esposizione sicura",
-                         delta_color="inverse" if tox else "normal")
+if ('risultati' in st.session_state
+        and st.session_state['risultati'].get('farmaco') == farmaco
+        and st.session_state['risultati'].get('id_paz') == id_paz):
 
-            st.markdown("### 📈 Profilo farmacocinetico")
-            fig = disegna_grafico(farmaco, storia_completa, livelli_completi, CL_ind, V_ind,
-                                  Q_ind, V2_ind, prior['CL_p'], prior['V_p'], prior['Q_p'],
-                                  prior.get('V2_p', 0.0), prior['t_inf'], t_ultimo_storico)
-            st.plotly_chart(fig, use_container_width=True, theme=None)
+    R = st.session_state['risultati']
+    CL_ind, V_ind, Q_ind, V2_ind = R['CL_ind'], R['V_ind'], R['Q_ind'], R['V2_ind']
+    Vss_d, AUC24_v, Cmax_ss, Cmin_ss = R['Vss_d'], R['AUC24_v'], R['Cmax_ss'], R['Cmin_ss']
+    auc_mic, emivita, tipo_fit, prior = R['auc_mic'], R['emivita'], R['tipo_fit'], R['prior']
+    storia_completa, livelli_completi = R['storia_completa'], R['livelli_completi']
+    t0_assoluto, dt_val = R['t0_assoluto'], R['dt_val']
+    dose_mg, dose_mg_kg = R['dose_mg'], R['dose_mg_kg']
+    tau_h_display, mic = R['tau_h_display'], R['mic']
+    ok_staph, ok_ent, ok_target, tox = R['ok_staph'], R['ok_ent'], R['ok_target'], R['tox']
+    t_ultimo_storico = R['t_ultimo_storico']
+    sesso, eta, gg = R['sesso'], R['eta'], R['gg']
+    peso, crea, dialisi = R['peso'], R['crea'], R['dialisi']
 
-            def _esito(ok):
-                return "target raggiunto" if ok else "insufficiente — rivalutare la posologia"
+    st.markdown("---")
+    st.subheader("🔬 Risultati PK/PD")
+    st.caption(f"**Modello di popolazione:** {prior['nm']}")
+    if prior['note']:
+        st.info(prior['note'])
 
-            if farmaco == "Dalbavancina":
-                pd_block = (f"  Efficacia (fAUC24h/MIC >= 27.1, target minimo): {auc_mic:.0f} "
-                           f"-> {_esito(ok_target)}\n"
-                           f"  Cmax prevista (24h dopo l'ultima dose): {Cmax_ss:.1f} mg/L\n"
-                           f"  Cmin prevista (24h dopo l'ultima dose): {Cmin_ss:.1f} mg/L\n"
-                           f"  Nota: per il target restrittivo (infezioni complesse) e la\n"
-                           f"  pianificazione della prossima dose vedere il pannello Forecast.\n")
-            elif farmaco == "Daptomicina":
-                pd_block = (f"  Efficacia vs S. aureus/MRSA (AUC24/MIC >= 666): {auc_mic:.0f} "
-                           f"-> {_esito(ok_staph)}\n"
-                           f"  Efficacia vs E. faecium (AUC24/MIC >= 143): {auc_mic:.0f} "
-                           f"-> {_esito(ok_ent)}\n"
-                           f"  Sicurezza muscolare (Cmin_ss >= 24.3 mg/L): {Cmin_ss:.1f} mg/L "
-                           f"-> {'attenzione, monitorare CPK' if tox else 'sicuro'}\n")
-            else:
-                pd_block = (f"  Efficacia gram-negativi (AUC24/MIC >= 125): {auc_mic:.0f} "
-                           f"-> {_esito(ok_target)}\n"
-                           f"  Esposizione sistemica: AUC24 = {AUC24_v:.0f} mg*h/L\n"
-                           f"  Rischio neurotossicita' (AUC24 >= 400 mg*h/L): "
-                           f"{'monitorare, esposizione elevata' if tox else 'sicuro'}\n")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Clearance (CL) del paziente", f"{CL_ind:.3f} L/h",
+             delta=f"Popolazione: {prior['CL_p']:.3f} L/h", delta_color="off")
+    c2.metric("Volume di distribuzione (Vss)", f"{Vss_d:.1f} L",
+             delta=f"Popolazione: {(prior['V_p'] + prior.get('V2_p',0)):.1f} L", delta_color="off")
+    c3.metric("Emivita (T½)", f"{emivita:.1f} h")
 
-            referto = f"""\
+    c4, c5, c6 = st.columns(3)
+    c4.metric("AUC₂₄ stimata", f"{AUC24_v:.0f} mg·h/L")
+
+    if farmaco == "Daptomicina":
+        c5.metric("AUC₂₄/MIC (target ≥ 666)", f"{auc_mic:.0f}",
+                 delta="✅ Target raggiunto" if ok_staph else "⚠️ Sotto target",
+                 delta_color="normal" if ok_staph else "inverse")
+        c6.metric("Cmin prevista (soglia CPK ≥ 24.3)", f"{Cmin_ss:.1f} mg/L",
+                 delta="⚠️ Rischio CPK" if tox else "✅ Sicuro",
+                 delta_color="inverse" if tox else "normal")
+    elif farmaco == "Dalbavancina":
+        c5.metric("fAUC₂₄h/MIC (target minimo ≥ 27.1)", f"{auc_mic:.0f}",
+                 delta="✅ Target raggiunto" if ok_target else "⚠️ Sotto target",
+                 delta_color="normal" if ok_target else "inverse")
+        c6.metric("Cmax / Cmin previste", f"{Cmax_ss:.1f} / {Cmin_ss:.1f} mg/L",
+                 help="Target su infezioni complesse e pianificazione redose "
+                      "nel pannello Forecast qui sotto.")
+    else:
+        c5.metric("AUC₂₄/MIC (target ≥ 125)", f"{auc_mic:.0f}",
+                 delta="✅ Target raggiunto" if ok_target else "⚠️ Sotto target",
+                 delta_color="normal" if ok_target else "inverse")
+        c6.metric("AUC₂₄ (soglia neurotossicità ≥ 400)", f"{AUC24_v:.0f} mg·h/L",
+                 delta="⚠️ Esposizione elevata" if tox else "✅ Esposizione sicura",
+                 delta_color="inverse" if tox else "normal")
+
+    st.markdown("### 📈 Profilo farmacocinetico")
+    fig = disegna_grafico(farmaco, storia_completa, livelli_completi, CL_ind, V_ind,
+                          Q_ind, V2_ind, prior['CL_p'], prior['V_p'], prior['Q_p'],
+                          prior.get('V2_p', 0.0), prior['t_inf'], t_ultimo_storico)
+    st.plotly_chart(fig, use_container_width=True, theme=None)
+
+    def _esito(ok):
+        return "target raggiunto" if ok else "insufficiente — rivalutare la posologia"
+
+    if farmaco == "Dalbavancina":
+        pd_block = (f"  Efficacia (fAUC24h/MIC >= 27.1, target minimo): {auc_mic:.0f} "
+                   f"-> {_esito(ok_target)}\n"
+                   f"  Cmax prevista (24h dopo l'ultima dose): {Cmax_ss:.1f} mg/L\n"
+                   f"  Cmin prevista (24h dopo l'ultima dose): {Cmin_ss:.1f} mg/L\n"
+                   f"  Nota: per il target restrittivo (infezioni complesse) e la\n"
+                   f"  pianificazione della prossima dose vedere il pannello Forecast.\n")
+    elif farmaco == "Daptomicina":
+        pd_block = (f"  Efficacia vs S. aureus/MRSA (AUC24/MIC >= 666): {auc_mic:.0f} "
+                   f"-> {_esito(ok_staph)}\n"
+                   f"  Efficacia vs E. faecium (AUC24/MIC >= 143): {auc_mic:.0f} "
+                   f"-> {_esito(ok_ent)}\n"
+                   f"  Sicurezza muscolare (Cmin_ss >= 24.3 mg/L): {Cmin_ss:.1f} mg/L "
+                   f"-> {'attenzione, monitorare CPK' if tox else 'sicuro'}\n")
+    else:
+        pd_block = (f"  Efficacia gram-negativi (AUC24/MIC >= 125): {auc_mic:.0f} "
+                   f"-> {_esito(ok_target)}\n"
+                   f"  Esposizione sistemica: AUC24 = {AUC24_v:.0f} mg*h/L\n"
+                   f"  Rischio neurotossicita' (AUC24 >= 400 mg*h/L): "
+                   f"{'monitorare, esposizione elevata' if tox else 'sicuro'}\n")
+
+    referto = f"""\
 === TDM BUDDY v6.0 — REFERTO {farmaco.upper()} ===
 Data: {dt_val}  |  Codice paziente: {id_paz}  |  Sesso: {sesso}  |  Età: {eta:.1f} anni  |  Peso: {peso} kg
 
@@ -1057,123 +1116,109 @@ Emivita terminale (T1/2): {emivita:.1f} h
 AUC24 stimata (finestra 24h dopo l'ultima dose): {AUC24_v:.0f} mg*h/L
 {pd_block}"""
 
-            st.markdown("### 📋 Referto per cartella clinica")
-            st.code(referto, language='text')
+    st.markdown("### 📋 Referto per cartella clinica")
+    st.code(referto, language='text')
 
-            # ---- FORECAST DALBAVANCINA ----
-            if farmaco == "Dalbavancina":
-                with st.container(border=True):
-                    st.markdown("#### 🔮 Forecast — pianificazione della prossima dose")
-                    st.caption("Proietta il profilo del paziente in avanti nel tempo per "
-                              "stimare quando la concentrazione scenderà sotto la soglia "
-                              "target scelta.")
+    # ---- FORECAST DALBAVANCINA ----
+    if farmaco == "Dalbavancina":
+        with st.container(border=True):
+            st.markdown("#### 🔮 Forecast — pianificazione della prossima dose")
+            st.caption("Proietta il profilo del paziente in avanti nel tempo per "
+                      "stimare quando la concentrazione scenderà sotto la soglia "
+                      "target scelta.")
 
-                    colF1, colF2, colF3 = st.columns(3)
-                    with colF1:
-                        target_scelto = st.selectbox(
-                            "Target PK/PD:",
-                            list(DALBA_TARGETS.keys()) + ["Trough C0/MIC ≥ 200"],
-                            help="Tutti e tre i target fAUC24h/MIC sono dallo stesso "
-                                 "Monte Carlo simulation: Cojutti PG, et al. Antimicrob "
-                                 "Agents Chemother 2021;65(5):e02260-20.",
-                        )
-                    with colF2:
-                        mic_label = st.selectbox("MIC / breakpoint:",
-                                                 list(DALBA_MIC_OPZIONI.keys()) + ["Personalizzata"])
-                        if mic_label == "Personalizzata":
-                            mic_fc = st.number_input("MIC personalizzata (mg/L)", 0.001, 4.0,
-                                                     0.125, step=0.001, format="%.4f")
-                        else:
-                            mic_fc = DALBA_MIC_OPZIONI[mic_label]
-                    with colF3:
-                        f_unb = st.number_input("Frazione libera (f)", 0.01, 0.10,
-                                               DALBA_PARAMS['fu'], 0.01,
-                                               help="Default 0.07 (93% legame proteico).")
+            colF1, colF2, colF3 = st.columns(3)
+            with colF1:
+                target_scelto = st.selectbox(
+                    "Target PK/PD:",
+                    list(DALBA_TARGETS.keys()) + ["Trough C0/MIC ≥ 200"],
+                    help="Tutti e tre i target fAUC24h/MIC sono dallo stesso "
+                         "Monte Carlo simulation: Cojutti PG, et al. Antimicrob "
+                         "Agents Chemother 2021;65(5):e02260-20.",
+                    key="fc_target",
+                )
+            with colF2:
+                mic_label = st.selectbox("MIC / breakpoint:",
+                                         list(DALBA_MIC_OPZIONI.keys()) + ["Personalizzata"],
+                                         key="fc_mic_label")
+                if mic_label == "Personalizzata":
+                    mic_fc = st.number_input("MIC personalizzata (mg/L)", 0.001, 4.0,
+                                             0.125, step=0.001, format="%.4f", key="fc_mic_custom")
+                else:
+                    mic_fc = DALBA_MIC_OPZIONI[mic_label]
+            with colF3:
+                f_unb = st.number_input("Frazione libera (f)", 0.01, 0.10,
+                                       DALBA_PARAMS['fu'], 0.01, key="fc_funb",
+                                       help="Default 0.07 (93% legame proteico).")
 
-                    st.caption("*EUCAST S. aureus* = breakpoint attuale, tabelle v.16.0 "
-                              "(2026); *USCAST* = ente statunitense, soglia diversa da "
-                              "EUCAST — non una versione precedente.")
+            st.caption("*EUCAST S. aureus* = breakpoint attuale, tabelle v.16.0 "
+                      "(2026); *USCAST* = ente statunitense, soglia diversa da "
+                      "EUCAST — non una versione precedente.")
 
-                    if target_scelto == "Trough C0/MIC ≥ 200":
-                        soglia = dalba_soglia_trough_c0mic(mic_fc)
-                        desc = f"C0/MIC ≥ 200 → soglia totale = {soglia:.2f} mg/L"
-                    else:
-                        soglia = dalba_soglia_totale(DALBA_TARGETS[target_scelto], mic_fc, f_unb)
-                        desc = f"{target_scelto} → soglia totale equivalente = {soglia:.2f} mg/L"
+            if target_scelto == "Trough C0/MIC ≥ 200":
+                soglia = dalba_soglia_trough_c0mic(mic_fc)
+                desc = f"C0/MIC ≥ 200 → soglia totale = {soglia:.2f} mg/L"
+            else:
+                soglia = dalba_soglia_totale(DALBA_TARGETS[target_scelto], mic_fc, f_unb)
+                desc = f"{target_scelto} → soglia totale equivalente = {soglia:.2f} mg/L"
 
-                    st.info(f"📐 Soglia calcolata: **{desc}**")
+            st.info(f"📐 Soglia calcolata: **{desc}**")
 
-                    t_val = max(max((l['ore'] for l in livelli_completi), default=0),
-                               storia_completa[-1]['ore'])
-                    c_att = pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_completa, t_val, prior['t_inf'])
-                    t_cross = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_completa,
-                                                 soglia, prior['t_inf'], t_partenza=t_val,
-                                                 t_max=t_val+2000, passo=2.0)
+            t_val = max(max((l['ore'] for l in livelli_completi), default=0),
+                       storia_completa[-1]['ore'])
+            c_att = pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_completa, t_val, prior['t_inf'])
+            t_cross = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_completa,
+                                         soglia, prior['t_inf'], t_partenza=t_val,
+                                         t_max=t_val+2000, passo=2.0)
 
-                    if t_cross is None:
-                        st.warning("⚠️ La soglia non viene raggiunta entro ~83 giorni "
-                                  "dalla valutazione attuale.")
-                    elif t_cross <= t_val + 0.5:
-                        st.error(f"🔴 Concentrazione già sotto soglia "
-                                f"({c_att:.2f} < {soglia:.2f} mg/L).")
-                    else:
-                        data_cross = t0_assoluto + timedelta(hours=t_cross)
-                        st.success(f"🗓️ La concentrazione scenderà sotto soglia il "
-                                  f"**{data_cross.strftime('%d/%m/%Y alle %H:%M')}** "
-                                  f"(tra circa {(t_cross-t_val)/24.0:.1f} giorni).")
+            if t_cross is None:
+                st.warning("⚠️ La soglia non viene raggiunta entro ~83 giorni "
+                          "dalla valutazione attuale.")
+            elif t_cross <= t_val + 0.5:
+                st.error(f"🔴 Concentrazione già sotto soglia "
+                        f"({c_att:.2f} < {soglia:.2f} mg/L).")
+            else:
+                data_cross = t0_assoluto + timedelta(hours=t_cross)
+                st.success(f"🗓️ La concentrazione scenderà sotto soglia il "
+                          f"**{data_cross.strftime('%d/%m/%Y alle %H:%M')}** "
+                          f"(tra circa {(t_cross-t_val)/24.0:.1f} giorni).")
 
-                    st.markdown("##### Simula una nuova somministrazione ipotetica")
-                    col_s1, col_s2, col_s3 = st.columns(3)
-                    with col_s1:
-                        simula = st.checkbox("Aggiungi dose ipotetica al forecast")
-                    with col_s2:
-                        if simula:
-                            data_new = st.date_input(
-                                "Data nuova dose",
-                                value=(t0_assoluto + timedelta(hours=t_val+24)).date(),
-                                format="DD/MM/YYYY")
-                            ora_new = st.time_input("Ora", value=datetime.strptime("10:00","%H:%M").time())
-                    with col_s3:
-                        if simula:
-                            dose_new = st.number_input("Dose ipotetica (mg)", 100.0, 1500.0, 1500.0, 50.0)
+            st.markdown("##### Simula una nuova somministrazione ipotetica")
+            col_s1, col_s2, col_s3 = st.columns(3)
+            with col_s1:
+                simula = st.checkbox("Aggiungi dose ipotetica al forecast", key="fc_simula")
+            with col_s2:
+                if simula:
+                    data_new = st.date_input(
+                        "Data nuova dose",
+                        value=(t0_assoluto + timedelta(hours=t_val+24)).date(),
+                        format="DD/MM/YYYY", key="fc_data_new")
+                    ora_new = st.time_input("Ora", value=datetime.strptime("10:00","%H:%M").time(),
+                                            key="fc_ora_new")
+            with col_s3:
+                if simula:
+                    dose_new = st.number_input("Dose ipotetica (mg)", 100.0, 1500.0, 1500.0, 50.0,
+                                               key="fc_dose_new")
 
-                    if simula:
-                        t_new = (datetime.combine(data_new, ora_new) - t0_assoluto).total_seconds()/3600.0
-                        storia_sim = sorted(storia_completa + [{'ore': t_new, 'dose': dose_new}],
-                                            key=lambda x: x['ore'])
-                        t_cross_sim = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_sim,
-                                                         soglia, prior['t_inf'], t_partenza=t_new,
-                                                         t_max=t_new+2000, passo=2.0)
-                        if t_cross_sim:
-                            data_cs = t0_assoluto + timedelta(hours=t_cross_sim)
-                            st.success(f"✅ Con la dose ipotetica di {dose_new:.0f} mg, "
-                                      f"la concentrazione resterà sopra soglia fino al "
-                                      f"**{data_cs.strftime('%d/%m/%Y')}**.")
-                        t_fine_sim = (t_cross_sim + 48) if t_cross_sim else (t_new + 500)
-                        t_arr_sim = np.linspace(0, t_fine_sim, 1000)
-                        c_arr_sim = [pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_sim, t, prior['t_inf'])
-                                    for t in t_arr_sim]
-                        fig2 = disegna_forecast(t_arr_sim, c_arr_sim, soglia, t_new, dose_new,
-                                                storia_completa)
-                        st.plotly_chart(fig2, use_container_width=True, theme=None)
-
-            # ---- SALVATAGGIO IN SESSIONE ----
-            record = {
-                'data_val': dt_val, 'farmaco': farmaco, 'eta_giorni': gg, 'peso': peso,
-                'creatinina': crea, 'crrt': bool(crrt), 'Sc': Sc, 'Qef': Qef, 'dialisi_tipo': dialisi,
-                'dose_mg': dose_mg, 'dose_mg_kg': dose_mg_kg, 'tau_h': tau_h_display,
-                'n_dosi': len(storia_completa), 'mic': mic, 'n_livelli': len(livelli_completi),
-                'CL_ind': CL_ind, 'V_ind': Vss_d, 'AUC24': AUC24_v, 'AUC_MIC': auc_mic,
-                'Cmin_ss': Cmin_ss, 'modello': prior['nm'], 'modello_dalba': modello_dalba,
-                'storia_dosi': storia_completa, 'livelli': livelli_completi,
-                'data_prima_dose': t0_assoluto.strftime('%Y-%m-%d %H:%M'),
-            }
-            st.session_state['storico']['monitoraggi'].append(record)
-            st.session_state['storico']['codice_paziente'] = id_paz
-            st.session_state['storico']['sesso'] = sesso
-            st.session_state['storico']['farmaco'] = farmaco
-            st.success("💾 Analisi aggiunta allo storico di questa sessione. "
-                      "Scarica il JSON dalla barra laterale per conservarla.")
+            if simula:
+                t_new = (datetime.combine(data_new, ora_new) - t0_assoluto).total_seconds()/3600.0
+                storia_sim = sorted(storia_completa + [{'ore': t_new, 'dose': dose_new}],
+                                    key=lambda x: x['ore'])
+                t_cross_sim = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_sim,
+                                                 soglia, prior['t_inf'], t_partenza=t_new,
+                                                 t_max=t_new+2000, passo=2.0)
+                if t_cross_sim:
+                    data_cs = t0_assoluto + timedelta(hours=t_cross_sim)
+                    st.success(f"✅ Con la dose ipotetica di {dose_new:.0f} mg, "
+                              f"la concentrazione resterà sopra soglia fino al "
+                              f"**{data_cs.strftime('%d/%m/%Y')}**.")
+                t_fine_sim = (t_cross_sim + 48) if t_cross_sim else (t_new + 500)
+                t_arr_sim = np.linspace(0, t_fine_sim, 1000)
+                c_arr_sim = [pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_sim, t, prior['t_inf'])
+                            for t in t_arr_sim]
+                fig2 = disegna_forecast(t_arr_sim, c_arr_sim, soglia, t_new, dose_new,
+                                        storia_completa)
+                st.plotly_chart(fig2, use_container_width=True, theme=None)
 
 # ------------------------------------------------------------
 # STORICO DI SESSIONE
