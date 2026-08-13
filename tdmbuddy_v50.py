@@ -1,5 +1,5 @@
 """
-TDM Buddy v5.6.1
+TDM Buddy v5.6.2
 ================
 
 FUNZIONALITÀ PRINCIPALI
@@ -7,8 +7,8 @@ FUNZIONALITÀ PRINCIPALI
   - Integrazione storia dosi cumulativa e Bayesian Updating
   - Archivio clinico SQLite / Gestione JSON State
   - Grafici PK Interattivi via Plotly (zoom, pan, toggle tracce)
-  - Modello Popolazione disaccoppiato (tratteggiato) vs Modello Individuale (continuo)
-  - Referto testuale "one-click" per Cartella Clinica (addio FPDF crash)
+  - Modello Popolazione disaccoppiato vs Modello Individuale
+  - Referto testuale "one-click" per Cartella Clinica
 """
 
 import streamlit as st
@@ -109,7 +109,6 @@ COJUTTI_PARAMS = {
 DALBA_MODELLI = {'Mariani (pediatrico, allometrico — Gaslini)': DALBA_PARAMS, 'Cojutti 2021 (adulti, osteoarticolare — AAC)': COJUTTI_PARAMS}
 DALBA_MIC_EUCAST = {'MIC90 osteoarticolare (0.0625)': 0.0625, 'EUCAST precedente (0.125)': 0.125, 'EUCAST S.aureus (0.25)': 0.25}
 
-# CHIAVI BONIFICATE PER EVITARE UNICODE ERROR
 DALBA_TARGETS = {
     'ABSSSI semplice (fAUC24h/MIC >= 27.1)': 27.1, 
     'Infezione complessa (fAUC24h/MIC >= 111.1)': 111.1
@@ -215,7 +214,7 @@ def prior_cipro(id_paziente, sesso, gg, peso, crea, crrt, dialisi):
     eta=gg/365.25; note=""; c=CIPRO; fc=1.0
     for (lo,hi),f in CIPRO_PED.items():
         if lo<=gg<hi: fc=f; break
-    CL_pop=c['CL_kg']*peso*fc; V_pop=c['V1_kg']*peso; Q_pop=c['Q_kg']*peso; V2_pop=c['V2_kg']*peso
+    CL_pop=c['CL_kg']*peso*fc; V1_pop=c['V1_kg']*peso; Q_pop=c['Q_kg']*peso; V2_pop=c['V2_kg']*peso
     oCL, oV1, oQ, oV2, sig = c['omega_CL'], c['omega_V1'], c['omega_Q'], c['omega_V2'], c['sigma']
 
     clcr=calcola_clcr(eta,peso,crea,sesso)
@@ -226,7 +225,7 @@ def prior_cipro(id_paziente, sesso, gg, peso, crea, crrt, dialisi):
         CL_pop=(c['CL_kg']*peso*fc*CIPRO_FRAZ_RENAL*0.20)+(c['CL_kg']*peso*fc*(1-CIPRO_FRAZ_RENAL)*0.63)
 
     nome=f"{c['nome']} (ClCr={clcr:.0f} mL/min)"
-    CL_std, V_std, Q_std, V2_std = CL_pop, V_pop, Q_pop, V2_pop
+    CL_std, V1_std, Q_std, V2_std = CL_pop, V1_pop, Q_pop, V2_pop
 
     monitoraggi = st.session_state['storico'].get('monitoraggi', [])
     candidati = [m for m in monitoraggi if m.get('farmaco') == "Ciprofloxacina"]
@@ -235,14 +234,14 @@ def prior_cipro(id_paziente, sesso, gg, peso, crea, crrt, dialisi):
         cl_hist = last_tdm['CL_ind']; cr_hist = float(last_tdm.get('creatinina', 1.0))
         if cr_hist > 0 and crea > 0: CL_pop = cl_hist * (cr_hist / crea)
         else: CL_pop = cl_hist
-        V_pop = last_tdm['V_ind']
+        V1_pop = last_tdm['V_ind']
         Q_pop = last_tdm['Q_ind'] if pd.notnull(last_tdm.get('Q_ind')) and last_tdm['Q_ind'] > 0 else Q_pop
         V2_pop = last_tdm['V2_ind'] if pd.notnull(last_tdm.get('V2_ind')) and last_tdm['V2_ind'] > 0 else V2_pop
         
         oCL *= 0.5; oV1 *= 0.5
-        note += f"⚠️ [BAYESIAN UPDATING] Usa storico paziente per fit MAP: CL_adj={CL_pop:.2f}, V1={V_pop:.2f}. "
+        note += f"⚠️ [BAYESIAN UPDATING] Usa storico paziente per fit MAP: CL_adj={CL_pop:.2f}, V1={V1_pop:.2f}. "
 
-    return CL_pop, V_pop, Q_pop, V2_pop, oCL, oV1, oQ, oV2, sig, 1.0, nome, note, CL_std, V_std, Q_std, V2_std
+    return CL_pop, V1_pop, Q_pop, V2_pop, oCL, oV1, oQ, oV2, sig, 1.0, nome, note, CL_std, V1_std, Q_std, V2_std
 
 def prior_dalba(id_paziente, peso, modello_scelto):
     p = DALBA_MODELLI[modello_scelto]
@@ -390,10 +389,10 @@ def disegna_forecast_plotly(t_arr_sim, c_sim, soglia_target, t_new_ore, dose_new
 # UI PRINCIPALE - LAYOUT E SIDEBAR
 # ============================================================
 
-st.set_page_config(page_title="TDM Buddy v5.6.1", layout="wide", page_icon="💊")
+st.set_page_config(page_title="TDM Buddy v5.6.2", layout="wide", page_icon="💊")
 
-st.title("💊 TDM Buddy v5.6.1")
-st.caption("Piattaforma Clinica di Farmacocinetica Bayesiana (Daptomicina, Ciprofloxacina, Dalbavancina)")
+st.title("💊 TDM Buddy v5.6.2")
+st.caption("Piattaforma Clinica di Farmacocinetica Bayesiana — Ottimizzata per la Corsia")
 
 # SIDEBAR: Gestione Dati e Sessione
 st.sidebar.header("🛠️ Gestione Sessione")
@@ -597,34 +596,35 @@ with tab1:
                 tau_h_display = tau_mediano(storia_completa)  
 
                 if farmaco == "Daptomicina":
-                    CL_std, V_std, oCL, oV, sig, t_inf, nm, note, CL_pop_pure, V_pop_pure = prior_dapto(id_paz, sesso, gg, peso, crea, crrt, Sc, Qef, dialisi)
+                    CL_p, V_p, oCL, oV, sig, t_inf, nm, note, CL_std, V_std = prior_dapto(id_paz, sesso, gg, peso, crea, crrt, Sc, Qef, dialisi)
+                    CL_ind, V_ind, tipo_fit = map_1cmt(CL_p, V_p, oCL, oV, sig, storia_completa, livelli_completi, t_inf)
+                    Q_ind = V2_ind = Q_std = V2_std = 0.0
+                    Vss_d = V_ind
+                    Vss_std = V_std
                     
-                    CL_ind, V_ind, tipo_fit = map_1cmt(CL_std, V_std, oCL, oV, sig, storia_completa, livelli_completi, t_inf)
-                    
-                    Q_ind=V2_ind=Q_std=V2_std=0.0
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_1cmt, (CL_ind,V_ind), storia_completa, t_inf)
-                    auc_mic = AUC24_v / mic; emivita = np.log(2)*V_ind/CL_ind; Vss_d = V_ind
+                    auc_mic = AUC24_v / mic; emivita = np.log(2)*V_ind/CL_ind
                     ok_staph, ok_ent, tox = auc_mic>=PD_DAPTO['AUC_MIC_staph'], auc_mic>=PD_DAPTO['AUC_MIC_entero'], Cmin_ss>=PD_DAPTO['Cmin_tox']
                 
                 elif farmaco == "Dalbavancin":
-                    CL_std, V1_std, Q_std, V2_std, oCL, sig, t_inf, nm, note, CL_pop_pure, V1_pop_pure, Q_pop_pure, V2_pop_pure = prior_dalba(id_paz, peso, modello_dalba)
-                    
-                    CL_ind, tipo_fit = map_dalba(CL_std, V1_std, Q_std, V2_std, oCL, sig, storia_completa, livelli_completi, t_inf)
-                    
-                    V_ind, Q_ind, V2_ind = V1_std, Q_std, V2_std
-                    V_std, V2_std = V1_std, V2_std
+                    CL_p, V1_p, Q_p, V2_p, oCL, sig, t_inf, nm, note, CL_std, V1_std = prior_dalba(id_paz, peso, modello_dalba)
+                    CL_ind, tipo_fit = map_dalba(CL_p, V1_p, Q_p, V2_p, oCL, sig, storia_completa, livelli_completi, t_inf)
+                    V_ind, Q_ind, V2_ind = V1_p, Q_p, V2_p
+                    V_std, Q_std, V2_std = V1_std, Q_p, V2_p
                     Vss_d = V_ind + V2_ind
+                    Vss_std = V_std + V2_std
+                    
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v / mic; emivita = np.log(2)*Vss_d/CL_ind
                     ok_target, tox = auc_mic >= DALBA_TARGETS['ABSSSI semplice (fAUC24h/MIC >= 27.1)'], False  
                 
-                else:
-                    CL_std, V1_std, Q_std, V2_std, oCL, oV1, oQ, oV2, sig, t_inf, nm, note, CL_pop_pure, V_pop_pure, Q_pop_pure, V2_pop_pure = prior_cipro(id_paz, sesso, gg, peso, crea, crrt, dialisi)
-                    
-                    CL_ind, V_ind, Q_ind, V2_ind, tipo_fit = map_2cmt(CL_std, V1_std, Q_std, V2_std, oCL, oV1, oQ, oV2, sig, storia_completa, livelli_completi, t_inf)
-                    
-                    V_std, V2_std = V1_std, V2_std
+                else: # Ciprofloxacina
+                    CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, t_inf, nm, note, CL_std, V1_std, Q_std, V2_std = prior_cipro(id_paz, sesso, gg, peso, crea, crrt, dialisi)
+                    CL_ind, V_ind, Q_ind, V2_ind, tipo_fit = map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia_completa, livelli_completi, t_inf)
+                    V_std = V1_std
                     Vss_d = V_ind + V2_ind
+                    Vss_std = V_std + V2_std
+                    
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v/mic; emivita = np.log(2)*Vss_d/CL_ind
                     ok_target, tox = auc_mic>=PD_CIPRO['AUC_MIC_target'], AUC24_v>=PD_CIPRO['AUC_alta']
@@ -635,13 +635,13 @@ with tab1:
                 if note: st.info(note)
 
                 c1,c2,c3 = st.columns(3)
-                c1.metric("Clearance (CL) Paziente",f"{CL_ind:.3f} L/h", delta=f"Normale pop: {CL_pop_pure:.3f}", delta_color="off")
-                c2.metric("Vol. Distribuzione (Vss)",f"{Vss_d:.1f} L", delta=f"Normale pop: {(V_pop_pure+V2_pop_pure) if farmaco!='Daptomicina' else V_pop_pure:.1f}", delta_color="off")
-                c3.metric("Emivita (T½)",f"{emivita:.1f} h")
+                c1.metric("Clearance (CL) Paziente", f"{CL_ind:.3f} L/h", delta=f"Normale pop: {CL_std:.3f} L/h", delta_color="off")
+                c2.metric("Vol. Distribuzione (Vss)", f"{Vss_d:.1f} L", delta=f"Normale pop: {Vss_std:.1f} L", delta_color="off")
+                c3.metric("Emivita (T½)", f"{emivita:.1f} h")
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 c4,c5,c6 = st.columns(3)
-                c4.metric("AUC₂₄ stimata",f"{AUC24_v:.0f} mg·h/L")
+                c4.metric("AUC₂₄ stimata", f"{AUC24_v:.0f} mg·h/L")
 
                 if farmaco=="Daptomicina":
                     c5.metric("AUC₂₄/MIC (≥ 666 S.aureus)",f"{auc_mic:.0f}", delta="✅ TARGET" if ok_staph else "⚠️ SOTTO TARGET", delta_color="normal" if ok_staph else "inverse")
@@ -656,15 +656,9 @@ with tab1:
                 st.markdown("### 📈 Profilo Farmacocinetico Interattivo")
                 t_cambio_val = -1
                 if _ultimo and 'storia_dosi' in _ultimo:
-                    for l in livelli_completi:
-                        if l['ore'] == _ultimo['livelli'][-1]['ore'] if _ultimo['livelli'] else -1:
-                            t_cambio_val = l['ore']
+                    t_cambio_val = max(s['ore'] for s in _ultimo['storia_dosi'])
                 
-                # Passiamo i parametri POP_PURE al grafico affinché la linea grigia sia il modello standard
-                if farmaco == "Daptomicina":
-                    fig = disegna_grafico_plotly(farmaco, storia_completa, livelli_completi, CL_ind, V_ind, Q_ind, V2_ind, CL_pop_pure, V_pop_pure, 0, 0, t_inf, t_cambio_val)
-                else:
-                    fig = disegna_grafico_plotly(farmaco, storia_completa, livelli_completi, CL_ind, V_ind, Q_ind, V2_ind, CL_pop_pure, V_pop_pure, Q_pop_pure, V2_pop_pure, t_inf, t_cambio_val)
+                fig = disegna_grafico_plotly(farmaco, storia_completa, livelli_completi, CL_ind, V_ind, Q_ind, V2_ind, CL_std, V_std, Q_std, V2_std, t_inf, t_cambio_val)
                 st.plotly_chart(fig, use_container_width=True)
 
                 def E(ok): return "TARGET RAGGIUNTO" if ok else "INSUFFICIENTE"
@@ -676,7 +670,7 @@ with tab1:
                 else:
                     pd_block = f"  Efficacia gram-negativi (AUC24/MIC >= 125): {auc_mic:.0f}  ->  {E(ok_target)}\n  Esposizione sistemica: AUC24 = {AUC24_v:.0f} mg*h/L\n  Rischio neurotossicita' (AUC24 >= 400): {'MONITORARE: AUC ELEVATA' if tox else 'SICURO'}\n"
 
-                referto = f"""=== TDM BUDDY v5.6 — REFERTO {farmaco.upper()} ===
+                referto = f"""=== TDM BUDDY v5.6.2 — REFERTO {farmaco.upper()} ===
 Data: {dt_val} | Paziente: {id_paz} | Sesso: {sesso} | Eta': {eta:.1f} anni | Peso: {peso} kg
 
 [MODELLO APPLICATO]
