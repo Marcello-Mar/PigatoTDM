@@ -1,14 +1,13 @@
 """
-TDM Buddy v5.5
+TDM Buddy v5.6
 ==============
 
 FUNZIONALITÀ PRINCIPALI
-  - MAP Bayesiano 1-compartimento (Dapto) e 2-compartimento (Cipro/Dalba)
-  - Ripopolamento totale dell'interfaccia: la tabella carica l'intero storico 
-    visivamente, permettendo modifiche e aggiunte "a colpo d'occhio".
-  - Nessun PDF problematico: referto testuale immediato per copia/incolla.
-  - Grafici PK Interattivi via Plotly (zoom, pan, ispezione curve).
-  - Gestione file JSON 100% cloud-safe (no data retention sul server).
+  - MAP Bayesiano 1-compartimento e 2-compartimento
+  - Integrazione storia dosi cumulativa
+  - UI/UX riprogettata: layout a schede (cards), allineamento simmetrico
+  - Pulsante per switch rapido a "Nuovo Paziente"
+  - Export testuale diretto per Cartella Clinica (no PDF)
 """
 
 import streamlit as st
@@ -42,7 +41,7 @@ SORALUCE = {
     'CLNR': 0.160, 'CLR_theta': 0.366, 'Clcr_ref': 49.0,
     'V': 12.30, 'omega_CL': 0.367, 'omega_V': 0.278, 'sigma': 0.123,
     'Sc_default': 0.20,
-    'nome': 'Soraluce et al., Int J Antimicrob Agents 2018;52(2):158-165 [Adulto ICU]',
+    'nome': 'Soraluce et al. 2018 [Adulto ICU]',
 }
 
 WEI = {
@@ -109,13 +108,13 @@ COJUTTI_PARAMS = {
 
 DALBA_MODELLI = {'Mariani (pediatrico, allometrico — Gaslini)': DALBA_PARAMS, 'Cojutti 2021 (adulti, osteoarticolare — AAC)': COJUTTI_PARAMS}
 DALBA_MIC_EUCAST = {'MIC90 osteoarticolare (0.0625)': 0.0625, 'EUCAST precedente (0.125)': 0.125, 'EUCAST S.aureus (0.25)': 0.25}
-DALBA_TARGETS = {'ABSSSI semplice (fAUC/MIC ≥ 27.1)': 27.1, 'Infezione complessa (fAUC/MIC ≥ 111.1)': 111.1}
+DALBA_TARGETS = {'ABSSSI semplice (fAUC24h/MIC ≥ 27.1)': 27.1, 'Infezione complessa (fAUC24h/MIC ≥ 111.1)': 111.1}
 
 def dalba_soglia_totale(target, mic, f): return (target * mic) / (24.0 * f)
 def dalba_soglia_trough(mic, f): return (4.0 * mic) / f
 
 # ============================================================
-# MOTORI PK
+# MOTORI PK E MAP
 # ============================================================
 
 def pk_1cmt(CL, V, storia, t_obs, t_inf=0.5):
@@ -161,10 +160,6 @@ def calcola_clcr(eta_a, peso, crea, sesso):
     if crea<=0: return 60.0
     clcr=((140-eta_a)*peso)/(72*crea)
     return max(clcr*0.85 if sesso=="Femmina" else clcr, 1.0)
-
-# ============================================================
-# PRIOR DI POPOLAZIONE
-# ============================================================
 
 def prior_dapto(sesso, gg, peso, crea, crrt, Sc, Qef, dialisi):
     eta = gg/365.25; note = ""
@@ -215,10 +210,6 @@ def prior_dalba(peso, modello_scelto):
         fw = peso / 70.0
         return p['CL_typ70']*(fw**0.75), p['V1_typ70']*fw, p['Q_typ70']*(fw**0.75), p['V2_typ70']*fw, p['omega_CL'], p['sigma'], p['t_inf'], p['nome'], "Scaling allometrico applicato."
     return p['CL_typ70'], p['V1_typ70'], p['Q_typ70'], p['V2_typ70'], p['omega_CL'], p['sigma'], p['t_inf'], p['nome'], "Nessuno scaling per peso."
-
-# ============================================================
-# MAP BAYESIANO PURE FITTING SULL'INTERO STORICO
-# ============================================================
 
 def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
     if len(livelli) == 0: return CL_p, V_p, "Prior di popolazione"
@@ -286,8 +277,8 @@ def disegna_grafico_plotly(farmaco, storia, livelli, CL_ind, V_ind, Q_ind, V2_in
         C_pop = [pk_2cmt(CL_std, V_std, Q_std, V2_std, storia, t, t_inf) for t in t_arr]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t_arr, y=C_pop, mode='lines', line=dict(dash='dash', color='#94A3B8', width=2), name='Modello Letteratura Standard'))
-    fig.add_trace(go.Scatter(x=t_arr, y=C_ind, mode='lines', line=dict(color='#0F172A', width=3), name='Profilo Paziente (MAP Bayesiano)'))
+    fig.add_trace(go.Scatter(x=t_arr, y=C_pop, mode='lines', line=dict(dash='dash', color='#94A3B8', width=2), name='Modello Popolazione Standard'))
+    fig.add_trace(go.Scatter(x=t_arr, y=C_ind, mode='lines', line=dict(color='#0F172A', width=3), name='Profilo Paziente (MAP)'))
 
     max_c = max(max(C_ind), max(C_pop)) if len(C_ind) > 0 else 100
 
@@ -315,7 +306,7 @@ def disegna_grafico_plotly(farmaco, storia, livelli, CL_ind, V_ind, Q_ind, V2_in
     if farmaco == "Daptomicina":
         fig.add_hline(y=24.3, line_dash="dashdot", line_color="#DC2626", annotation_text="Soglia tossicità CPK", annotation_position="top right")
 
-    fig.update_layout(xaxis_title="Ore dall'inizio della terapia (t=0 prima dose)", yaxis_title=f"Concentrazione plasmatica {farmaco} (mg/L)", plot_bgcolor='#FAFAFA', paper_bgcolor='#FAFAFA', hovermode="x unified", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1), margin=dict(l=40, r=40, t=40, b=40))
+    fig.update_layout(xaxis_title="Ore dall'inizio della terapia (t=0)", yaxis_title=f"Concentrazione {farmaco} (mg/L)", plot_bgcolor='#FAFAFA', paper_bgcolor='#FAFAFA', hovermode="x unified", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1), margin=dict(l=40, r=40, t=40, b=40))
     return fig
 
 def disegna_forecast_plotly(t_arr_sim, c_sim, soglia_target, t_new_ore, dose_new, storia_completa):
@@ -336,47 +327,55 @@ def disegna_forecast_plotly(t_arr_sim, c_sim, soglia_target, t_new_ore, dose_new
 
 
 # ============================================================
-# UI PRINCIPALE
+# UI PRINCIPALE - LAYOUT E SIDEBAR
 # ============================================================
 
-st.set_page_config(page_title="TDM Buddy v5.5", layout="wide", page_icon="💊")
+st.set_page_config(page_title="TDM Buddy v5.6", layout="wide", page_icon="💊")
 
-# TITOLO E CARICAMENTO PAZIENTE NELLA PAGINA PRINCIPALE
-st.title("💊 TDM Buddy v5.5")
-st.caption("Piattaforma Clinica di Farmacocinetica Bayesiana (Daptomicina, Ciprofloxacina, Dalbavancina)")
+st.title("💊 TDM Buddy v5.6")
+st.caption("Piattaforma Clinica di Farmacocinetica Bayesiana — Ottimizzata per la Corsia")
 
-st.markdown("### 🗂️ Gestione Paziente e Storico")
-col_file, col_paz, col_down = st.columns([1.5, 1.5, 1])
+# SIDEBAR: Gestione Dati e Sessione
+st.sidebar.header("🛠️ Gestione Sessione")
 
-with col_file:
-    file_up = st.file_uploader("Carica storico paziente (JSON)", type=["json"], label_visibility="collapsed")
-    if file_up is not None:
-        try:
-            dati_caricati = json.load(file_up)
-            st.session_state['storico'] = dati_caricati
-            st.success(f"✅ Storico '{dati_caricati.get('codice_paziente','?')}' caricato: {len(dati_caricati.get('monitoraggi', []))} TDM trovati.")
-        except Exception as e: st.error(f"File non valido: {e}")
+# Aggiunta Pulsante Reset
+if st.sidebar.button("🔄 Nuovo Paziente / Svuota Dati", type="primary", use_container_width=True):
+    st.session_state['storico'] = storico_vuoto()
+    st.rerun()
+
+st.sidebar.markdown("---")
+file_up = st.sidebar.file_uploader("📥 Carica storico paziente (JSON)", type=["json"])
+if file_up is not None:
+    try:
+        dati_caricati = json.load(file_up)
+        st.session_state['storico'] = dati_caricati
+        st.sidebar.success(f"✅ Storico '{dati_caricati.get('codice_paziente','?')}' caricato: {len(dati_caricati.get('monitoraggi', []))} TDM trovati.")
+    except Exception as e: 
+        st.sidebar.error(f"File non valido: {e}")
+
+st.sidebar.markdown("### 👤 Anagrafica Paziente")
+id_paz = st.sidebar.text_input("Codice Paziente (no dati sensibili)", value=st.session_state['storico'].get('codice_paziente', ''))
+sesso = st.sidebar.selectbox("Sesso biologico", ["Maschio", "Femmina"], index=0 if st.session_state['storico'].get('sesso', 'Maschio') == 'Maschio' else 1)
+st.session_state['storico']['codice_paziente'] = id_paz
+st.session_state['storico']['sesso'] = sesso
+
+n_rec = len(st.session_state['storico'].get('monitoraggi', []))
+if n_rec > 0:
+    st.sidebar.markdown("---")
+    st.sidebar.info(f"📋 {n_rec} analisi salvate nella sessione corrente.")
+    ultimo_farmaco = st.session_state['storico']['monitoraggi'][-1].get('farmaco', 'Multi')
     
-    # Quick view dello storico se presente
-    n_rec = len(st.session_state['storico'].get('monitoraggi', []))
-    if n_rec > 0:
-        df_sb = pd.DataFrame(st.session_state['storico']['monitoraggi'])
-        cols_sb = [c for c in ['data_val', 'farmaco', 'creatinina', 'mic'] if c in df_sb.columns]
-        st.dataframe(df_sb[cols_sb].tail(4), use_container_width=True, hide_index=True)
+    df_sb = pd.DataFrame(st.session_state['storico']['monitoraggi'])
+    cols_sb = [c for c in ['data_val', 'farmaco', 'creatinina', 'mic'] if c in df_sb.columns]
+    st.sidebar.dataframe(df_sb[cols_sb].tail(4), use_container_width=True, hide_index=True)
+    
+    st.sidebar.download_button("📤 Scarica Storico Aggiornato", data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'), file_name=f"TDMBuddy_{ultimo_farmaco}_{id_paz}.json", mime="application/json", type="primary", use_container_width=True)
 
-with col_paz:
-    id_paz = st.text_input("Codice Paziente (no dati sensibili)", value=st.session_state['storico'].get('codice_paziente', ''))
-    sesso = st.selectbox("Sesso biologico", ["Maschio", "Femmina"], index=0 if st.session_state['storico'].get('sesso', 'Maschio') == 'Maschio' else 1)
-    st.session_state['storico']['codice_paziente'] = id_paz
-    st.session_state['storico']['sesso'] = sesso
 
-with col_down:
-    if n_rec > 0:
-        ultimo_farmaco = st.session_state['storico']['monitoraggi'][-1].get('farmaco', 'Multi')
-        st.download_button("📥 Scarica Aggiornamento", data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'), file_name=f"TDMBuddy_{ultimo_farmaco}_{id_paz}.json", mime="application/json", type="primary", use_container_width=True)
-        if st.button("🗑️ Svuota Sessione", use_container_width=True): st.session_state['storico'] = storico_vuoto(); st.rerun()
+# ============================================================
+# MAIN PAGE - TABS
+# ============================================================
 
-st.markdown("---")
 tab1, tab2, tab3 = st.tabs(["➕ Analisi TDM", "📚 Storico Sessione", "ℹ️ Riferimenti Scientifici"])
 
 with tab3:
@@ -403,12 +402,12 @@ with tab3:
 
 with tab1:
     if not id_paz:
-        st.warning("Inserisci il codice paziente nel box in alto per procedere.")
+        st.warning("👈 Inserisci il codice paziente nella barra laterale sinistra per procedere.")
         st.stop()
 
-    farmaco = st.radio("💊 Seleziona il Farmaco da monitorare:", ["Daptomicina","Ciprofloxacina","Dalbavancin"], horizontal=True)
+    st.markdown("### 💊 Selezione Target")
+    farmaco = st.radio("Seleziona il Farmaco da monitorare:", ["Daptomicina","Ciprofloxacina","Dalbavancin"], horizontal=True, label_visibility="collapsed")
 
-    # Estrazione parametri dall'ultimo TDM dello *stesso* farmaco
     monitoraggi_farmaco = [m for m in st.session_state['storico'].get('monitoraggi', []) if m.get('farmaco') == farmaco]
     if monitoraggi_farmaco:
         _ultimo = monitoraggi_farmaco[-1]
@@ -416,7 +415,7 @@ with tab1:
         _peso_def = float(_ultimo.get('peso', 70.0))
         def_crea = float(_ultimo.get('creatinina', 1.0))
         def_mic = float(_ultimo.get('mic', 0.0625 if farmaco=="Dalbavancin" else 1.0))
-        st.success(f"📋 Parametri clinici (Creatinina e MIC) ripopolati dall'ultima analisi di {farmaco}.")
+        st.success(f"📋 Dati storici recuperati dall'ultima analisi di {farmaco}.")
     else:
         _ultimo = None
         _gg_def = 10950 
@@ -424,41 +423,46 @@ with tab1:
         def_crea = 1.0
         def_mic = 0.0625 if farmaco=="Dalbavancin" else 1.0
 
-    col_e1, col_e2, col_e3, col_peso = st.columns(4)
-    with col_e1: eta_anni_in = st.number_input("Età — Anni", 0, 100, min(int(_gg_def // 365), 100))
-    with col_e2: eta_mesi_in = st.number_input("Età — Mesi", 0, 11, min(int((_gg_def % 365) // 30), 11))
-    with col_e3: eta_giorni_in = st.number_input("Età — Giorni", 0, 30, int((_gg_def % 365) % 30))
-    with col_peso: peso = st.number_input("Peso (kg)", 0.3, 300.0, _peso_def)
+    # 1. Dati Paziente
+    with st.container(border=True):
+        st.markdown("#### 1. Dati Biometrici & Modello")
+        col_e1, col_e2, col_e3, col_peso = st.columns(4)
+        with col_e1: eta_anni_in = st.number_input("Età — Anni", 0, 100, min(int(_gg_def // 365), 100))
+        with col_e2: eta_mesi_in = st.number_input("Età — Mesi", 0, 11, min(int((_gg_def % 365) // 30), 11))
+        with col_e3: eta_giorni_in = st.number_input("Età — Giorni", 0, 30, int((_gg_def % 365) % 30))
+        with col_peso: peso = st.number_input("Peso (kg)", 0.3, 300.0, _peso_def)
 
-    gg = int(round(eta_anni_in*365.25 + eta_mesi_in*30.44 + eta_giorni_in))
-    eta = gg / 365.25
+        gg = int(round(eta_anni_in*365.25 + eta_mesi_in*30.44 + eta_giorni_in))
+        eta = gg / 365.25
 
-    modello_dalba = None
-    if farmaco=="Dalbavancin":
-        idx_mod = list(DALBA_MODELLI.keys()).index(_ultimo.get('modello_dalba', list(DALBA_MODELLI.keys())[0])) if _ultimo else 0
-        modello_dalba = st.selectbox("🧬 Modello PK di riferimento:", list(DALBA_MODELLI.keys()), index=idx_mod)
+        modello_dalba = None
+        if farmaco=="Dalbavancin":
+            idx_mod = list(DALBA_MODELLI.keys()).index(_ultimo.get('modello_dalba', list(DALBA_MODELLI.keys())[0])) if _ultimo else 0
+            modello_dalba = st.selectbox("🧬 Modello PK di riferimento:", list(DALBA_MODELLI.keys()), index=idx_mod)
 
-    st.markdown("### 1. Parametri Clinici Attuali")
-    col1,col2,col3 = st.columns(3)
-    with col1:
-        crea = st.number_input("Creatinina Sierica (mg/dL)", 0.05, 25.0, def_crea, 0.05)
-        mic = st.number_input(f"MIC {farmaco} (mg/L)", 0.001, 16.0, def_mic, format="%.4f")
-    with col2:
-        crrt = st.checkbox("Paziente in CRRT?")
-        Sc, Qef = (st.number_input("Sc", 0.01, 0.60, 0.20), st.number_input("Qef (L/h)", 0.5, 6.0, 2.0)) if crrt else (0.2, 2.0)
-    with col3:
-        if farmaco=="Daptomicina" and gg<6570:
-            dialisi = st.selectbox("Funzione Renale / Dialisi:", ["Nessuna","Lieve (GFR 60-90)","Moderata (GFR 30-60)","Grave (GFR 15-30)","ESRD (GFR <15)"] + (["Emodialisi (HD)","Dialisi Peritoneale (CCPD)"] if gg>=4380 else []))
-        else: dialisi = "Nessuna"
+    # 2. Parametri Clinici
+    with st.container(border=True):
+        st.markdown("#### 2. Dati Clinici Attuali")
+        col1,col2,col3 = st.columns(3)
+        with col1:
+            crea = st.number_input("Creatinina Sierica (mg/dL)", 0.05, 25.0, def_crea, 0.05)
+            mic = st.number_input(f"MIC {farmaco} (mg/L)", 0.001, 16.0, def_mic, format="%.4f")
+        with col2:
+            crrt = st.checkbox("Paziente in CRRT?")
+            Sc, Qef = (st.number_input("Sc", 0.01, 0.60, 0.20), st.number_input("Qef (L/h)", 0.5, 6.0, 2.0)) if crrt else (0.2, 2.0)
+        with col3:
+            if farmaco=="Daptomicina" and gg<6570:
+                dialisi = st.selectbox("Funzione Renale / Dialisi:", ["Nessuna","Lieve (GFR 60-90)","Moderata (GFR 30-60)","Grave (GFR 15-30)","ESRD (GFR <15)"] + (["Emodialisi (HD)","Dialisi Peritoneale (CCPD)"] if gg>=4380 else []))
+            else: dialisi = "Nessuna"
 
-    st.markdown("### 2. Timeline Somministrazioni e Livelli Plasmatici")
-    st.info("💡 **Le tabelle mostrano l'INTERA storia clinica del paziente.** Modifica le righe esistenti o aggiungine di nuove per la valutazione TDM odierna. Il sistema fitta l'intera curva simultaneamente.")
+    # 3. Timeline
+    st.markdown("### 3. Timeline Dosi e Prelievi")
+    st.info("💡 **Aggiungi o modifica le righe per la valutazione odierna.** Il sistema calcolerà l'intera curva PK.")
 
     dose_def = {"Daptomicina": 500.0, "Dalbavancin": 1500.0, "Ciprofloxacina": 400.0}[farmaco]
 
-    # Pre-popolamento Dosi
     dosi_list = []
-    t0_db = datetime.now() # Fallback
+    t0_db = datetime.now() 
     t_ultimo_storico = -1
     
     if _ultimo and 'storia_dosi' in _ultimo:
@@ -475,7 +479,6 @@ with tab1:
     else:
         dosi_list.append({"Data (GG/MM/AAAA)": date.today().strftime("%d/%m/%Y"), "Ora (HH:MM)": "08:00", "Dose (mg)": dose_def})
 
-    # Pre-popolamento Livelli
     liv_list = []
     if _ultimo and 'livelli' in _ultimo:
         for l in _ultimo['livelli']:
@@ -484,8 +487,12 @@ with tab1:
     liv_list.append({"Data (GG/MM/AAAA)": "", "Ora (HH:MM)": "", "Concentrazione (mg/L)": None, "Nota (opz.)": ""})
 
     colA, colB = st.columns(2)
-    with colA: df_dosi_edit = st.data_editor(pd.DataFrame(dosi_list), num_rows="dynamic", use_container_width=True)
-    with colB: df_liv_edit = st.data_editor(pd.DataFrame(liv_list), num_rows="dynamic", use_container_width=True)
+    with colA: 
+        st.markdown("**💉 Somministrazioni**")
+        df_dosi_edit = st.data_editor(pd.DataFrame(dosi_list), num_rows="dynamic", use_container_width=True)
+    with colB: 
+        st.markdown("**🔬 Livelli Plasmatici**")
+        df_liv_edit = st.data_editor(pd.DataFrame(liv_list), num_rows="dynamic", use_container_width=True)
 
     def _parse_data_ora(d_str, o_str):
         if not d_str or not o_str: return None
@@ -513,7 +520,8 @@ with tab1:
         conc_val = safe_float(r.get("Concentrazione (mg/L)"))
         if dt_obj and conc_val is not None: livelli_completi.append({'dt': dt_obj, 'conc': conc_val, 'nota': str(r.get("Nota (opz.)", ""))})
 
-    if st.button("🚀 Avvia Fitting MAP Bayesiano sull'Intero Storico", type="primary", use_container_width=True):
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🚀 AVVIA FITTING MAP BAYESIANO", type="primary", use_container_width=True):
         if not storia_completa: st.error("Nessuna dose valida.")
         elif len(livelli_completi) == 0: st.error("Inserisci almeno un livello plasmatico.")
         else:
@@ -532,53 +540,59 @@ with tab1:
 
                 if farmaco == "Daptomicina":
                     CL_std, V_std, oCL, oV, sig, t_inf, nm, note = prior_dapto(sesso, gg, peso, crea, crrt, Sc, Qef, dialisi)
+                    
+                    # FIT BAYESIANO CON IL PRIOR STANDARD DELLA POPOLAZIONE
                     CL_ind, V_ind, tipo_fit = map_1cmt(CL_std, V_std, oCL, oV, sig, storia_completa, livelli_completi, t_inf)
+                    
                     Q_ind=V2_ind=Q_std=V2_std=0.0
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_1cmt, (CL_ind,V_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v / mic; emivita = np.log(2)*V_ind/CL_ind; Vss_d = V_ind
                     ok_staph, ok_ent, tox = auc_mic>=PD_DAPTO['AUC_MIC_staph'], auc_mic>=PD_DAPTO['AUC_MIC_entero'], Cmin_ss>=PD_DAPTO['Cmin_tox']
                 elif farmaco == "Dalbavancin":
                     CL_std, V1_std, Q_std, V2_std, oCL, sig, t_inf, nm, note = prior_dalba(peso, modello_dalba)
+                    
                     CL_ind, tipo_fit = map_dalba(CL_std, V1_std, Q_std, V2_std, oCL, sig, storia_completa, livelli_completi, t_inf)
+                    
                     V_ind, Q_ind, V2_ind = V1_std, Q_std, V2_std
                     Vss_d = V_ind + V2_ind
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v / mic; emivita = np.log(2)*Vss_d/CL_ind
-                    ok_target, tox = auc_mic >= DALBA_TARGETS['ABSSSI semplice (fAUC24h/MIC >= 27.1)'], False  
+                    ok_target, tox = auc_mic >= DALBA_TARGETS['ABSSSI semplice (fAUC24h/MIC ≥ 27.1)'], False  
                 else:
                     CL_std, V1_std, Q_std, V2_std, oCL, oV1, oQ, oV2, sig, t_inf, nm, note = prior_cipro(sesso, gg, peso, crea, crrt, dialisi)
+                    
                     CL_ind, V_ind, Q_ind, V2_ind, tipo_fit = map_2cmt(CL_std, V1_std, Q_std, V2_std, oCL, oV1, oQ, oV2, sig, storia_completa, livelli_completi, t_inf)
+                    
                     Vss_d = V_ind + V2_ind
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v/mic; emivita = np.log(2)*Vss_d/CL_ind
                     ok_target, tox = auc_mic>=PD_CIPRO['AUC_MIC_target'], AUC24_v>=PD_CIPRO['AUC_alta']
 
                 st.markdown("---")
-                st.subheader(f"🔬 Risultati PK/PD — {farmaco}")
-                st.caption(f"**Modello Standard Popolazione:** {nm}")
+                st.subheader("🔬 Risultati PK/PD")
+                st.caption(f"**Modello Popolazione Base:** {nm}")
                 if note: st.info(note)
 
                 c1,c2,c3 = st.columns(3)
-                c1.metric("CL Individuale",f"{CL_ind:.3f} L/h", delta=f"{(CL_ind/peso)*1000:.1f} mL/h/kg", help=f"Media standard di popolazione: {CL_std:.3f} L/h")
-                c2.metric("Vss Paziente",f"{Vss_d:.1f} L", delta=f"{Vss_d/peso:.2f} L/kg", help=f"Standard Popolazione: {(V_std+V2_std) if farmaco!='Daptomicina' else V_std:.1f} L")
-                c3.metric("Emivita terminale (T½)",f"{emivita:.1f} h")
+                c1.metric("Clearance (CL) Paziente",f"{CL_ind:.3f} L/h", delta=f"Normale: {CL_std:.3f}", delta_color="off")
+                c2.metric("Vol. Distribuzione (Vss)",f"{Vss_d:.1f} L", delta=f"Normale: {(V_std+V2_std) if farmaco!='Daptomicina' else V_std:.1f}", delta_color="off")
+                c3.metric("Emivita (T½)",f"{emivita:.1f} h")
                 
-                st.markdown("")
+                st.markdown("<br>", unsafe_allow_html=True)
                 c4,c5,c6 = st.columns(3)
                 c4.metric("AUC₂₄ stimata",f"{AUC24_v:.0f} mg·h/L")
 
                 if farmaco=="Daptomicina":
-                    c5.metric("AUC₂₄/MIC  (target S.aureus ≥ 666)",f"{auc_mic:.0f}", delta="✅ TARGET" if ok_staph else "⚠️ SOTTO TARGET", delta_color="normal" if ok_staph else "inverse")
-                    c6.metric(f"Cmin SS prevista  (soglia CPK ≥ 24.3 mg/L)",f"{Cmin_ss:.1f} mg/L", delta="⚠️ RISCHIO CPK" if tox else "✅ Sicuro", delta_color="inverse" if tox else "normal")
+                    c5.metric("AUC₂₄/MIC (≥ 666 S.aureus)",f"{auc_mic:.0f}", delta="✅ TARGET" if ok_staph else "⚠️ SOTTO TARGET", delta_color="normal" if ok_staph else "inverse")
+                    c6.metric(f"Cmin SS (Soglia CPK ≥ 24.3)",f"{Cmin_ss:.1f} mg/L", delta="⚠️ RISCHIO CPK" if tox else "✅ Sicuro", delta_color="inverse" if tox else "normal")
                 elif farmaco=="Dalbavancin":
-                    c5.metric("fAUC₂₄h/MIC  (target ABSSSI ≥ 27.1)",f"{auc_mic:.0f}", delta="✅ TARGET" if ok_target else "⚠️ SOTTO TARGET", delta_color="normal" if ok_target else "inverse")
+                    c5.metric("fAUC₂₄h/MIC (≥ 27.1 ABSSSI)",f"{auc_mic:.0f}", delta="✅ TARGET" if ok_target else "⚠️ SOTTO TARGET", delta_color="normal" if ok_target else "inverse")
                     c6.metric("Cmax / Cmin previste",f"{Cmax_ss:.1f} / {Cmin_ss:.1f} mg/L")
                 else:
-                    c5.metric("AUC₂₄/MIC  (target gram-neg ≥ 125)",f"{auc_mic:.0f}", delta="✅ TARGET" if ok_target else "⚠️ SOTTO TARGET", delta_color="normal" if ok_target else "inverse")
-                    c6.metric(f"AUC₂₄  (soglia neurotox ≥ 400 mg·h/L)",f"{AUC24_v:.0f} mg·h/L", delta="⚠️ AUC ELEVATA" if tox else "✅ Esposizione sicura", delta_color="inverse" if tox else "normal")
+                    c5.metric("AUC₂₄/MIC (≥ 125)",f"{auc_mic:.0f}", delta="✅ TARGET" if ok_target else "⚠️ SOTTO TARGET", delta_color="normal" if ok_target else "inverse")
+                    c6.metric(f"AUC₂₄ (Soglia CNS ≥ 400)",f"{AUC24_v:.0f} mg·h/L", delta="⚠️ AUC ELEVATA" if tox else "✅ Esposizione sicura", delta_color="inverse" if tox else "normal")
 
-                st.subheader("📈 Profilo Farmacocinetico Interattivo")
-                # Disegna la linea dell'ultima modifica dosaggio storico se presente
+                st.markdown("### 📈 Profilo Farmacocinetico Interattivo")
                 t_cambio_val = -1
                 if _ultimo and 'storia_dosi' in _ultimo:
                     for l in livelli_completi:
@@ -597,84 +611,80 @@ with tab1:
                 else:
                     pd_block = f"  Efficacia gram-negativi (AUC24/MIC >= 125): {auc_mic:.0f}  ->  {E(ok_target)}\n  Esposizione sistemica: AUC24 = {AUC24_v:.0f} mg*h/L\n  Rischio neurotossicita' (AUC24 >= 400): {'MONITORARE: AUC ELEVATA' if tox else 'SICURO'}\n"
 
-                referto = f"""=== TDM BUDDY v5.5 — REFERTO {farmaco.upper()} ===
-Data valutazione: {dt_val}   ID paziente: {id_paz}
-Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
+                referto = f"""=== TDM BUDDY v5.6 — REFERTO {farmaco.upper()} ===
+Data: {dt_val} | Paziente: {id_paz} | Sesso: {sesso} | Eta': {eta:.1f} anni | Peso: {peso} kg
 
-[MODELLO FARMACOGENETICO APPLICATO]
-  {nm}
-  Algoritmo: {tipo_fit}
+[MODELLO APPLICATO]
+{nm}
 
 [DATI CLINICI]
-  Creatinina sierica:      {crea} mg/dL
-  Dialisi / CRRT:          {dialisi}
-  Dose più recente:        {dose_mg:.0f} mg  ({dose_mg_kg:.1f} mg/kg)
-  Numero dosi totali:      {len(storia_completa)}
-  MIC patogeno:            {mic} mg/L
-  Livelli plasmatici usati per il fit: {len(livelli_completi)}
+Creatinina sierica: {crea} mg/dL
+Dialisi / CRRT: {dialisi}
+Dose più recente: {dose_mg:.0f} mg ({dose_mg_kg:.1f} mg/kg)
+MIC patogeno: {mic} mg/L
 
-[PARAMETRI PK INDIVIDUALI STIMATI]
-  Clearance (CL):               {CL_ind:.3f} L/h  ({(CL_ind/peso)*1000:.1f} mL/h/kg)
-  Volume di distribuzione (Vss):{Vss_d:.2f} L     ({Vss_d/peso:.2f} L/kg)
-  Emivita terminale (T1/2):     {emivita:.1f} h
+[PARAMETRI PK INDIVIDUALI (MAP Bayesiano)]
+Clearance (CL): {CL_ind:.3f} L/h
+Volume di distribuzione (Vss): {Vss_d:.2f} L
+Emivita terminale (T1/2): {emivita:.1f} h
 
 [VALUTAZIONE PK/PD]
-  AUC24 stimata (finestra 24h dopo l'ultima dose): {AUC24_v:.0f} mg*h/L
+AUC24 stimata: {AUC24_v:.0f} mg*h/L
 {pd_block}"""
 
-                st.subheader("📋 Referto per Cartella Clinica")
-                st.info("Clicca sull'icona a forma di due fogli in alto a destra nel box grigio per copiare l'intero referto.")
+                st.markdown("### 📋 Referto per Cartella Clinica")
+                st.info("Copia il testo sottostante cliccando sull'icona in alto a destra nel riquadro.")
                 st.code(referto, language='markdown')
 
                 if farmaco == "Dalbavancin":
-                    st.markdown("---")
-                    st.subheader("🔮 Forecast — Pianificazione Prossima Somministrazione")
+                    with st.container(border=True):
+                        st.markdown("#### 🔮 Forecast — Prossima Somministrazione")
 
-                    colF1, colF2, colF3 = st.columns(3)
-                    with colF1:
-                        target_scelto = st.selectbox("Target PK/PD di riferimento:", list(DALBA_TARGETS.keys()) + ["Trough (100% fT > 4×MIC)"])
-                    with colF2:
-                        mic_scelta_label = st.selectbox("MIC / breakpoint:", list(DALBA_MIC_EUCAST.keys()) + ["Personalizzato"])
-                        if mic_scelta_label == "Personalizzato": mic_forecast = st.number_input("MIC (mg/L)", 0.001, 4.0, 0.125, step=0.001, format="%.4f")
-                        else: mic_forecast = DALBA_MIC_EUCAST[mic_scelta_label]
-                    with colF3:
-                        f_unbound = st.number_input("Frazione libera (f)", 0.01, 0.10, DALBA_PARAMS['fu'], 0.01)
+                        colF1, colF2, colF3 = st.columns(3)
+                        with colF1:
+                            target_scelto = st.selectbox("Target PK/PD di riferimento:", list(DALBA_TARGETS.keys()) + ["Trough (100% fT > 4×MIC)"])
+                        with colF2:
+                            mic_scelta_label = st.selectbox("MIC / breakpoint:", list(DALBA_MIC_EUCAST.keys()) + ["Personalizzato"])
+                            if mic_scelta_label == "Personalizzato": mic_forecast = st.number_input("MIC (mg/L)", 0.001, 4.0, 0.125, step=0.001, format="%.4f")
+                            else: mic_forecast = DALBA_MIC_EUCAST[mic_scelta_label]
+                        with colF3:
+                            f_unbound = st.number_input("Frazione libera (f)", 0.01, 0.10, DALBA_PARAMS['fu'], 0.01)
 
-                    if target_scelto == "Trough (100% fT > 4×MIC)":
-                        soglia_target = dalba_soglia_trough(mic_forecast, f_unbound)
-                        desc_target = f"trough 4×MIC libera → soglia totale = {soglia_target:.2f} mg/L"
-                    else:
-                        soglia_target = dalba_soglia_concentrazione_totale(DALBA_TARGETS[target_scelto], mic_forecast, f_unbound)
-                        desc_target = f"{target_scelto} → soglia totale equivalente = {soglia_target:.2f} mg/L"
+                        if target_scelto == "Trough (100% fT > 4×MIC)":
+                            soglia_target = dalba_soglia_trough(mic_forecast, f_unbound)
+                            desc_target = f"trough 4×MIC libera → soglia totale = {soglia_target:.2f} mg/L"
+                        else:
+                            soglia_target = dalba_soglia_concentrazione_totale(DALBA_TARGETS[target_scelto], mic_forecast, f_unbound)
+                            desc_target = f"{target_scelto} → soglia totale equivalente = {soglia_target:.2f} mg/L"
 
-                    st.info(f"📐 Soglia calcolata: **{desc_target}**")
+                        st.caption(f"📐 Soglia calcolata: **{desc_target}**")
 
-                    t_valutazione = max(max((l['ore'] for l in livelli_completi), default=0), storia_completa[-1]['ore'])
-                    c_attuale = pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_completa, t_valutazione, t_inf)
-                    t_crossing = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_completa, soglia_target, t_inf, t_partenza=t_valutazione, t_max=t_valutazione + 2000, passo=2.0)
+                        t_valutazione = max(max((l['ore'] for l in livelli_completi), default=0), storia_completa[-1]['ore'])
+                        c_attuale = pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_completa, t_valutazione, t_inf)
+                        t_crossing = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_completa, soglia_target, t_inf, t_partenza=t_valutazione, t_max=t_valutazione + 2000, passo=2.0)
 
-                    if t_crossing is None: st.warning("⚠️ Soglia non raggiunta entro 83 giorni.")
-                    elif t_crossing <= t_valutazione + 0.5: st.error(f"🔴 Concentrazione già sotto soglia ({c_attuale:.2f} mg/L).")
-                    else: st.success(f"🗓️ La concentrazione scenderà sotto soglia il **{(t0_assoluto + timedelta(hours=t_crossing)).strftime('%d/%m/%Y %H:%M')}** ({(t_crossing - t_valutazione) / 24.0:.1f} giorni).")
+                        if t_crossing is None: st.warning("⚠️ Soglia non raggiunta entro 83 giorni.")
+                        elif t_crossing <= t_valutazione + 0.5: st.error(f"🔴 Concentrazione già sotto soglia ({c_attuale:.2f} mg/L).")
+                        else: st.success(f"🗓️ La concentrazione scenderà sotto soglia il **{(t0_assoluto + timedelta(hours=t_crossing)).strftime('%d/%m/%Y %H:%M')}** ({(t_crossing - t_valutazione) / 24.0:.1f} giorni).")
 
-                    st.markdown("#### 💉 Simula nuova somministrazione ipotetica")
-                    col_sim1, col_sim2, col_sim3 = st.columns(3)
-                    with col_sim1: simula = st.checkbox("Aggiungi dose al forecast")
-                    with col_sim2:
+                        st.markdown("##### Simula nuova somministrazione ipotetica")
+                        col_sim1, col_sim2, col_sim3 = st.columns(3)
+                        with col_sim1: simula = st.checkbox("Aggiungi dose al grafico Forecast")
+                        with col_sim2:
+                            if simula:
+                                data_new = st.date_input("Data nuova dose", value=(t0_assoluto + timedelta(hours=t_valutazione+24)).date(), format="DD/MM/YYYY")
+                                ora_new = st.time_input("Ora dose", value=datetime.strptime("10:00","%H:%M").time())
+                        with col_sim3:
+                            if simula: dose_new = st.number_input("Dose ipotetica (mg)", 100.0, 1500.0, 1500.0, 50.0)
+
                         if simula:
-                            data_new = st.date_input("Data nuova dose", value=(t0_assoluto + timedelta(hours=t_valutazione+24)).date(), format="DD/MM/YYYY")
-                            ora_new = st.time_input("Ora", value=datetime.strptime("10:00","%H:%M").time())
-                    with col_sim3:
-                        if simula: dose_new = st.number_input("Dose ipotetica (mg)", 100.0, 1500.0, 1500.0, 50.0)
-
-                    if simula:
-                        t_new_ore = (datetime.combine(data_new, ora_new) - t0_assoluto).total_seconds() / 3600.0
-                        storia_sim = sorted(storia_completa + [{'ore': t_new_ore, 'dose': dose_new}], key=lambda x: x['ore'])
-                        t_crossing_sim = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_sim, soglia_target, t_inf, t_partenza=t_new_ore, t_max=t_new_ore+2000, passo=2.0)
-                        
-                        if t_crossing_sim: st.success(f"✅ Con dose di {dose_new:.0f} mg, concentrazione sopra soglia fino al **{(t0_assoluto + timedelta(hours=t_crossing_sim)).strftime('%d/%m/%Y')}**.")
-                        fig2 = disegna_forecast_plotly(np.linspace(0, t_crossing_sim + 48 if t_crossing_sim else t_new_ore + 500, 1000), [pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_sim, t, t_inf) for t in np.linspace(0, t_crossing_sim + 48 if t_crossing_sim else t_new_ore + 500, 1000)], soglia_target, t_new_ore, dose_new, storia_completa)
-                        st.plotly_chart(fig2, use_container_width=True)
+                            t_new_ore = (datetime.combine(data_new, ora_new) - t0_assoluto).total_seconds() / 3600.0
+                            storia_sim = sorted(storia_completa + [{'ore': t_new_ore, 'dose': dose_new}], key=lambda x: x['ore'])
+                            t_crossing_sim = trova_tempo_soglia(CL_ind, V_ind, Q_ind, V2_ind, storia_sim, soglia_target, t_inf, t_partenza=t_new_ore, t_max=t_new_ore+2000, passo=2.0)
+                            
+                            if t_crossing_sim: st.success(f"✅ Con dose di {dose_new:.0f} mg, concentrazione sopra soglia fino al **{(t0_assoluto + timedelta(hours=t_crossing_sim)).strftime('%d/%m/%Y')}**.")
+                            fig2 = disegna_forecast_plotly(np.linspace(0, t_crossing_sim + 48 if t_crossing_sim else t_new_ore + 500, 1000), [pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_sim, t, t_inf) for t in np.linspace(0, t_crossing_sim + 48 if t_crossing_sim else t_new_ore + 500, 1000)], soglia_target, t_new_ore, dose_new, storia_completa)
+                            st.plotly_chart(fig2, use_container_width=True)
 
                 # Salvataggio automatico in sessione
                 record = {
@@ -689,7 +699,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
                 st.session_state['storico']['monitoraggi'].append(record)
                 st.session_state['storico']['codice_paziente'] = id_paz
                 st.session_state['storico']['sesso'] = sesso
-                st.success("💾 Analisi TDM validata e aggiunta allo storico di sessione. Ricordati di scaricare il file in alto se vuoi conservarlo.")
+                st.success("💾 Analisi TDM validata e aggiunta allo storico di sessione. Ricordati di scaricare il file in alto a sinistra se vuoi conservarlo per il futuro.")
 
 with tab2:
     monitoraggi = st.session_state['storico'].get('monitoraggi', [])
@@ -698,9 +708,15 @@ with tab2:
         df_sto = pd.DataFrame(monitoraggi)
         cols_vis = [c for c in ['data_val','farmaco','creatinina','mic','dose_mg','n_dosi','n_livelli','CL_ind','AUC24'] if c in df_sto.columns]
         st.dataframe(df_sto[cols_vis], use_container_width=True)
-        scelta = st.selectbox("Rimuovi un record dalla sessione:", ["— Scegli —"] + [f"#{i} — {r['data_val']} [{r.get('farmaco','?')}]" for i, r in enumerate(monitoraggi)])
-        if scelta != "— Scegli —":
-            idx_sel = int(scelta.split("#")[1].split(" ")[0])
-            if st.button("🗑️ Rimuovi questo record"):
-                st.session_state['storico']['monitoraggi'].pop(idx_sel)
-                st.rerun()
+        
+        colS1, colS2 = st.columns(2)
+        with colS1:
+            scelta = st.selectbox("Seleziona per rimuovere un record errato:", ["— Scegli —"] + [f"#{i} — {r['data_val']} [{r.get('farmaco','?')}]" for i, r in enumerate(monitoraggi)])
+        with colS2:
+            st.write("")
+            st.write("")
+            if scelta != "— Scegli —":
+                idx_sel = int(scelta.split("#")[1].split(" ")[0])
+                if st.button("🗑️ Rimuovi questo record"):
+                    st.session_state['storico']['monitoraggi'].pop(idx_sel)
+                    st.rerun()
