@@ -300,7 +300,9 @@ def metriche_esposizione_24h(pk_func, params, storia, t_inf, n_punti=300):
     t_ultima_dose = storia[-1]['ore']
     t_grid = np.linspace(t_ultima_dose, t_ultima_dose + 24, n_punti)
     c_grid = np.array([pk_func(*params, storia, t, t_inf) for t in t_grid])
-    auc = float(np.trapz(c_grid, t_grid))
+    # Trapezoidale manuale: np.trapz è stata rimossa in NumPy 2.0
+    # (np.trapezoid la sostituisce, ma questa forma funziona su ogni versione)
+    auc = float(np.sum((c_grid[1:] + c_grid[:-1]) / 2.0 * np.diff(t_grid)))
     return auc, float(c_grid.max()), float(c_grid.min())
 
 
@@ -598,15 +600,22 @@ def costruisci_livelli(nuovi_liv, t0_assoluto, livelli_precedenti):
     """
     Fonde i livelli plasmatici precedenti (già in ore assolute da
     t0_assoluto) con i nuovi livelli misurati (datetime objects).
-    nuovi_liv: lista di dict {'dt': datetime, 'conc': float, 'nota': str}
-    Restituisce lista ordinata di {'ore': float, 'conc': float, 'nota': str}.
+    nuovi_liv: lista di dict {'dt': datetime, 'conc': float, 'nota': str,
+                              'creatinina': float|None}
+    Restituisce lista ordinata di {'ore': float, 'conc': float, 'nota': str,
+                                    'creatinina': float|None}.
     Nessun limite al numero di livelli: possono essere quanti il
     paziente ne ha effettivamente avuti nel corso della terapia.
+    La creatinina per livello è puramente informativa/di registrazione:
+    NON è usata come covariata in nessun calcolo PK (il valore di
+    creatinina che guida i modelli resta quello inserito in "Parametri
+    Clinici" per la valutazione corrente).
     """
     livelli = list(livelli_precedenti)
     for l in nuovi_liv:
         ore = (l['dt'] - t0_assoluto).total_seconds() / 3600.0
-        livelli.append({'ore': ore, 'conc': l['conc'], 'nota': l.get('nota', '')})
+        livelli.append({'ore': ore, 'conc': l['conc'], 'nota': l.get('nota', ''),
+                        'creatinina': l.get('creatinina')})
     livelli.sort(key=lambda x: x['ore'])
     return livelli
 
@@ -877,7 +886,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
   Durata infusione:        {t_inf*60:.0f} min
   MIC patogeno:            {mic} mg/L
   Livelli plasmatici usati per il fit: {len(livelli_completi)}
-{chr(10).join(f"    t={l['ore']:.1f}h  ->  {l['conc']:.4f} mg/L" + (f"  ({l['nota']})" if l.get('nota') else "") for l in livelli_completi) if livelli_completi else "    (nessun livello inserito — solo prior di popolazione)"}
+{chr(10).join(f"    t={l['ore']:.1f}h  ->  {l['conc']:.4f} mg/L" + (f"  [creat.={l['creatinina']:.2f} mg/dL]" if l.get('creatinina') is not None else "") + (f"  ({l['nota']})" if l.get('nota') else "") for l in livelli_completi) if livelli_completi else "    (nessun livello inserito — solo prior di popolazione)"}
 
 [PARAMETRI PK INDIVIDUALI STIMATI]
   Clearance (CL):               {CL_ind:.3f} L/h  ({(CL_ind/peso)*1000:.1f} mL/h/kg)
@@ -1414,11 +1423,14 @@ with tab1:
     with colB:
         st.markdown("**🔬 Nuovi Livelli Plasmatici Misurati**")
         st.caption("Aggiungi (o lascia vuota) una riga per ogni prelievo. "
-                  "Nessun limite al numero di livelli inseribili.")
+                  "Nessun limite al numero di livelli inseribili. La creatinina "
+                  "per livello è solo di registrazione — non entra nei calcoli PK "
+                  "(quella usata dai modelli resta il valore in \"Parametri Clinici\").")
         df_liv_init = pd.DataFrame({
             "Data (GG/MM/AAAA)": [""],
             "Ora (HH:MM)": [""],
             "Concentrazione (mg/L)": [None],
+            "Creatinina (mg/dL, opz.)": [None],
             "Nota (opz.)": [""],
         })
         df_liv_edit = st.data_editor(
@@ -1426,6 +1438,7 @@ with tab1:
             key="tbl_livelli_edit",
             column_config={
                 "Concentrazione (mg/L)": st.column_config.NumberColumn(format="%.4f", min_value=0.0),
+                "Creatinina (mg/dL, opz.)": st.column_config.NumberColumn(format="%.2f", min_value=0.0),
             },
         )
 
@@ -1464,8 +1477,11 @@ with tab1:
         conc_val = r.get("Concentrazione (mg/L)", None)
         if dt_row is None or conc_val is None or pd.isna(conc_val):
             continue
+        crea_val = r.get("Creatinina (mg/dL, opz.)", None)
+        crea_val = float(crea_val) if (crea_val is not None and not pd.isna(crea_val)) else None
         nuovi_liv.append({'dt': dt_row, 'conc': float(conc_val),
-                          'nota': str(r.get("Nota (opz.)", "") or "")})
+                          'nota': str(r.get("Nota (opz.)", "") or ""),
+                          'creatinina': crea_val})
 
     if not nuove_somm:
         st.warning("⚠️ Inserisci almeno una nuova somministrazione con data, ora e dose valide.")
@@ -1508,6 +1524,7 @@ with tab1:
             {'Ore da t=0': f"{l['ore']:.1f}h",
              'Data/Ora assoluta': (t0_assoluto + timedelta(hours=l['ore'])).strftime('%d/%m/%Y %H:%M'),
              'Conc. (mg/L)': f"{l['conc']:.4f}",
+             'Creatinina (mg/dL)': (f"{l['creatinina']:.2f}" if l.get('creatinina') is not None else '—'),
              'Nota': l.get('nota',''),
              'Origine': '📂 Storico' if i < n_prev_liv else '✏️ Nuovo'}
             for i, l in enumerate(livelli_correnti)])
