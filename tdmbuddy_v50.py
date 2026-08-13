@@ -3,11 +3,12 @@ TDM Buddy v5.6
 ==============
 
 FUNZIONALITÀ PRINCIPALI
-  - MAP Bayesiano 1-compartimento e 2-compartimento
-  - Integrazione storia dosi cumulativa
-  - UI/UX riprogettata: layout a schede (cards), allineamento simmetrico
-  - Pulsante per switch rapido a "Nuovo Paziente"
-  - Export testuale diretto per Cartella Clinica (no PDF)
+  - MAP Bayesiano 1-compartimento (Dapto) e 2-compartimento (Cipro/Dalba)
+  - Integrazione storia dosi cumulativa e Bayesian Updating
+  - Archivio clinico SQLite / Gestione JSON State
+  - Grafici PK Interattivi via Plotly (zoom, pan, toggle tracce)
+  - Modello Popolazione disaccoppiato (tratteggiato) vs Modello Individuale (continuo)
+  - Referto testuale "one-click" per Cartella Clinica (addio FPDF crash)
 """
 
 import streamlit as st
@@ -31,7 +32,6 @@ def storico_vuoto():
 
 if 'storico' not in st.session_state:
     st.session_state['storico'] = storico_vuoto()
-
 
 # ============================================================
 # PARAMETRI PK — DAPTOMICINA
@@ -161,7 +161,11 @@ def calcola_clcr(eta_a, peso, crea, sesso):
     clcr=((140-eta_a)*peso)/(72*crea)
     return max(clcr*0.85 if sesso=="Femmina" else clcr, 1.0)
 
-def prior_dapto(sesso, gg, peso, crea, crrt, Sc, Qef, dialisi):
+# ============================================================
+# PRIOR DI POPOLAZIONE (DISACCOPPIATI)
+# ============================================================
+
+def prior_dapto(id_paziente, sesso, gg, peso, crea, crrt, Sc, Qef, dialisi):
     eta = gg/365.25; note = ""
     if gg<365:
         p=YE2025; CL_pop=(p['CL']*peso)/1000; V_pop=p['V']*peso
@@ -190,26 +194,77 @@ def prior_dapto(sesso, gg, peso, crea, crrt, Sc, Qef, dialisi):
         nm=f"{s['nome']} (ClCr={clcr:.0f} mL/min)"
         oCL, oV, sig, t_inf = s['omega_CL'], s['omega_V'], s['sigma'], 0.5
         if crrt: CL_pop+=Sc*Qef; note+=f"CRRT: CLEC={Sc*Qef:.3f} L/h."
-    return CL_pop, V_pop, oCL, oV, sig, t_inf, nm, note
+    
+    CL_std, V_std = CL_pop, V_pop
 
-def prior_cipro(sesso, gg, peso, crea, crrt, dialisi):
+    monitoraggi = st.session_state['storico'].get('monitoraggi', [])
+    candidati = [m for m in monitoraggi if m.get('farmaco') == "Daptomicina"]
+    if candidati:
+        last_tdm = candidati[-1]
+        cl_hist = last_tdm['CL_ind']; cr_hist = float(last_tdm.get('creatinina', 1.0))
+        if cr_hist > 0 and crea > 0: CL_pop = cl_hist * (cr_hist / crea)
+        else: CL_pop = cl_hist
+        V_pop = last_tdm['V_ind']
+        oCL *= 0.5; oV *= 0.5
+        note += f"⚠️ [BAYESIAN UPDATING] Usa storico paziente per fit MAP: CL_adj={CL_pop:.2f}, V={V_pop:.2f}. "
+
+    return CL_pop, V_pop, oCL, oV, sig, t_inf, nm, note, CL_std, V_std
+
+def prior_cipro(id_paziente, sesso, gg, peso, crea, crrt, dialisi):
     eta=gg/365.25; note=""; c=CIPRO; fc=1.0
     for (lo,hi),f in CIPRO_PED.items():
         if lo<=gg<hi: fc=f; break
-    CL_pop=c['CL_kg']*peso*fc; V1_pop=c['V1_kg']*peso; Q_pop=c['Q_kg']*peso; V2_pop=c['V2_kg']*peso
+    CL_pop=c['CL_kg']*peso*fc; V_pop=c['V1_kg']*peso; Q_pop=c['Q_kg']*peso; V2_pop=c['V2_kg']*peso
     oCL, oV1, oQ, oV2, sig = c['omega_CL'], c['omega_V1'], c['omega_Q'], c['omega_V2'], c['sigma']
 
     clcr=calcola_clcr(eta,peso,crea,sesso)
-    if clcr>=30: CL_pop=(c['CL_kg']*peso*fc*CIPRO_FRAZ_RENAL*min(clcr/120.0,1.0))+(c['CL_kg']*peso*fc*(1-CIPRO_FRAZ_RENAL))
-    else: CL_pop=(c['CL_kg']*peso*fc*CIPRO_FRAZ_RENAL*0.20)+(c['CL_kg']*peso*fc*(1-CIPRO_FRAZ_RENAL)*0.63)
-    return CL_pop, V1_pop, Q_pop, V2_pop, oCL, oV1, oQ, oV2, sig, 1.0, f"{c['nome']} (ClCr={clcr:.0f})", note
+    if clcr>=30:
+        fr=min(clcr/120.0,1.0)
+        CL_pop=(c['CL_kg']*peso*fc*CIPRO_FRAZ_RENAL*fr)+(c['CL_kg']*peso*fc*(1-CIPRO_FRAZ_RENAL))
+    else:
+        CL_pop=(c['CL_kg']*peso*fc*CIPRO_FRAZ_RENAL*0.20)+(c['CL_kg']*peso*fc*(1-CIPRO_FRAZ_RENAL)*0.63)
 
-def prior_dalba(peso, modello_scelto):
+    nome=f"{c['nome']} (ClCr={clcr:.0f} mL/min)"
+    CL_std, V_std, Q_std, V2_std = CL_pop, V_pop, Q_pop, V2_pop
+
+    monitoraggi = st.session_state['storico'].get('monitoraggi', [])
+    candidati = [m for m in monitoraggi if m.get('farmaco') == "Ciprofloxacina"]
+    if candidati:
+        last_tdm = candidati[-1]
+        cl_hist = last_tdm['CL_ind']; cr_hist = float(last_tdm.get('creatinina', 1.0))
+        if cr_hist > 0 and crea > 0: CL_pop = cl_hist * (cr_hist / crea)
+        else: CL_pop = cl_hist
+        V_pop = last_tdm['V_ind']
+        Q_pop = last_tdm['Q_ind'] if pd.notnull(last_tdm.get('Q_ind')) and last_tdm['Q_ind'] > 0 else Q_pop
+        V2_pop = last_tdm['V2_ind'] if pd.notnull(last_tdm.get('V2_ind')) and last_tdm['V2_ind'] > 0 else V2_pop
+        
+        oCL *= 0.5; oV1 *= 0.5
+        note += f"⚠️ [BAYESIAN UPDATING] Usa storico paziente per fit MAP: CL_adj={CL_pop:.2f}, V1={V_pop:.2f}. "
+
+    return CL_pop, V_pop, Q_pop, V2_pop, oCL, oV1, oQ, oV2, sig, 1.0, nome, note, CL_std, V_std, Q_std, V2_std
+
+def prior_dalba(id_paziente, peso, modello_scelto):
     p = DALBA_MODELLI[modello_scelto]
+    note = ""
+
     if modello_scelto.startswith('Mariani'):
         fw = peso / 70.0
-        return p['CL_typ70']*(fw**0.75), p['V1_typ70']*fw, p['Q_typ70']*(fw**0.75), p['V2_typ70']*fw, p['omega_CL'], p['sigma'], p['t_inf'], p['nome'], "Scaling allometrico applicato."
-    return p['CL_typ70'], p['V1_typ70'], p['Q_typ70'], p['V2_typ70'], p['omega_CL'], p['sigma'], p['t_inf'], p['nome'], "Nessuno scaling per peso."
+        CL_pop, V_pop, Q_pop, V2_pop = p['CL_typ70']*(fw**0.75), p['V1_typ70']*fw, p['Q_typ70']*(fw**0.75), p['V2_typ70']*fw
+    else:
+        CL_pop, V_pop, Q_pop, V2_pop = p['CL_typ70'], p['V1_typ70'], p['Q_typ70'], p['V2_typ70']
+
+    CL_std, V_std, Q_std, V2_std = CL_pop, V_pop, Q_pop, V2_pop
+    oCL = p['omega_CL']
+
+    monitoraggi = st.session_state['storico'].get('monitoraggi', [])
+    candidati = [m for m in monitoraggi if m.get('farmaco') == "Dalbavancin"]
+    if candidati:
+        last_tdm = candidati[-1]
+        CL_pop = last_tdm['CL_ind']
+        oCL *= 0.5
+        note += f"⚠️ [BAYESIAN UPDATING] Usa storico paziente per fit MAP: CL_adj={CL_pop:.4f} L/h. "
+
+    return CL_pop, V_pop, Q_pop, V2_pop, oCL, p['sigma'], p['t_inf'], p['nome'], note, CL_std, V_std, Q_std, V2_std
 
 def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
     if len(livelli) == 0: return CL_p, V_p, "Prior di popolazione"
@@ -225,7 +280,9 @@ def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
 def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia, livelli, t_inf):
     n = len(livelli)
     if n == 0: return CL_p, V1_p, Q_p, V2_p, "Prior di popolazione"
-    OQ_eff, OV2_eff  = 0.10 + (oQ - 0.10)*min(1.0, n/6.0), 0.10 + (oV2 - 0.10)*min(1.0, n/6.0)
+
+    OQ_eff  = 0.10 + (oQ - 0.10)*min(1.0, n/6.0)
+    OV2_eff = 0.10 + (oV2 - 0.10)*min(1.0, n/6.0)
 
     def f(p):
         CL_, V1_, Q_, V2_ = np.exp(p[0]), np.exp(p[1]), np.exp(p[2]), np.exp(p[3])
@@ -277,8 +334,8 @@ def disegna_grafico_plotly(farmaco, storia, livelli, CL_ind, V_ind, Q_ind, V2_in
         C_pop = [pk_2cmt(CL_std, V_std, Q_std, V2_std, storia, t, t_inf) for t in t_arr]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t_arr, y=C_pop, mode='lines', line=dict(dash='dash', color='#94A3B8', width=2), name='Modello Popolazione Standard'))
-    fig.add_trace(go.Scatter(x=t_arr, y=C_ind, mode='lines', line=dict(color='#0F172A', width=3), name='Profilo Paziente (MAP)'))
+    fig.add_trace(go.Scatter(x=t_arr, y=C_pop, mode='lines', line=dict(dash='dash', color='#94A3B8', width=2), name='Popolazione Standard (Baseline)'))
+    fig.add_trace(go.Scatter(x=t_arr, y=C_ind, mode='lines', line=dict(color='#0F172A', width=3), name='Profilo Individuale Paziente (MAP)'))
 
     max_c = max(max(C_ind), max(C_pop)) if len(C_ind) > 0 else 100
 
@@ -325,7 +382,6 @@ def disegna_forecast_plotly(t_arr_sim, c_sim, soglia_target, t_new_ore, dose_new
     fig2.update_layout(xaxis_title="Ore dall'inizio terapia", yaxis_title="Dalbavancina (mg/L)", plot_bgcolor='#FAFAFA', paper_bgcolor='#FAFAFA', hovermode="x unified", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1), margin=dict(l=40, r=40, t=40, b=40))
     return fig2
 
-
 # ============================================================
 # UI PRINCIPALE - LAYOUT E SIDEBAR
 # ============================================================
@@ -333,12 +389,11 @@ def disegna_forecast_plotly(t_arr_sim, c_sim, soglia_target, t_new_ore, dose_new
 st.set_page_config(page_title="TDM Buddy v5.6", layout="wide", page_icon="💊")
 
 st.title("💊 TDM Buddy v5.6")
-st.caption("Piattaforma Clinica di Farmacocinetica Bayesiana — Ottimizzata per la Corsia")
+st.caption("Piattaforma Clinica di Farmacocinetica Bayesiana (Daptomicina, Ciprofloxacina, Dalbavancina)")
 
 # SIDEBAR: Gestione Dati e Sessione
 st.sidebar.header("🛠️ Gestione Sessione")
 
-# Aggiunta Pulsante Reset
 if st.sidebar.button("🔄 Nuovo Paziente / Svuota Dati", type="primary", use_container_width=True):
     st.session_state['storico'] = storico_vuoto()
     st.rerun()
@@ -349,7 +404,7 @@ if file_up is not None:
     try:
         dati_caricati = json.load(file_up)
         st.session_state['storico'] = dati_caricati
-        st.sidebar.success(f"✅ Storico '{dati_caricati.get('codice_paziente','?')}' caricato: {len(dati_caricati.get('monitoraggi', []))} TDM trovati.")
+        st.sidebar.success(f"✅ Storico '{dati_caricati.get('codice_paziente','?')}' caricato.")
     except Exception as e: 
         st.sidebar.error(f"File non valido: {e}")
 
@@ -370,7 +425,6 @@ if n_rec > 0:
     st.sidebar.dataframe(df_sb[cols_sb].tail(4), use_container_width=True, hide_index=True)
     
     st.sidebar.download_button("📤 Scarica Storico Aggiornato", data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'), file_name=f"TDMBuddy_{ultimo_farmaco}_{id_paz}.json", mime="application/json", type="primary", use_container_width=True)
-
 
 # ============================================================
 # MAIN PAGE - TABS
@@ -457,7 +511,7 @@ with tab1:
 
     # 3. Timeline
     st.markdown("### 3. Timeline Dosi e Prelievi")
-    st.info("💡 **Aggiungi o modifica le righe per la valutazione odierna.** Il sistema calcolerà l'intera curva PK.")
+    st.info("💡 **Le tabelle mostrano l'INTERA storia clinica del paziente.** Modifica le righe esistenti o aggiungine di nuove per la valutazione TDM odierna. Il sistema fitta l'intera curva simultaneamente.")
 
     dose_def = {"Daptomicina": 500.0, "Dalbavancin": 1500.0, "Ciprofloxacina": 400.0}[farmaco]
 
@@ -539,30 +593,25 @@ with tab1:
                 tau_h_display = tau_mediano(storia_completa)  
 
                 if farmaco == "Daptomicina":
-                    CL_std, V_std, oCL, oV, sig, t_inf, nm, note = prior_dapto(sesso, gg, peso, crea, crrt, Sc, Qef, dialisi)
-                    
-                    # FIT BAYESIANO CON IL PRIOR STANDARD DELLA POPOLAZIONE
-                    CL_ind, V_ind, tipo_fit = map_1cmt(CL_std, V_std, oCL, oV, sig, storia_completa, livelli_completi, t_inf)
-                    
-                    Q_ind=V2_ind=Q_std=V2_std=0.0
+                    CL_p, V_p, oCL, oV, sig, t_inf, nm, note, CL_std, V_std = prior_dapto(id_paz, sesso, gg, peso, crea, crrt, Sc, Qef, dialisi)
+                    CL_ind, V_ind, tipo_fit = map_1cmt(CL_p, V_p, oCL, oV, sig, storia_completa, livelli_completi, t_inf)
+                    Q_ind = V2_ind = Q_std = V2_std = 0.0
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_1cmt, (CL_ind,V_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v / mic; emivita = np.log(2)*V_ind/CL_ind; Vss_d = V_ind
                     ok_staph, ok_ent, tox = auc_mic>=PD_DAPTO['AUC_MIC_staph'], auc_mic>=PD_DAPTO['AUC_MIC_entero'], Cmin_ss>=PD_DAPTO['Cmin_tox']
+                
                 elif farmaco == "Dalbavancin":
-                    CL_std, V1_std, Q_std, V2_std, oCL, sig, t_inf, nm, note = prior_dalba(peso, modello_dalba)
-                    
-                    CL_ind, tipo_fit = map_dalba(CL_std, V1_std, Q_std, V2_std, oCL, sig, storia_completa, livelli_completi, t_inf)
-                    
-                    V_ind, Q_ind, V2_ind = V1_std, Q_std, V2_std
+                    CL_p, V_p, Q_p, V2_p, oCL, sig, t_inf, nm, note, CL_std, V_std, Q_std, V2_std = prior_dalba(id_paz, peso, modello_dalba)
+                    CL_ind, tipo_fit = map_dalba(CL_p, V_p, Q_p, V2_p, oCL, sig, storia_completa, livelli_completi, t_inf)
+                    V_ind, Q_ind, V2_ind = V_p, Q_p, V2_p
                     Vss_d = V_ind + V2_ind
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v / mic; emivita = np.log(2)*Vss_d/CL_ind
-                    ok_target, tox = auc_mic >= DALBA_TARGETS['ABSSSI semplice (fAUC24h/MIC ≥ 27.1)'], False  
-                else:
-                    CL_std, V1_std, Q_std, V2_std, oCL, oV1, oQ, oV2, sig, t_inf, nm, note = prior_cipro(sesso, gg, peso, crea, crrt, dialisi)
-                    
-                    CL_ind, V_ind, Q_ind, V2_ind, tipo_fit = map_2cmt(CL_std, V1_std, Q_std, V2_std, oCL, oV1, oQ, oV2, sig, storia_completa, livelli_completi, t_inf)
-                    
+                    ok_target, tox = auc_mic >= DALBA_TARGETS['ABSSSI semplice (fAUC24h/MIC >= 27.1)'], False  
+                
+                else: # Ciprofloxacina
+                    CL_p, V_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, t_inf, nm, note, CL_std, V_std, Q_std, V2_std = prior_cipro(id_paz, sesso, gg, peso, crea, crrt, dialisi)
+                    CL_ind, V_ind, Q_ind, V2_ind, tipo_fit = map_2cmt(CL_p, V_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia_completa, livelli_completi, t_inf)
                     Vss_d = V_ind + V2_ind
                     AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
                     auc_mic = AUC24_v/mic; emivita = np.log(2)*Vss_d/CL_ind
@@ -575,7 +624,7 @@ with tab1:
 
                 c1,c2,c3 = st.columns(3)
                 c1.metric("Clearance (CL) Paziente",f"{CL_ind:.3f} L/h", delta=f"Normale: {CL_std:.3f}", delta_color="off")
-                c2.metric("Vol. Distribuzione (Vss)",f"{Vss_d:.1f} L", delta=f"Normale: {(V_std+V2_std) if farmaco!='Daptomicina' else V_std:.1f}", delta_color="off")
+                c2.metric("Vol. Distribuzione (Vss)",f"{Vss_d:.1f} L", delta=f"Normale: {(V_std+V2_std):.1f}", delta_color="off")
                 c3.metric("Emivita (T½)",f"{emivita:.1f} h")
                 
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -599,7 +648,7 @@ with tab1:
                         if l['ore'] == _ultimo['livelli'][-1]['ore'] if _ultimo['livelli'] else -1:
                             t_cambio_val = l['ore']
                 
-                fig = disegna_grafico_plotly(farmaco, storia_completa, livelli_completi, CL_ind, V_ind, Q_ind, V2_ind, CL_std, V_std if farmaco=="Daptomicina" else V1_std, Q_std, V2_std, t_inf, t_cambio_val)
+                fig = disegna_grafico_plotly(farmaco, storia_completa, livelli_completi, CL_ind, V_ind, Q_ind, V2_ind, CL_std, V_std, Q_std, V2_std, t_inf, t_cambio_val)
                 st.plotly_chart(fig, use_container_width=True)
 
                 def E(ok): return "TARGET RAGGIUNTO" if ok else "INSUFFICIENTE"
