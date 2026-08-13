@@ -1149,9 +1149,9 @@ with tab1:
 
     col_e1, col_e2, col_e3, col_peso = st.columns(4)
     with col_e1:
-        eta_anni_in = st.number_input("Età — Anni", 0, 25, int(_anni_def))
+        eta_anni_in = st.number_input("Età — Anni", 0, 100, min(int(_anni_def), 100))
     with col_e2:
-        eta_mesi_in = st.number_input("Età — Mesi", 0, 11, int(_mesi_def))
+        eta_mesi_in = st.number_input("Età — Mesi", 0, 11, min(int(_mesi_def), 11))
     with col_e3:
         eta_giorni_in = st.number_input("Età — Giorni", 0, 30, int(_giorni_def))
     with col_peso:
