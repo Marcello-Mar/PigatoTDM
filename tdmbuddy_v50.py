@@ -189,6 +189,7 @@ def prior_cipro(id_paziente, sesso, gg, peso, crea, crrt, dialisi):
         V1_pop = last_tdm['V_ind']
         Q_pop = last_tdm['Q_ind'] if pd.notnull(last_tdm.get('Q_ind')) and last_tdm['Q_ind'] > 0 else Q_pop
         V2_pop = last_tdm['V2_ind'] if pd.notnull(last_tdm.get('V2_ind')) and last_tdm['V2_ind'] > 0 else V2_pop
+        
         oCL *= 0.5; oV1 *= 0.5
         note += f"⚠️ [BAYESIAN UPDATING] Usa storico: CL_adj={CL_pop:.2f}, V1={V1_pop:.2f}. "
 
@@ -209,7 +210,8 @@ def prior_dalba(id_paziente, peso, modello_scelto):
     monitoraggi = st.session_state['storico'].get('monitoraggi', [])
     candidati = [m for m in monitoraggi if m.get('farmaco') == "Dalbavancin"]
     if candidati:
-        CL_pop = candidati[-1]['CL_ind']
+        last_tdm = candidati[-1]
+        CL_pop = last_tdm['CL_ind']
         oCL *= 0.5
         note += f"⚠️ [BAYESIAN UPDATING] Usa storico: CL_adj={CL_pop:.4f} L/h. "
 
@@ -251,7 +253,7 @@ def map_dalba(CL_p, V1_p, Q_p, V2_p, oCL, sig, storia, livelli, t_inf):
         lik = sum(((np.log(max(liv['conc'],1e-6)) - np.log(max(pk_2cmt(np.exp(p[0]), V1_p, Q_p, V2_p, storia, liv['ore'], t_inf),1e-6))) ** 2) / sig ** 2 for liv in livelli)
         return 0.5 * (prior + lik)
     r = minimize(f, [np.log(CL_p)], method='L-BFGS-B', bounds=[(np.log(CL_p*0.05), np.log(CL_p*10.0))], options={'ftol': 1e-12})
-    return np.exp(r.x[0]), f"MAP Bayesiano su CL, {len(livelli)} livelli"
+    return np.exp(r.x[0]), f"MAP Bayesiano su CL, {len(livelli)} livelli (V1/Q/V2 fissi)"
 
 def trova_tempo_soglia(CL, V1, Q, V2, storia, soglia, t_inf, t_partenza=0.0, t_max=2000.0, passo=1.0):
     if pk_2cmt(CL, V1, Q, V2, storia, t_partenza, t_inf) < soglia: return t_partenza
@@ -266,6 +268,30 @@ def trova_tempo_soglia(CL, V1, Q, V2, storia, soglia, t_inf, t_partenza=0.0, t_m
             return hi
         t_prev = t; t += passo
     return None
+
+# ============================================================
+# STORIA DOSI E LIVELLI
+# ============================================================
+
+def carica_storia_precedente(farmaco):
+    candidati = [m for m in st.session_state['storico'].get('monitoraggi', []) if m.get('farmaco') == farmaco]
+    if not candidati: return [], [], None
+    try: return candidati[-1]['storia_dosi'], candidati[-1].get('livelli', []), datetime.strptime(candidati[-1]['data_prima_dose'], '%Y-%m-%d %H:%M')
+    except: return [], [], None
+
+def costruisci_storia(nuove_somm, t0_assoluto, storia_precedente):
+    storia = list(storia_precedente)
+    for s in nuove_somm:
+        storia.append({'ore': (s['dt'] - t0_assoluto).total_seconds() / 3600.0, 'dose': s['dose']})
+    storia.sort(key=lambda x: x['ore'])
+    return storia
+
+def costruisci_livelli(nuovi_liv, t0_assoluto, livelli_precedenti):
+    livelli = list(livelli_precedenti)
+    for l in nuovi_liv:
+        livelli.append({'ore': (l['dt'] - t0_assoluto).total_seconds() / 3600.0, 'conc': l['conc'], 'nota': l.get('nota', '')})
+    livelli.sort(key=lambda x: x['ore'])
+    return livelli
 
 # ============================================================
 # GRAFICI PLOTLY INTERATTIVI
