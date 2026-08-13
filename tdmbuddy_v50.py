@@ -1,5 +1,5 @@
 """
-TDM Buddy v5.4
+TDM Buddy v5.5
 ==============
 
 FUNZIONALITÀ PRINCIPALI
@@ -9,14 +9,11 @@ FUNZIONALITÀ PRINCIPALI
   - Export testuale diretto per Cartella Clinica
   - Grafici PK Interattivi via Plotly (zoom, pan, toggle tracce)
 
-MODELLI INTEGRATI
-  - DAPTOMICINA: Soraluce 2018, Wei 2020, Ye 2022, Ye 2025, Lim 2021, Bhavnani 2010.
-  - CIPROFLOXACINA: Schlender 2018, Balbas-Martinez 2019, Forrest 1993, Ambrose 2007.
-  - DALBAVANCINA: Mariani (IRCCS Gaslini), Cojutti 2021, Cojutti 2023.
-
-FIX RECENTI:
-  - np.trapezoid retrocompatibile.
-  - Gestione safe_float per evitare crash su celle vuote in st.data_editor.
+NOVITÀ v5.5:
+  - Precompilazione automatica di Creatinina e MIC in base allo storico del paziente.
+  - Tabella di ispezione rapida del JSON caricato direttamente nella Sidebar.
+  - Nomenclatura del file JSON dinamica basata sull'ultimo farmaco analizzato.
+  - Inserimento di Creatinina e MIC nella visualizzazione del tab Storico.
 """
 
 import streamlit as st
@@ -260,15 +257,14 @@ def prior_dapto(id_paziente, sesso, gg, peso, crea, crrt, Sc, Qef, dialisi):
 
     last_tdm = get_last_tdm(id_paziente, "Daptomicina")
     if last_tdm is not None:
-        cl_hist = last_tdm['CL_ind']; cr_hist = last_tdm['creatinina']
+        cl_hist = last_tdm['CL_ind']; cr_hist = float(last_tdm.get('creatinina', 1.0))
         if cr_hist > 0 and crea > 0: CL_pop = cl_hist * (cr_hist / crea)
         else: CL_pop = cl_hist
         V_pop = last_tdm['V_ind']
         oCL *= 0.5; oV *= 0.5
-        note += f"⚠️ [BAYESIAN UPDATING] Usa storico per fittare: CL_adj={CL_pop:.2f}, V={V_pop:.2f}."
+        note += f"⚠️ [BAYESIAN UPDATING] Usa storico per fittare: CL_adj={CL_pop:.2f}, V={V_pop:.2f}. "
 
     return CL_pop, V_pop, oCL, oV, sig, t_inf, nm, note, CL_std, V_std
-
 
 def prior_cipro(id_paziente, sesso, gg, peso, crea, crrt, dialisi):
     eta=gg/365.25; note=""; c=CIPRO
@@ -288,23 +284,21 @@ def prior_cipro(id_paziente, sesso, gg, peso, crea, crrt, dialisi):
         CL_pop=(c['CL_kg']*peso*fc*CIPRO_FRAZ_RENAL*0.20)+(c['CL_kg']*peso*fc*(1-CIPRO_FRAZ_RENAL)*0.63)
 
     nome=f"{c['nome']} (ClCr={clcr:.0f} mL/min)"
-
     CL_std, V1_std = CL_pop, V1_pop
 
     last_tdm = get_last_tdm(id_paziente, "Ciprofloxacina")
     if last_tdm is not None:
-        cl_hist = last_tdm['CL_ind']; cr_hist = last_tdm['creatinina']
+        cl_hist = last_tdm['CL_ind']; cr_hist = float(last_tdm.get('creatinina', 1.0))
         if cr_hist > 0 and crea > 0: CL_pop = cl_hist * (cr_hist / crea)
         else: CL_pop = cl_hist
         V1_pop = last_tdm['V_ind']
-        Q_pop = last_tdm['Q_ind'] if pd.notnull(last_tdm['Q_ind']) and last_tdm['Q_ind'] > 0 else Q_pop
-        V2_pop = last_tdm['V2_ind'] if pd.notnull(last_tdm['V2_ind']) and last_tdm['V2_ind'] > 0 else V2_pop
+        Q_pop = last_tdm['Q_ind'] if pd.notnull(last_tdm.get('Q_ind')) and last_tdm['Q_ind'] > 0 else Q_pop
+        V2_pop = last_tdm['V2_ind'] if pd.notnull(last_tdm.get('V2_ind')) and last_tdm['V2_ind'] > 0 else V2_pop
         
         oCL *= 0.5; oV1 *= 0.5
-        note += f"⚠️ [BAYESIAN UPDATING] Usa storico per fittare: CL_adj={CL_pop:.2f}, V1={V1_pop:.2f}."
+        note += f"⚠️ [BAYESIAN UPDATING] Usa storico per fittare: CL_adj={CL_pop:.2f}, V1={V1_pop:.2f}. "
 
     return CL_pop, V1_pop, Q_pop, V2_pop, oCL, oV1, oQ, oV2, sig, 1.0, nome, note, CL_std, V1_std
-
 
 def prior_dalba(id_paziente, peso, modello_scelto):
     p = DALBA_MODELLI[modello_scelto]
@@ -336,7 +330,7 @@ def prior_dalba(id_paziente, peso, modello_scelto):
 
 def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
     n = len(livelli)
-    if n == 0: return CL_p, V_p, "Prior di popolazione (nessun livello inserito)"
+    if n == 0: return CL_p, V_p, "Prior di popolazione"
 
     def f(p):
         CL_, V_ = np.exp(p[0]), np.exp(p[1])
@@ -351,13 +345,13 @@ def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
 
 def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia, livelli, t_inf):
     n = len(livelli)
-    if n == 0: return CL_p, V1_p, Q_p, V2_p, "Prior di popolazione (nessun livello inserito)"
+    if n == 0: return CL_p, V1_p, Q_p, V2_p, "Prior di popolazione"
 
     OQ_eff  = 0.10 + (oQ  - 0.10) * min(1.0, n/6.0)
     OV2_eff = 0.10 + (oV2 - 0.10) * min(1.0, n/6.0)
 
     def f(p):
-        CL_, V1_, Q_, V2_ = np.exp(p)
+        CL_, V1_, Q_, V2_ = np.exp(p[0]), np.exp(p[1]), np.exp(p[2]), np.exp(p[3])
         pr = (((p[0]-np.log(CL_p))**2)/oCL**2 + ((p[1]-np.log(V1_p))**2)/oV1**2 + ((p[2]-np.log(Q_p))**2)/OQ_eff**2 + ((p[3]-np.log(V2_p))**2)/OV2_eff**2)
         lk = sum(((np.log(max(liv['conc'],1e-6)) - np.log(max(pk_2cmt(CL_, V1_, Q_, V2_, storia, liv['ore'], t_inf),1e-6)))**2) / sig**2 for liv in livelli)
         return 0.5*(pr+lk)
@@ -366,10 +360,9 @@ def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia, livelli, t_i
     r = minimize(f, [np.log(CL_p), np.log(V1_p), np.log(Q_p), np.log(V2_p)], method='L-BFGS-B', bounds=bnd, options={'ftol':1e-12})
     return np.exp(r.x[0]), np.exp(r.x[1]), np.exp(r.x[2]), np.exp(r.x[3]), f"MAP Bayesiano 2-cmt su {n} livelli"
 
-
 def map_dalba(CL_pop, V1_pop, Q_pop, V2_pop, omega_CL, sigma, storia, livelli, t_inf):
     n = len(livelli)
-    if n == 0: return CL_pop, "Prior di popolazione (nessun livello inserito)"
+    if n == 0: return CL_pop, "Prior di popolazione"
 
     def f(p):
         CL_ = np.exp(p[0])
@@ -436,7 +429,7 @@ def disegna_grafico_plotly(farmaco, storia, livelli, CL_ind, V_ind, Q_ind, V2_in
         C_pop = [pk_2cmt(CL_std, V_std, Q_std, V2_std, storia, t, t_inf) for t in t_arr]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t_arr, y=C_pop, mode='lines', line=dict(dash='dash', color='#94A3B8', width=2), name='Popolazione Letteratura Standard'))
+    fig.add_trace(go.Scatter(x=t_arr, y=C_pop, mode='lines', line=dict(dash='dash', color='#94A3B8', width=2), name='Popolazione Standard'))
     fig.add_trace(go.Scatter(x=t_arr, y=C_ind, mode='lines', line=dict(color='#0F172A', width=3), name='Profilo Individuale Paziente (MAP)'))
 
     max_c = max(max(C_ind), max(C_pop)) if len(C_ind) > 0 else 100
@@ -658,7 +651,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
             st.session_state['storico']['sesso'] = sesso
             st.success("💾 Analisi aggiunta allo storico di sessione.")
 
-            st.download_button("📥 Scarica storico paziente aggiornato (JSON)", data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'), file_name=f"TDMBuddy_storico_{id_paz}.json", mime="application/json", use_container_width=True, type="primary")
+            st.download_button("📥 Scarica storico paziente aggiornato (JSON)", data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'), file_name=f"TDMBuddy_{farmaco}_{id_paz}.json", mime="application/json", use_container_width=True, type="primary")
         except Exception as e:
             st.warning(f"Errore nel salvataggio in sessione: {e}")
 
@@ -688,7 +681,13 @@ st.session_state['storico']['sesso'] = sesso
 n_rec = len(st.session_state['storico'].get('monitoraggi', []))
 if n_rec > 0:
     st.sidebar.info(f"📋 {n_rec} analisi in questa sessione.")
-    st.sidebar.download_button("📥 Scarica storico corrente", data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'), file_name=f"TDMBuddy_{id_paz}.json", mime="application/json")
+    ultimo_farmaco = st.session_state['storico']['monitoraggi'][-1].get('farmaco', 'Multi')
+    
+    df_sb = pd.DataFrame(st.session_state['storico']['monitoraggi'])
+    cols_sb = [c for c in ['data_val', 'farmaco', 'creatinina', 'mic'] if c in df_sb.columns]
+    st.sidebar.dataframe(df_sb[cols_sb].tail(5), use_container_width=True, hide_index=True)
+    
+    st.sidebar.download_button("📥 Scarica storico corrente", data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'), file_name=f"TDMBuddy_{ultimo_farmaco}_{id_paz}.json", mime="application/json")
     if st.sidebar.button("🗑️ Cancella storico"): st.session_state['storico'] = storico_vuoto(); st.rerun()
 
 tab1, tab2 = st.tabs(["➕ Nuova Analisi TDM","📚 Storico Paziente"])
@@ -698,10 +697,20 @@ with tab1:
         st.warning("Inserisci un codice paziente nella barra laterale per procedere.")
         st.stop()
 
+    farmaco = st.radio("💊 Farmaco da monitorare:", ["Daptomicina","Ciprofloxacina","Dalbavancin"], horizontal=True)
+
     monitoraggi_tutti = st.session_state['storico'].get('monitoraggi', [])
-    _ultimo = monitoraggi_tutti[-1] if monitoraggi_tutti else {}
-    _gg_def = int(_ultimo.get('eta_giorni', 10950))
-    _peso_def = float(_ultimo.get('peso', 70.0))
+    _ultimo = get_last_tdm(id_paz, farmaco)
+    if _ultimo:
+        _gg_def = int(_ultimo.get('eta_giorni', 10950))
+        _peso_def = float(_ultimo.get('peso', 70.0))
+        def_crea = float(_ultimo.get('creatinina', 1.0))
+        def_mic = float(_ultimo.get('mic', 0.0625 if farmaco=="Dalbavancin" else 1.0))
+    else:
+        _gg_def = 10950 
+        _peso_def = 70.0
+        def_crea = 1.0
+        def_mic = 0.0625 if farmaco=="Dalbavancin" else 1.0
 
     col_e1, col_e2, col_e3, col_peso = st.columns(4)
     with col_e1: eta_anni_in = st.number_input("Età — Anni", 0, 100, min(int(_gg_def // 365), 100))
@@ -712,7 +721,6 @@ with tab1:
     gg = int(round(eta_anni_in*365.25 + eta_mesi_in*30.44 + eta_giorni_in))
     eta = gg / 365.25
 
-    farmaco = st.radio("💊 Farmaco da monitorare:", ["Daptomicina","Ciprofloxacina","Dalbavancin"], horizontal=True)
     modello_dalba = st.selectbox("🧬 Modello PK di riferimento:", list(DALBA_MODELLI.keys())) if farmaco=="Dalbavancin" else None
 
     st.markdown("### 🔗 Integrazione Storico Dosi Paziente")
@@ -727,8 +735,8 @@ with tab1:
     st.markdown("### 1. Parametri Clinici")
     col1,col2,col3 = st.columns(3)
     with col1:
-        crea = st.number_input("Creatinina Sierica (mg/dL)", 0.05, 25.0, 1.0, 0.05)
-        mic = st.number_input(f"MIC {farmaco} (mg/L)", 0.001, 16.0, 0.0625 if farmaco=="Dalbavancin" else 1.0, format="%.4f")
+        crea = st.number_input("Creatinina Sierica (mg/dL)", 0.05, 25.0, def_crea, 0.05)
+        mic = st.number_input(f"MIC {farmaco} (mg/L)", 0.001, 16.0, def_mic, format="%.4f")
     with col2:
         crrt = st.checkbox("Paziente in CRRT?")
         Sc, Qef = (st.number_input("Sc", 0.01, 0.60, 0.20), st.number_input("Qef (L/h)", 0.5, 6.0, 2.0)) if crrt else (0.2, 2.0)
@@ -790,7 +798,9 @@ with tab2:
     monitoraggi = st.session_state['storico'].get('monitoraggi', [])
     if not monitoraggi: st.info("Nessuna analisi TDM in questa sessione.")
     else:
-        st.dataframe(pd.DataFrame(monitoraggi)[['data_val','farmaco','eta_giorni','peso','dose_mg','n_dosi','n_livelli','CL_ind','AUC24']], use_container_width=True)
+        df_sto = pd.DataFrame(monitoraggi)
+        cols_vis = [c for c in ['data_val','farmaco','creatinina','mic','eta_giorni','peso','dose_mg','n_dosi','n_livelli','CL_ind','AUC24'] if c in df_sto.columns]
+        st.dataframe(df_sto[cols_vis], use_container_width=True)
         scelta = st.selectbox("Rivisualizza analisi:", ["— Scegli —"] + [f"#{i} — {r['data_val']} [{r.get('farmaco','?')}]" for i, r in enumerate(monitoraggi)])
         if scelta != "— Scegli —":
             idx_sel = int(scelta.split("#")[1].split(" ")[0])
