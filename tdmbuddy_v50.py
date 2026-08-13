@@ -160,7 +160,7 @@ IRC_MAP = {
 }
 
 # ============================================================
-# PARAMETRI PK — DALBAVANCINA (modello interno DALMATA)
+# PARAMETRI PK — DALBAVANCINA (modelli Mariani e Cojutti 2021)
 # ============================================================
 # Fonte: "Population Pharmacokinetics of Dalbavancin in Pediatric
 # Patients: A Real-World Therapeutic Drug Monitoring Study" (dati
@@ -186,8 +186,37 @@ IRC_MAP = {
 DALBA_PARAMS = {
     'CL_typ70': 0.0305, 'V1_typ70': 4.81, 'Q_typ70': 0.0081, 'V2_typ70': 4.81,
     'omega_CL': 0.198, 'sigma': 0.375, 't_inf': 0.5, 'fu': 0.07,
-    'nome': ("Modello DALMATA (dati IRCCS Gaslini, non ancora pubblicato, "
+    'nome': ("Modello Mariani (dati IRCCS Gaslini, non ancora pubblicato, "
              "modello interno fornito dall'utente)"),
+}
+
+# Modello alternativo — Cojutti PG, et al. Population pharmacokinetics of
+# dalbavancin and dosing consideration for optimal treatment of adult
+# patients with staphylococcal osteoarticular infections. Antimicrob
+# Agents Chemother. 2021;65(9):e00879-21. Popolazione: 15 pazienti adulti
+# con infezioni osteoarticolari da stafilococco.
+#
+# Parametri tipici di popolazione (valori assoluti, NON normalizzati per
+# peso — nel dato fornito non è presente un'equazione di scaling
+# allometrico esplicita per questo modello, a differenza di Mariani).
+# Applicati quindi come valori fissi di popolazione, appropriati per un
+# paziente adulto vicino al peso medio della coorte originale; usare con
+# cautela per pazienti con peso molto diverso dalla popolazione di
+# derivazione (15 adulti con infezione osteoarticolare).
+#   CL = 0.106 L/h, V1 = 17.4 L, Q = 0.103 L/h, V2 = 15.1 L
+#   IIV_CL = 36.2% CV, errore residuo proporzionale = 18%
+#   Emivita terminale calcolata dal modello: 11.3 giorni
+COJUTTI_PARAMS = {
+    'CL_typ70': 0.106, 'V1_typ70': 17.4, 'Q_typ70': 0.103, 'V2_typ70': 15.1,
+    'omega_CL': 0.362, 'sigma': 0.18, 't_inf': 0.5, 'fu': 0.07,
+    'nome': ("Cojutti PG, et al. Antimicrob Agents Chemother. 2021;65(9):"
+             "e00879-21 (adulti, infezioni osteoarticolari, n=15; nessuno "
+             "scaling per peso fornito — valori di popolazione fissi)"),
+}
+
+DALBA_MODELLI = {
+    'Mariani (pediatrico, allometrico — Gaslini)': DALBA_PARAMS,
+    'Cojutti 2021 (adulti, osteoarticolare — AAC)': COJUTTI_PARAMS,
 }
 
 # Target PK/PD dalbavancina — riferimenti citati nel documento sorgente:
@@ -342,24 +371,36 @@ def prior_cipro(sesso, gg, peso, crea, crrt, dialisi):
     return CL,V1,Q,V2,c['omega_CL'],c['omega_V1'],c['omega_Q'],c['sigma'],1.0,nm,note
 
 
-def prior_dalba(peso):
+def prior_dalba(peso, modello_scelto):
     """
-    Prior dalbavancina -- modello DALMATA (dati interni Gaslini).
-    Scaling allometrico a esponenti fissi (0.75 su CL/Q, 1 su V1/V2),
-    normalizzato a 70 kg. Nessuna covariata su funzione renale, albumina
-    o eta' e' stata ritenuta significativa nel modello originale.
+    Prior dalbavancina -- supporta due modelli alternativi:
+      - 'Mariani (pediatrico, allometrico — Gaslini)': scaling allometrico
+        a esponenti fissi (0.75 su CL/Q, 1 su V1/V2), normalizzato a 70 kg.
+      - 'Cojutti 2021 (adulti, osteoarticolare — AAC)': valori di
+        popolazione fissi, nessuno scaling per peso disponibile nella
+        pubblicazione originale.
     """
-    p = DALBA_PARAMS
-    fw = peso / 70.0
-    CL_pop = p['CL_typ70'] * (fw ** 0.75)
-    V1_pop = p['V1_typ70'] * fw
-    Q_pop  = p['Q_typ70']  * (fw ** 0.75)
-    V2_pop = p['V2_typ70'] * fw
-    note = ("Scaling allometrico applicato (CL,Q: peso/70^0.75; V1,V2: peso/70). "
-            "Nessuna covariata su eGFR/albumina/eta' ritenuta significativa nel "
-            "modello originale -- per insufficienza renale grave (ClCr<30 mL/min) "
-            "fare riferimento alla scheda tecnica DALVANCE (FDA 2025) per "
-            "l'aggiustamento posologico, non incorporato nel modello PK.")
+    p = DALBA_MODELLI[modello_scelto]
+
+    if modello_scelto.startswith('Mariani'):
+        fw = peso / 70.0
+        CL_pop = p['CL_typ70'] * (fw ** 0.75)
+        V1_pop = p['V1_typ70'] * fw
+        Q_pop  = p['Q_typ70']  * (fw ** 0.75)
+        V2_pop = p['V2_typ70'] * fw
+        note = ("Scaling allometrico applicato (CL,Q: peso/70^0.75; V1,V2: peso/70). "
+                "Nessuna covariata su eGFR/albumina/eta' ritenuta significativa nel "
+                "modello originale -- per insufficienza renale grave (ClCr<30 mL/min) "
+                "fare riferimento alla scheda tecnica DALVANCE (FDA 2025) per "
+                "l'aggiustamento posologico, non incorporato nel modello PK.")
+    else:
+        CL_pop, V1_pop, Q_pop, V2_pop = p['CL_typ70'], p['V1_typ70'], p['Q_typ70'], p['V2_typ70']
+        note = ("⚠️ Modello Cojutti 2021: nessuno scaling per peso disponibile nella "
+                "pubblicazione originale -- valori di popolazione applicati come fissi, "
+                "indipendentemente dal peso inserito. Derivato da 15 pazienti adulti "
+                "con infezione osteoarticolare: usare con cautela per pazienti "
+                "molto diversi da questa popolazione.")
+
     return CL_pop, V1_pop, Q_pop, V2_pop, p['omega_CL'], p['sigma'], p['t_inf'], p['nome'], note
 
 # ============================================================
@@ -410,7 +451,7 @@ def map_dalba(CL_pop, V1_pop, Q_pop, V2_pop, omega_CL, sigma,
     MAP dalbavancina: stima SOLO log(CL) (unico parametro con IIV nel
     modello originale). V1, Q, V2 restano fissi ai valori allometrici
     di popolazione -- questo e' corretto e non una semplificazione,
-    perche' il modello DALMATA non ha ritenuto IIV significativa su
+    perche' il modello Mariani non ha ritenuto IIV significativa su
     questi tre parametri (shrinkage elevato, vedi note metodologiche).
     """
     n = (1 if cmax > 0 else 0) + (1 if cmin > 0 else 0)
@@ -603,7 +644,7 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
                    crea, crrt, Sc, Qef, dialisi,
                    mic, cmax_mis, cmin_mis,
                    storia_completa, storia_precedente, t0_assoluto,
-                   t_cx, t_cn, tau, salva=False):
+                   t_cx, t_cn, tau, salva=False, modello_dalba=None):
 
     if not storia_completa:
         st.error("Nessuna dose inserita."); return
@@ -625,8 +666,10 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
         ok_staph = auc_mic>=PD_DAPTO['AUC_MIC_staph']
         ok_ent   = auc_mic>=PD_DAPTO['AUC_MIC_entero']
         tox      = Cmin_ss>=PD_DAPTO['Cmin_tox']
-    elif farmaco == "Dalbavancin (DALMATA)":
-        CL_p,V1_p,Qp,V2_p,oCL,sig,t_inf,nm,note = prior_dalba(peso)
+    elif farmaco == "Dalbavancin":
+        if modello_dalba is None:
+            modello_dalba = list(DALBA_MODELLI.keys())[0]
+        CL_p,V1_p,Qp,V2_p,oCL,sig,t_inf,nm,note = prior_dalba(peso, modello_dalba)
         CL_ind, tipo_fit = map_dalba(CL_p,V1_p,Qp,V2_p,oCL,sig,storia_completa,t_cx,cmax_mis,t_cn,cmin_mis,t_inf)
         V_ind, Q_ind, V2_ind = V1_p, Qp, V2_p   # fissi (nessuna IIV nel modello originale)
         Q_p = Qp; Vss_d = V_ind + V2_ind
@@ -685,7 +728,7 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
         c6.metric(f"Cmin SS prevista  (soglia CPK ≥ 24.3 mg/L)",f"{Cmin_ss:.1f} mg/L",
                   delta="⚠️ RISCHIO CPK — MONITORARE" if tox else "✅ Sicuro",
                   delta_color="inverse" if tox else "normal")
-    elif farmaco=="Dalbavancin (DALMATA)":
+    elif farmaco=="Dalbavancin":
         c5.metric("fAUC₂₄h/MIC  (target ABSSSI ≥ 27.1)",f"{auc_mic:.0f}",
                   delta="✅ TARGET" if ok_target else "⚠️ SOTTO TARGET",
                   delta_color="normal" if ok_target else "inverse",
@@ -717,7 +760,7 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
                         f"  t=0 assoluto terapia:           {t0_assoluto.strftime('%d/%m/%Y %H:%M')}\n"
                         f"  Timeline totale:                {storia_completa[-1]['ore']:.1f} h dal t=0\n")
 
-    if farmaco=="Dalbavancin (DALMATA)":
+    if farmaco=="Dalbavancin":
         pd_block=(
             f"  Efficacia (fAUC24h/MIC >= 27.1, target ABSSSI semplice):\n"
             f"    fAUC24h/MIC = {auc_mic:.0f}  ->  {E(ok_target)}\n"
@@ -830,7 +873,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
        anymore. Clin Infect Dis. 2007;44(Suppl 2):S79-S86.
        doi:10.1086/510079.
   DALBAVANCINA
-  [11] Modello DALMATA: "Population Pharmacokinetics of Dalbavancin in
+  [11] Modello Mariani: "Population Pharmacokinetics of Dalbavancin in
        Pediatric Patients: A Real-World Therapeutic Drug Monitoring
        Study" -- dati IRCCS Istituto Giannina Gaslini, Genova. Modello
        interno, non ancora pubblicato (fornito dall'utente).
@@ -859,7 +902,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
     # ============================================================
     # PANNELLO FORECAST — solo Dalbavancin
     # ============================================================
-    if farmaco == "Dalbavancin (DALMATA)":
+    if farmaco == "Dalbavancin":
         st.markdown("---")
         st.subheader("🔮 Forecast — Pianificazione Prossima Somministrazione")
         st.caption(
@@ -998,6 +1041,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
                 'cmax_mis': cmax_mis, 'cmin_mis': cmin_mis,
                 'CL_ind': CL_ind, 'V_ind': Vss_d, 'AUC24': AUC24_v,
                 'AUC_MIC': auc_mic, 'Cmin_ss': Cmin_ss, 'modello': nm,
+                'modello_dalba': modello_dalba,
                 'storia_dosi': storia_completa,
                 'data_prima_dose': t0_assoluto.strftime('%Y-%m-%d %H:%M'),
             }
@@ -1112,8 +1156,9 @@ st.sidebar.markdown("""
 - Forrest A, et al. *Antimicrob Agents Chemother.* 1993;37(5):1065-1072.
 - Ambrose PG, et al. *Clin Infect Dis.* 2007;44(S2):S79-S86.
 
-**Dalbavancin (DALMATA)**
-- Modello interno IRCCS Gaslini (non pubblicato, fornito dall'utente).
+**Dalbavancin (Mariani / Cojutti)**
+- Modello Mariani: interno IRCCS Gaslini (non pubblicato, fornito dall'utente).
+- Cojutti PG, et al. *Antimicrob Agents Chemother.* 2021;65(9):e00879-21 (modello osteoarticolare adulti).
 - Cojutti PG, et al. *Antimicrob Agents Chemother.* 2023 (target complessa).
 - Cojutti PG, et al. *Int J Antimicrob Agents.* 2021 (TDM Bayesiano).
 - EUCAST breakpoints — dalbavancin / S. aureus.
@@ -1162,17 +1207,29 @@ with tab1:
     st.caption(f"Età calcolata: **{gg} giorni** ({eta:.2f} anni)")
 
     farmaco = st.radio("💊 Farmaco da monitorare:",
-                        ["Daptomicina","Ciprofloxacina","Dalbavancin (DALMATA)"],
+                        ["Daptomicina","Ciprofloxacina","Dalbavancin"],
                         horizontal=True)
+    modello_dalba = None  # rilevante solo per farmaco == "Dalbavancin"
 
     if farmaco=="Daptomicina":
         if gg<365:     st.info(f"👶 Lattante ({gg} gg) → Modello: Ye et al., Eur J Pharm Sci 2025;208:107058")
         elif gg<6570:  st.info(f"🧒 Pediatrico ({eta:.1f}a) → Modello: Wei et al., J Clin Pharmacol 2020;60(6):768-774")
         else:          st.info(f"👨 Adulto ({eta:.0f}a) → Modello: Soraluce et al., Int J Antimicrob Agents 2018;52(2):158-165")
-    elif farmaco=="Dalbavancin (DALMATA)":
-        st.info(f"🧬 Modello DALMATA (dati interni Gaslini) — scaling allometrico "
-               f"su peso {peso} kg. Solo CL ha variabilità interindividuale stimabile "
-               f"via MAP; V1/Q/V2 fissi (allometria).")
+    elif farmaco=="Dalbavancin":
+        modello_dalba = st.selectbox(
+            "🧬 Modello PK di riferimento per il forecast:",
+            list(DALBA_MODELLI.keys()),
+            help="Mariani: pediatrico, scaling allometrico, dati Gaslini non pubblicati. "
+                 "Cojutti 2021: adulti con infezione osteoarticolare, valori fissi (nessuno "
+                 "scaling per peso disponibile nella pubblicazione originale)."
+        )
+        if modello_dalba.startswith('Mariani'):
+            st.info(f"🧬 {modello_dalba} — scaling allometrico su peso {peso} kg. "
+                   f"Solo CL ha variabilità interindividuale stimabile via MAP; "
+                   f"V1/Q/V2 fissi (allometria).")
+        else:
+            st.info(f"🧬 {modello_dalba} — parametri di popolazione fissi "
+                   f"(nessuno scaling per peso). Solo CL stimabile via MAP.")
     else:
         if gg<91:      st.warning("⚠️ Neonato <3 mesi: Schlender 2018 non validato in questa fascia d'età.")
         elif gg<6570:  st.info(f"🧒 Pediatrico ({eta:.1f}a) → Schlender JF, et al., Clin Pharmacokinet 2018;57(12):1613-1634 (scaling)")
@@ -1211,7 +1268,7 @@ with tab1:
     col1,col2,col3 = st.columns(3)
     with col1:
         crea = st.number_input("Creatinina Sierica (mg/dL)", 0.05, 25.0, 1.0, 0.05)
-        if farmaco == "Dalbavancin (DALMATA)":
+        if farmaco == "Dalbavancin":
             mic = st.number_input("MIC di riferimento (mg/L)", 0.008, 4.0, 0.0625, 0.008,
                                   help="Il target PK/PD dettagliato con selezione MIC EUCAST "
                                        "è disponibile nella sezione Forecast dopo l'analisi.")
@@ -1240,14 +1297,14 @@ with tab1:
     st.markdown("### 2. Nuove Somministrazioni e Prelievi")
 
     if farmaco=="Daptomicina":
-        dose_def, tau_def = 500.0, 24
-    elif farmaco=="Dalbavancin (DALMATA)":
-        dose_def, tau_def = 1500.0, 168   # dose singola 1500mg; tau indicativo 7gg (regime bidose)
+        dose_def, tau_def, tau_max = 500.0, 24, 96
+    elif farmaco=="Dalbavancin":
+        dose_def, tau_def, tau_max = 1500.0, 168, 400   # dose singola 1500mg; tau indicativo 7-14gg
         st.caption("📌 Dalbavancina: dosaggio tipico 22.5 mg/kg (<6a) o 18 mg/kg (≥6a), "
                   "max 1500 mg/dose. Regime a 1 o 2 dosi (0 e 7/14 gg). "
                   "Imposta N° dosi = 1 per dose singola.")
     else:
-        dose_def, tau_def = 400.0, 12
+        dose_def, tau_def, tau_max = 400.0, 12, 96
 
     colA, colB = st.columns(2)
     with colA:
@@ -1265,7 +1322,8 @@ with tab1:
                                     format="DD/MM/YYYY", key="d1n")
             o1     = st.time_input("Ora Prima Nuova Dose", value=ora_def, key="o1n")
             dose_i = st.number_input("Dose (mg)", 10.0, 4000.0, dose_def, 10.0)
-            tau_i  = st.number_input("Intervallo (ore)", 4, 96, tau_def, step=2)
+            tau_i  = st.number_input("Intervallo (ore)", 4, tau_max,
+                                     min(tau_def, tau_max), step=2)
             n_d    = st.number_input("N° nuove dosi somministrate", 1, 30, 4)
 
     with colB:
@@ -1334,7 +1392,8 @@ with tab1:
                     mic, cmax_mis, cmin_mis,
                     storia_corrente,
                     storia_prev_db if (usa_storico and storia_prev_db) else [],
-                    t0_assoluto, t_cx_ass, t_cn_ass, tau_int, salva=True)
+                    t0_assoluto, t_cx_ass, t_cn_ass, tau_int, salva=True,
+                    modello_dalba=modello_dalba)
 
 # ---- TAB STORICO ----
 with tab2:
@@ -1392,4 +1451,5 @@ with tab2:
                 str(riga.get('dialisi_tipo', 'Nessuna')), float(riga['mic']),
                 float(riga['cmax_mis']), float(riga['cmin_mis']),
                 storia_s, [], t0_s,
-                t_ult + 0.5, t_ult + tau_s * 0.85, tau_s, salva=False)
+                t_ult + 0.5, t_ult + tau_s * 0.85, tau_s, salva=False,
+                modello_dalba=riga.get('modello_dalba'))
