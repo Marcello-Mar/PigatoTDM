@@ -9,12 +9,14 @@ FUNZIONALITÀ PRINCIPALI
   - Export testuale diretto per Cartella Clinica
   - Grafici PK Interattivi via Plotly (zoom, pan, toggle tracce)
 
-NOVITÀ v5.4:
-  - Eliminata generazione PDF (risolti crash FPDF su Cloud).
-  - Introdotto blocco 'st.code' per copia-incolla immediato del referto.
-  - Disaccoppiato il Prior di Popolazione Standard (usato nel grafico come baseline visiva)
-    dal Prior Bayesiano Aggiornato (usato per il fitting matematico), in modo che
-    la curva tratteggiata mostri sempre il modello letterario puro.
+MODELLI INTEGRATI
+  - DAPTOMICINA: Soraluce 2018, Wei 2020, Ye 2022, Ye 2025, Lim 2021, Bhavnani 2010.
+  - CIPROFLOXACINA: Schlender 2018, Balbas-Martinez 2019, Forrest 1993, Ambrose 2007.
+  - DALBAVANCINA: Mariani (IRCCS Gaslini), Cojutti 2021, Cojutti 2023.
+
+FIX RECENTI:
+  - np.trapezoid retrocompatibile.
+  - Gestione safe_float per evitare crash su celle vuote in st.data_editor.
 """
 
 import streamlit as st
@@ -225,7 +227,6 @@ def get_last_tdm(id_paziente, farmaco):
 def prior_dapto(id_paziente, sesso, gg, peso, crea, crrt, Sc, Qef, dialisi):
     eta=gg/365.25; note=""
     
-    # 1. Calcolo Parametri di Popolazione Standard
     if gg<365:
         p=YE2025; CL_pop=(p['CL']*peso)/1000; V_pop=p['V']*peso
         oCL=p['SD']/p['CL']; oV=0.30; sig=0.12; t_inf=1.0; nm=p['nome']
@@ -255,10 +256,8 @@ def prior_dapto(id_paziente, sesso, gg, peso, crea, crrt, Sc, Qef, dialisi):
         oCL, oV, sig, t_inf = s['omega_CL'], s['omega_V'], s['sigma'], 0.5
         if crrt: CL_pop+=Sc*Qef
 
-    # Salviamo i valori standard intatti per il grafico
     CL_std, V_std = CL_pop, V_pop
 
-    # 2. Bayesian Updating per il MAP Fit
     last_tdm = get_last_tdm(id_paziente, "Daptomicina")
     if last_tdm is not None:
         cl_hist = last_tdm['CL_ind']; cr_hist = last_tdm['creatinina']
@@ -756,8 +755,23 @@ with tab1:
         except: return None
         return datetime.combine(d, t)
 
-    nuove_somm = [{'dt': _parse_data_ora(r["Data (GG/MM/AAAA)"], r["Ora (HH:MM)"]), 'dose': float(r["Dose (mg)"])} for _, r in df_dosi_edit.iterrows() if _parse_data_ora(r.get("Data (GG/MM/AAAA)"), r.get("Ora (HH:MM)")) and pd.notna(r.get("Dose (mg)"))]
-    nuovi_liv = [{'dt': _parse_data_ora(r["Data (GG/MM/AAAA)"], r["Ora (HH:MM)"]), 'conc': float(r["Concentrazione (mg/L)"]), 'nota': str(r.get("Nota (opz.)", ""))} for _, r in df_liv_edit.iterrows() if _parse_data_ora(r.get("Data (GG/MM/AAAA)"), r.get("Ora (HH:MM)")) and pd.notna(r.get("Concentrazione (mg/L)"))]
+    def safe_float(val):
+        try: return float(val)
+        except (ValueError, TypeError): return None
+
+    nuove_somm = []
+    for _, r in df_dosi_edit.iterrows():
+        dt_obj = _parse_data_ora(r.get("Data (GG/MM/AAAA)"), r.get("Ora (HH:MM)"))
+        dose_val = safe_float(r.get("Dose (mg)"))
+        if dt_obj and dose_val is not None:
+            nuove_somm.append({'dt': dt_obj, 'dose': dose_val})
+
+    nuovi_liv = []
+    for _, r in df_liv_edit.iterrows():
+        dt_obj = _parse_data_ora(r.get("Data (GG/MM/AAAA)"), r.get("Ora (HH:MM)"))
+        conc_val = safe_float(r.get("Concentrazione (mg/L)"))
+        if dt_obj and conc_val is not None:
+            nuovi_liv.append({'dt': dt_obj, 'conc': conc_val, 'nota': str(r.get("Nota (opz.)", ""))})
 
     t0_assoluto = t0_db if (usa_storico and storia_prev_db) else (min(s['dt'] for s in nuove_somm) if nuove_somm else datetime.combine(date.today(), datetime.strptime("08:00","%H:%M").time()))
 
