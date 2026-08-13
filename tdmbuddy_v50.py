@@ -70,10 +70,7 @@ import json
 from fpdf import FPDF
 
 # ============================================================
-# STORAGE — nessun database. Tutto vive in st.session_state
-# (isolato per sessione/browser) e viene esportato/importato come
-# file JSON che l'operatore scarica e gestisce localmente.
-# Nessun dato tocca il disco del server in nessun momento.
+# STORAGE
 # ============================================================
 
 def storico_vuoto():
@@ -138,7 +135,7 @@ CIPRO = {
     'omega_CL':0.37,'omega_V1':0.32,'omega_Q':0.25,'omega_V2':0.30,
     'sigma':0.15,'fu':0.67,
     'nome':'Schlender JF, et al., Clin Pharmacokinet 2018;57(12):1613-1634 '
-           '/ Balbas-Martinez V, et al., Eur J Pharm Sci 2019;128:171-179',
+            '/ Balbas-Martinez V, et al., Eur J Pharm Sci 2019;128:171-179',
 }
 
 CIPRO_PED = {
@@ -160,29 +157,9 @@ IRC_MAP = {
 }
 
 # ============================================================
-# PARAMETRI PK — DALBAVANCINA (modelli Mariani e Cojutti 2021)
+# PARAMETRI PK — DALBAVANCINA
 # ============================================================
-# Fonte: "Population Pharmacokinetics of Dalbavancin in Pediatric
-# Patients: A Real-World Therapeutic Drug Monitoring Study" (dati
-# IRCCS Istituto Giannina Gaslini, Genova; modello non ancora
-# pubblicato, fornito dall'utente). Modello 2-compartimenti,
-# SAEM/nlmixr2-rxode2, 35 pazienti / 83 eventi di dose / 137 concentrazioni.
-#
-# Parametri tipici (individuo di riferimento 70 kg):
-#   lCL = -3.49  -> CL_typ = exp(-3.49) = 0.0305 L/h   (RSE 1.54%, BSV 19.8% CV, shrink 20.9%)
-#   lV1 =  1.57  -> V1_typ = exp( 1.57) = 4.81  L      (RSE 3.87%, nessuna IIV)
-#   lQ  = -4.81  -> Q_typ  = exp(-4.81) = 0.0081 L/h   (RSE 3.24%, nessuna IIV)
-#   lV2 =  1.57  -> V2_typ = exp( 1.57) = 4.81  L      (RSE 15.9%, nessuna IIV)
-#   Errore residuo proporzionale = 0.375 (37.5%)
-#
-# Scaling allometrico (covariata a priori, esponenti fissi):
-#   CL = CL_typ * (WT/70)^0.75 * exp(eta_CL)
-#   V1 = V1_typ * (WT/70)
-#   Q  = Q_typ  * (WT/70)^0.75
-#   V2 = V2_typ * (WT/70)
-# Nessuna covariata aggiuntiva (eGFR, albumina, eta') ha superato i
-# criteri di inclusione: la IIV e' modellata SOLO su CL; V1/Q/V2 sono
-# quindi valori deterministici (fissi) una volta noto il peso corporeo.
+
 DALBA_PARAMS = {
     'CL_typ70': 0.0305, 'V1_typ70': 4.81, 'Q_typ70': 0.0081, 'V2_typ70': 4.81,
     'omega_CL': 0.198, 'sigma': 0.375, 't_inf': 0.5, 'fu': 0.07,
@@ -190,22 +167,6 @@ DALBA_PARAMS = {
              "modello interno fornito dall'utente)"),
 }
 
-# Modello alternativo — Cojutti PG, et al. Population pharmacokinetics of
-# dalbavancin and dosing consideration for optimal treatment of adult
-# patients with staphylococcal osteoarticular infections. Antimicrob
-# Agents Chemother. 2021;65(9):e00879-21. Popolazione: 15 pazienti adulti
-# con infezioni osteoarticolari da stafilococco.
-#
-# Parametri tipici di popolazione (valori assoluti, NON normalizzati per
-# peso — nel dato fornito non è presente un'equazione di scaling
-# allometrico esplicita per questo modello, a differenza di Mariani).
-# Applicati quindi come valori fissi di popolazione, appropriati per un
-# paziente adulto vicino al peso medio della coorte originale; usare con
-# cautela per pazienti con peso molto diverso dalla popolazione di
-# derivazione (15 adulti con infezione osteoarticolare).
-#   CL = 0.106 L/h, V1 = 17.4 L, Q = 0.103 L/h, V2 = 15.1 L
-#   IIV_CL = 36.2% CV, errore residuo proporzionale = 18%
-#   Emivita terminale calcolata dal modello: 11.3 giorni
 COJUTTI_PARAMS = {
     'CL_typ70': 0.106, 'V1_typ70': 17.4, 'Q_typ70': 0.103, 'V2_typ70': 15.1,
     'omega_CL': 0.362, 'sigma': 0.18, 't_inf': 0.5, 'fu': 0.07,
@@ -219,13 +180,6 @@ DALBA_MODELLI = {
     'Cojutti 2021 (adulti, osteoarticolare — AAC)': COJUTTI_PARAMS,
 }
 
-# Target PK/PD dalbavancina — riferimenti citati nel documento sorgente:
-#   fAUC24h/MIC >= 27.1   -> target ABSSSI semplice
-#   fAUC24h/MIC >= 111.1  -> target infezioni complesse/osteoarticolari
-#                            (Cojutti P, et al. Antimicrob Agents Chemother 2023)
-#   100% fT > 4xMIC       -> target trough, attivita' battericida tempo-dipendente
-# Soglie di concentrazione TOTALE equivalenti (f=0.07, 93% legame proteico):
-#   C_total = (target_AUC/MIC * MIC) / (24 * f)
 DALBA_MIC_EUCAST = {
     'MIC90 osteoarticolare (0.0625 mg/L)': 0.0625,
     'Breakpoint EUCAST precedente (0.125 mg/L)': 0.125,
@@ -238,11 +192,9 @@ DALBA_TARGETS = {
 }
 
 def dalba_soglia_concentrazione_totale(target_auc_mic, mic, f):
-    """C_total target = (target * MIC) / (24 * f) -- soglia media/AUC-equivalente."""
     return (target_auc_mic * mic) / (24.0 * f)
 
 def dalba_soglia_trough(mic, f):
-    """Soglia di trough: concentrazione totale equivalente a 4x MIC libera."""
     return (4.0 * mic) / f
 
 # ============================================================
@@ -288,27 +240,14 @@ def pk_2cmt(CL, V1, Q, V2, storia, t_obs, t_inf=0.5):
 
 
 def metriche_esposizione_24h(pk_func, params, storia, t_inf, n_punti=300):
-    """
-    Calcola AUC, Cmax e Cmin numericamente sulle 24h successive
-    all'ultima dose somministrata, indipendentemente dal fatto che il
-    dosaggio sia regolare o irregolare (nessun concetto di 'tau' fisso
-    richiesto). pk_func e' pk_1cmt o pk_2cmt; params sono i parametri
-    posizionali richiesti da pk_func DOPO 'storia, t, t_inf' (es. (CL,V)
-    per 1cmt, (CL,V1,Q,V2) per 2cmt).
-    Restituisce (AUC24, Cmax, Cmin).
-    """
     t_ultima_dose = storia[-1]['ore']
     t_grid = np.linspace(t_ultima_dose, t_ultima_dose + 24, n_punti)
     c_grid = np.array([pk_func(*params, storia, t, t_inf) for t in t_grid])
-    # Trapezoidale manuale: np.trapz è stata rimossa in NumPy 2.0
-    # (np.trapezoid la sostituisce, ma questa forma funziona su ogni versione)
-    auc = float(np.sum((c_grid[1:] + c_grid[:-1]) / 2.0 * np.diff(t_grid)))
+    auc = float(np.trapz(c_grid, t_grid))
     return auc, float(c_grid.max()), float(c_grid.min())
 
 
 def tau_mediano(storia):
-    """Intervallo mediano tra dosi consecutive -- SOLO a scopo informativo/
-    di visualizzazione nel referto; nessun calcolo dipende da questo valore."""
     if len(storia) < 2:
         return None
     ore = sorted(s['ore'] for s in storia)
@@ -388,18 +327,10 @@ def prior_cipro(sesso, gg, peso, crea, crrt, dialisi):
                "Considerare intervallo q48h e monitoraggio intensivo.")
     if crrt: note+="⚠️ CRRT: rimozione cipro variabile, non modellata esplicitamente. Monitorare livelli."
     nm=f"{c['nome']} (ClCr={clcr:.0f} mL/min)"
-    return CL,V1,Q,V2,c['omega_CL'],c['omega_V1'],c['omega_Q'],c['sigma'],1.0,nm,note
+    return CL,V1,Q,V2,c['omega_CL'],c['omega_V1'],c['omega_Q'],c['omega_V2'],c['sigma'],1.0,nm,note
 
 
 def prior_dalba(peso, modello_scelto):
-    """
-    Prior dalbavancina -- supporta due modelli alternativi:
-      - 'Mariani (pediatrico, allometrico — Gaslini)': scaling allometrico
-        a esponenti fissi (0.75 su CL/Q, 1 su V1/V2), normalizzato a 70 kg.
-      - 'Cojutti 2021 (adulti, osteoarticolare — AAC)': valori di
-        popolazione fissi, nessuno scaling per peso disponibile nella
-        pubblicazione originale.
-    """
     p = DALBA_MODELLI[modello_scelto]
 
     if modello_scelto.startswith('Mariani'):
@@ -428,11 +359,6 @@ def prior_dalba(peso, modello_scelto):
 # ============================================================
 
 def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
-    """
-    MAP Bayesiano 1-compartimento su un numero QUALSIASI di livelli
-    plasmatici misurati (0, 1, 2, ... N). Ogni elemento di 'livelli' e'
-    un dict {'ore': <ore da t0>, 'conc': <mg/L misurata>}.
-    """
     n = len(livelli)
     if n == 0:
         return CL_p, V_p, "Prior di popolazione (nessun livello inserito)"
@@ -453,23 +379,14 @@ def map_1cmt(CL_p, V_p, oCL, oV, sig, storia, livelli, t_inf):
     return np.exp(r.x[0]), np.exp(r.x[1]), lbl
 
 
-def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, sig, storia, livelli, t_inf):
-    """
-    MAP Bayesiano 2-compartimento su un numero QUALSIASI di livelli.
-    Con pochi campioni (<=2) Q e V2 restano ancorati stretti al prior
-    (identificabilita' limitata); con piu' campioni il vincolo si
-    allenta automaticamente in proporzione (omega scala con 1/sqrt(n),
-    fino al valore "libero" oQ/oV2 originale).
-    """
+def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, oV2, sig, storia, livelli, t_inf):
     n = len(livelli)
     if n == 0:
         return CL_p, V1_p, Q_p, V2_p, "Prior di popolazione (nessun livello inserito)"
 
-    # con pochi campioni Q/V2 sono poco identificabili: parto stretto
-    # (0.10) e allento progressivamente con n, senza mai superare oQ/oV2
     fattore_allentamento = min(1.0, n / 6.0)
     OQ_eff  = 0.10 + (oQ  - 0.10) * fattore_allentamento
-    OV2_eff = 0.10 + (oQ  - 0.10) * fattore_allentamento  # stessa cinetica di allentamento
+    OV2_eff = 0.10 + (oV2 - 0.10) * fattore_allentamento
 
     def f(p):
         CL_, V1_, Q_, V2_ = np.exp(p[0]), np.exp(p[1]), np.exp(p[2]), np.exp(p[3])
@@ -491,17 +408,7 @@ def map_2cmt(CL_p, V1_p, Q_p, V2_p, oCL, oV1, oQ, sig, storia, livelli, t_inf):
     return np.exp(r.x[0]), np.exp(r.x[1]), np.exp(r.x[2]), np.exp(r.x[3]), lbl
 
 
-def map_dalba(CL_pop, V1_pop, Q_pop, V2_pop, omega_CL, sigma,
-              storia, livelli, t_inf):
-    """
-    MAP dalbavancina: stima SOLO log(CL) (unico parametro con IIV nel
-    modello originale) su un numero QUALSIASI di livelli plasmatici
-    misurati nel tempo -- essenziale per il TDM cumulativo di un
-    farmaco long-acting come la dalbavancina, dove il paziente puo'
-    avere decine di prelievi su mesi di follow-up. V1, Q, V2 restano
-    fissi ai valori di popolazione (nessuna IIV ritenuta significativa
-    su questi tre parametri nei modelli sorgente).
-    """
+def map_dalba(CL_pop, V1_pop, Q_pop, V2_pop, omega_CL, sigma, storia, livelli, t_inf):
     n = len(livelli)
     if n == 0:
         return CL_pop, "Prior di popolazione (nessun livello inserito)"
@@ -517,21 +424,12 @@ def map_dalba(CL_pop, V1_pop, Q_pop, V2_pop, omega_CL, sigma,
 
     x0 = [np.log(CL_pop)]
     bnd = [(np.log(CL_pop*0.05), np.log(CL_pop*10.0))]
-    r = minimize(f, x0, method='L-BFGS-B', bounds=bnd,
-                options={'maxiter': 2000, 'ftol': 1e-12})
+    r = minimize(f, x0, method='L-BFGS-B', bounds=bnd, options={'maxiter': 2000, 'ftol': 1e-12})
     lbl = f"MAP Bayesiano su CL, {n} livell{'o' if n==1 else 'i'} plasmatic{'o' if n==1 else 'i'}; V1/Q/V2 fissi (allometria/popolazione)"
     return np.exp(r.x[0]), lbl
 
 
 def trova_tempo_soglia(CL, V1, Q, V2, storia, soglia, t_inf, t_partenza=0.0, t_max=2000.0, passo=1.0):
-    """
-    Cerca (scansione + bisezione) il primo istante t > t_partenza in cui
-    la concentrazione prevista scende sotto 'soglia'. Assume curva
-    monotona decrescente dopo l'ultima dose (nessuna nuova somministrazione
-    tra t_partenza e t_max). Restituisce None se non raggiunta entro t_max
-    o gia' sotto soglia al momento della valutazione (in tal caso ritorna
-    t_partenza stesso).
-    """
     def C(t):
         return pk_2cmt(CL, V1, Q, V2, storia, t, t_inf)
 
@@ -561,12 +459,6 @@ def trova_tempo_soglia(CL, V1, Q, V2, storia, soglia, t_inf, t_partenza=0.0, t_m
 # ============================================================
 
 def carica_storia_precedente(farmaco):
-    """
-    Carica dosi E livelli plasmatici più recenti dallo storico di
-    SESSIONE (nessun database) per il farmaco indicato. Restituisce
-    (storia_dosi, livelli_precedenti, data_prima_dose_dt) oppure
-    ([], [], None) se non presente.
-    """
     monitoraggi = st.session_state['storico'].get('monitoraggi', [])
     candidati = [m for m in monitoraggi if m.get('farmaco') == farmaco]
     if not candidati:
@@ -582,12 +474,6 @@ def carica_storia_precedente(farmaco):
 
 
 def costruisci_storia(nuove_somm, t0_assoluto, storia_precedente):
-    """
-    Fonde la storia precedente (già in ore assolute da t0_assoluto)
-    con le nuove somministrazioni (datetime objects).
-    nuove_somm: lista di dict {'dt': datetime, 'dose': float}
-    Restituisce lista ordinata di {'ore': float, 'dose': float}.
-    """
     storia = list(storia_precedente)
     for s in nuove_somm:
         ore = (s['dt'] - t0_assoluto).total_seconds() / 3600.0
@@ -597,25 +483,10 @@ def costruisci_storia(nuove_somm, t0_assoluto, storia_precedente):
 
 
 def costruisci_livelli(nuovi_liv, t0_assoluto, livelli_precedenti):
-    """
-    Fonde i livelli plasmatici precedenti (già in ore assolute da
-    t0_assoluto) con i nuovi livelli misurati (datetime objects).
-    nuovi_liv: lista di dict {'dt': datetime, 'conc': float, 'nota': str,
-                              'creatinina': float|None}
-    Restituisce lista ordinata di {'ore': float, 'conc': float, 'nota': str,
-                                    'creatinina': float|None}.
-    Nessun limite al numero di livelli: possono essere quanti il
-    paziente ne ha effettivamente avuti nel corso della terapia.
-    La creatinina per livello è puramente informativa/di registrazione:
-    NON è usata come covariata in nessun calcolo PK (il valore di
-    creatinina che guida i modelli resta quello inserito in "Parametri
-    Clinici" per la valutazione corrente).
-    """
     livelli = list(livelli_precedenti)
     for l in nuovi_liv:
         ore = (l['dt'] - t0_assoluto).total_seconds() / 3600.0
-        livelli.append({'ore': ore, 'conc': l['conc'], 'nota': l.get('nota', ''),
-                        'creatinina': l.get('creatinina')})
+        livelli.append({'ore': ore, 'conc': l['conc'], 'nota': l.get('nota', '')})
     livelli.sort(key=lambda x: x['ore'])
     return livelli
 
@@ -631,10 +502,11 @@ def genera_pdf(testo):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial",'B',13)
-    pdf.cell(0,9,"TDM Buddy v5.2 — Referto di Monitoraggio Terapeutico Farmacologico",ln=1,align='C')
-    pdf.set_font("Arial",size=9); pdf.ln(2)
+    pdf.cell(0, 9, "TDM Buddy v5.2 - Referto di Monitoraggio Terapeutico Farmacologico", ln=1, align='C')
+    pdf.set_font("Arial", size=9)
+    pdf.ln(2)
     for riga in safe.split('\n'):
-        pdf.multi_cell(0,5,txt=riga)
+        pdf.multi_cell(0, 5, txt=riga)
     return pdf.output(dest='S').encode('latin-1')
 
 # ============================================================
@@ -660,7 +532,6 @@ def disegna_grafico(farmaco, storia, livelli,
     fig.patch.set_facecolor('#FAFAFA')
     ax.set_facecolor('#FAFAFA')
 
-    # Ombra periodo storico vs nuovo
     if storia_precedente:
         t_cambio = max(s['ore'] for s in storia_precedente)
         ax.axvspan(0, t_cambio, alpha=0.06, color='#6EA8D8', zorder=0, label='Terapia precedente (storico sessione)')
@@ -678,18 +549,15 @@ def disegna_grafico(farmaco, storia, livelli,
                    label='Soglia tossicità CPK — Cmin ≥ 24.3 mg/L\n'
                          '(Bhavnani SM, et al. Clin Infect Dis 2010;50(12):1568-74)')
 
-    # Marcatori dosi — distingui vecchie da nuove
     t_cambio_val = max(s['ore'] for s in storia_precedente) if storia_precedente else -1
     for s in storia:
         col = '#6EA8D8' if s['ore'] <= t_cambio_val else '#475569'
         ax.axvline(s['ore'], color=col, ls=':', alpha=0.35, lw=1.0)
 
-    # Livelli misurati — quanti ce ne sono, tutti a scatter, con etichetta
-    # solo per i primi (evita legende infinite con decine di prelievi)
     MAX_LABEL = 6
     for i, l in enumerate(livelli):
         etichetta = (f"Livello {i+1} = {l['conc']:.2f} mg/L (t={l['ore']:.0f}h)"
-                    if i < MAX_LABEL else None)
+                     if i < MAX_LABEL else None)
         ax.scatter(l['ore'], l['conc'], color='#16A34A', s=140, zorder=7,
                    marker='*', edgecolors='white', linewidths=0.5,
                    label=etichetta)
@@ -726,9 +594,8 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
     dose_mg       = storia_completa[-1]['dose']
     dose_mg_kg    = dose_mg / peso
     eta           = gg / 365.25
-    tau_h_display = tau_mediano(storia_completa)  # SOLO informativo nel referto
+    tau_h_display = tau_mediano(storia_completa)  
 
-    # --- Prior + MAP (su un numero QUALSIASI di livelli, 0..N) ---
     if farmaco == "Daptomicina":
         CL_p,V_p,oCL,oV,sig,t_inf,nm,note = prior_dapto(sesso,gg,peso,crea,crrt,Sc,Qef,dialisi)
         CL_ind,V_ind,tipo_fit = map_1cmt(CL_p,V_p,oCL,oV,sig,storia_completa,livelli_completi,t_inf)
@@ -745,16 +612,16 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
             modello_dalba = list(DALBA_MODELLI.keys())[0]
         CL_p,V1_p,Qp,V2_p,oCL,sig,t_inf,nm,note = prior_dalba(peso, modello_dalba)
         CL_ind, tipo_fit = map_dalba(CL_p,V1_p,Qp,V2_p,oCL,sig,storia_completa,livelli_completi,t_inf)
-        V_ind, Q_ind, V2_ind = V1_p, Qp, V2_p   # fissi (nessuna IIV nel modello originale)
+        V_ind, Q_ind, V2_ind = V1_p, Qp, V2_p
         Q_p = Qp; Vss_d = V_ind + V2_ind
         AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
         auc_mic  = AUC24_v / mic
         emivita  = np.log(2)*Vss_d/CL_ind
         ok_target= auc_mic >= DALBA_TARGETS['ABSSSI semplice (fAUC24h/MIC >= 27.1)']
-        tox      = False  # nessuna soglia di tossicita' da concentrazione validata per dalba
+        tox      = False  
     else:
-        CL_p,V1_p,Qp,V2_p,oCL,oV1,oQ,sig,t_inf,nm,note = prior_cipro(sesso,gg,peso,crea,crrt,dialisi)
-        CL_ind,V_ind,Q_ind,V2_ind,tipo_fit = map_2cmt(CL_p,V1_p,Qp,V2_p,oCL,oV1,oQ,sig,storia_completa,livelli_completi,t_inf)
+        CL_p,V1_p,Qp,V2_p,oCL,oV1,oQ,oV2,sig,t_inf,nm,note = prior_cipro(sesso,gg,peso,crea,crrt,dialisi)
+        CL_ind,V_ind,Q_ind,V2_ind,tipo_fit = map_2cmt(CL_p,V1_p,Qp,V2_p,oCL,oV1,oQ,oV2,sig,storia_completa,livelli_completi,t_inf)
         Q_p=Qp; Vss_d=V_ind+V2_ind
         AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(pk_2cmt, (CL_ind,V_ind,Q_ind,V2_ind), storia_completa, t_inf)
         auc_mic  = AUC24_v/mic
@@ -762,7 +629,6 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
         ok_target= auc_mic>=PD_CIPRO['AUC_MIC_target']
         tox      = AUC24_v>=PD_CIPRO['AUC_alta']
 
-    # ---- DISPLAY ----
     st.markdown("---")
     if storia_precedente or livelli_precedenti:
         n_nuove_dosi = len(storia_completa) - len(storia_precedente)
@@ -782,7 +648,7 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
               help=f"Prior di popolazione: {CL_p:.3f} L/h")
     c2.metric("Vss (distribuzione)",f"{Vss_d:.1f} L",
               delta=f"{Vss_d/peso:.2f} L/kg",
-              help="1-cmt (dapto): V; 2-cmt (cipro): V1+V2")
+              help="1-cmt (dapto): V; 2-cmt (cipro/dalba): V1+V2")
     c3.metric("Emivita terminale (T½)",f"{emivita:.1f} h",
               help="Approssimazione: T½ = ln2 × Vss / CL")
     st.markdown("")
@@ -811,14 +677,12 @@ def esegui_analisi(farmaco, id_paz, sesso, gg, peso, dt_val,
                   delta="⚠️ AUC ELEVATA — monitorare CNS" if tox else "✅ Esposizione sicura",
                   delta_color="inverse" if tox else "normal")
 
-    # Grafico
     st.subheader("📈 Profilo Farmacocinetico — Timeline Completa")
     fig = disegna_grafico(farmaco, storia_completa, livelli_completi,
                           CL_ind, V_ind, Q_ind, V2_ind, CL_p, V_p if farmaco=="Daptomicina" else V1_p,
                           Q_p, V2_p, t_inf, storia_precedente)
     st.pyplot(fig); plt.close()
 
-    # Referto
     def E(ok): return "TARGET RAGGIUNTO" if ok else "INSUFFICIENTE — RIVALUTARE POSOLOGIA"
     storico_note = ""
     if storia_precedente:
@@ -886,7 +750,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
   Durata infusione:        {t_inf*60:.0f} min
   MIC patogeno:            {mic} mg/L
   Livelli plasmatici usati per il fit: {len(livelli_completi)}
-{chr(10).join(f"    t={l['ore']:.1f}h  ->  {l['conc']:.4f} mg/L" + (f"  [creat.={l['creatinina']:.2f} mg/dL]" if l.get('creatinina') is not None else "") + (f"  ({l['nota']})" if l.get('nota') else "") for l in livelli_completi) if livelli_completi else "    (nessun livello inserito — solo prior di popolazione)"}
+{chr(10).join(f"    t={l['ore']:.1f}h  ->  {l['conc']:.4f} mg/L" + (f"  ({l['nota']})" if l.get('nota') else "") for l in livelli_completi) if livelli_completi else "    (nessun livello inserito — solo prior di popolazione)"}
 
 [PARAMETRI PK INDIVIDUALI STIMATI]
   Clearance (CL):               {CL_ind:.3f} L/h  ({(CL_ind/peso)*1000:.1f} mL/h/kg)
@@ -969,9 +833,6 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
                            file_name=f"TDMBuddy_{farmaco}_{id_paz}_{dt_val[:10]}.pdf",
                            mime="application/pdf", use_container_width=True)
 
-    # ============================================================
-    # PANNELLO FORECAST — solo Dalbavancin
-    # ============================================================
     if farmaco == "Dalbavancin":
         st.markdown("---")
         st.subheader("🔮 Forecast — Pianificazione Prossima Somministrazione")
@@ -1015,7 +876,6 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
 
         st.info(f"📐 Soglia calcolata: **{desc_target}**")
 
-        # Tempo dall'ultima osservazione (ultimo livello o ultima dose, il più recente)
         t_ultimo_liv = max((l['ore'] for l in livelli_completi), default=0)
         t_valutazione = max(t_ultimo_liv, storia_completa[-1]['ore'])
         c_attuale = pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_completa, t_valutazione, t_inf)
@@ -1029,10 +889,10 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
 
         if t_crossing is None:
             st.warning("⚠️ La soglia non viene raggiunta entro ~83 giorni dalla valutazione attuale "
-                      "con la sola dose già somministrata — verificare i parametri inseriti.")
+                       "con la sola dose già somministrata — verificare i parametri inseriti.")
         elif t_crossing <= t_valutazione + 0.5:
             st.error(f"🔴 La concentrazione è **già sotto la soglia** target al momento della valutazione "
-                    f"({c_attuale:.2f} < {soglia_target:.2f} mg/L). Considerare una nuova somministrazione.")
+                     f"({c_attuale:.2f} < {soglia_target:.2f} mg/L). Considerare una nuova somministrazione.")
         else:
             data_crossing = t0_assoluto + timedelta(hours=t_crossing)
             giorni_rimanenti = (t_crossing - t_valutazione) / 24.0
@@ -1042,7 +902,6 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
                 f"(tra circa **{giorni_rimanenti:.1f} giorni**)."
             )
 
-        # --- Simulazione nuova dose ipotetica ---
         st.markdown("#### 💉 Simula una nuova somministrazione ipotetica")
         col_sim1, col_sim2, col_sim3 = st.columns(3)
         with col_sim1:
@@ -1078,7 +937,6 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
                     f"(**{giorni_sim:.1f} giorni** di copertura dalla nuova dose)."
                 )
 
-            # Grafico esteso con dose ipotetica
             t_fine_sim = t_crossing_sim + 48 if t_crossing_sim else t_new_ore + 500
             t_arr_sim = np.linspace(0, t_fine_sim, 1000)
             c_sim = [pk_2cmt(CL_ind, V_ind, Q_ind, V2_ind, storia_sim, t, t_inf) for t in t_arr_sim]
@@ -1108,7 +966,7 @@ Sesso: {sesso}   Eta': {eta:.1f} anni   Peso: {peso} kg
                 'creatinina': crea, 'crrt': bool(crrt), 'Sc': Sc, 'Qef': Qef,
                 'dialisi_tipo': dialisi,
                 'dose_mg': dose_mg, 'dose_mg_kg': dose_mg_kg,
-                'tau_h': tau_h_display,   # solo informativo, nessun calcolo dipende da questo
+                'tau_h': tau_h_display,
                 'n_dosi': len(storia_completa), 'mic': mic,
                 'n_livelli': len(livelli_completi),
                 'CL_ind': CL_ind, 'V_ind': Vss_d, 'AUC24': AUC24_v,
@@ -1148,7 +1006,7 @@ st.set_page_config(page_title="TDM Buddy v5.2", layout="wide", page_icon="💊")
 st.title("💊 TDM Buddy v5.2")
 st.caption(
     "Monitoraggio Terapeutico Bayesiano — Daptomicina, Ciprofloxacina, Dalbavancin  |  "
-    "MAP 1-cmt / 2-cmt / 2-cmt allometrico — nessun dato salvato sul server"
+    "MAP cumulativo 1-cmt / 2-cmt / 2-cmt allometrico"
 )
 
 st.warning(
@@ -1160,7 +1018,6 @@ st.warning(
     "non sostituisce il giudizio clinico e non è un dispositivo medico certificato."
 )
 
-# ---- SIDEBAR: gestione storico paziente (JSON, nessun DB) ----
 st.sidebar.header("🗂️ Storico Paziente (locale)")
 
 file_up = st.sidebar.file_uploader(
@@ -1238,7 +1095,6 @@ st.sidebar.markdown("""
 - DALVANCE (dalbavancin) — FDA prescribing information, 2025.
 """)
 
-# ---- TABS ----
 tab1, tab2 = st.tabs(["➕ Nuova Analisi TDM","📚 Storico Paziente"])
 
 with tab1:
@@ -1257,7 +1113,7 @@ with tab1:
         _gg_def = int(_ultimo.get('eta_giorni', 10950))
         _peso_def = float(_ultimo.get('peso', 70.0))
     else:
-        _gg_def = 10950  # ~30 anni, default adulto
+        _gg_def = 10950 
         _peso_def = 70.0
 
     _anni_def  = _gg_def // 365
@@ -1282,7 +1138,7 @@ with tab1:
     farmaco = st.radio("💊 Farmaco da monitorare:",
                         ["Daptomicina","Ciprofloxacina","Dalbavancin"],
                         horizontal=True)
-    modello_dalba = None  # rilevante solo per farmaco == "Dalbavancin"
+    modello_dalba = None
 
     if farmaco=="Daptomicina":
         if gg<365:     st.info(f"👶 Lattante ({gg} gg) → Modello: Ye et al., Eur J Pharm Sci 2025;208:107058")
@@ -1308,7 +1164,6 @@ with tab1:
         elif gg<6570:  st.info(f"🧒 Pediatrico ({eta:.1f}a) → Schlender JF, et al., Clin Pharmacokinet 2018;57(12):1613-1634 (scaling)")
         else:          st.info(f"👨 Adulto ({eta:.0f}a) → Schlender 2018 / Balbas-Martinez V, et al., Eur J Pharm Sci 2019;128:171-179")
 
-    # ---- SEZIONE STORICO DOSI ----
     st.markdown("### 🔗 Integrazione Storico Dosi Paziente")
 
     storia_prev_db, livelli_prev_db, t0_db = carica_storia_precedente(farmaco)
@@ -1346,7 +1201,6 @@ with tab1:
         st.info("ℹ️ Nessuno storico disponibile in questa sessione per questo farmaco. "
                 "Questa sarà la prima analisi TDM.")
 
-    # ---- PARAMETRI CLINICI ----
     st.markdown("### 1. Parametri Clinici")
     col1,col2,col3 = st.columns(3)
     with col1:
@@ -1380,7 +1234,6 @@ with tab1:
             dialisi="Nessuna"
             st.caption("📌 Cockcroft-Gault calcolato internamente da creatinina, età, peso, sesso.")
 
-    # ---- NUOVE SOMMINISTRAZIONI E LIVELLI (liste libere, nessun limite) ----
     st.markdown("### 2. Nuove Somministrazioni e Livelli Plasmatici")
     st.caption(
         "Inserisci ESATTAMENTE le somministrazioni e i prelievi effettuati dal "
@@ -1423,14 +1276,11 @@ with tab1:
     with colB:
         st.markdown("**🔬 Nuovi Livelli Plasmatici Misurati**")
         st.caption("Aggiungi (o lascia vuota) una riga per ogni prelievo. "
-                  "Nessun limite al numero di livelli inseribili. La creatinina "
-                  "per livello è solo di registrazione — non entra nei calcoli PK "
-                  "(quella usata dai modelli resta il valore in \"Parametri Clinici\").")
+                  "Nessun limite al numero di livelli inseribili.")
         df_liv_init = pd.DataFrame({
             "Data (GG/MM/AAAA)": [""],
             "Ora (HH:MM)": [""],
             "Concentrazione (mg/L)": [None],
-            "Creatinina (mg/dL, opz.)": [None],
             "Nota (opz.)": [""],
         })
         df_liv_edit = st.data_editor(
@@ -1438,11 +1288,9 @@ with tab1:
             key="tbl_livelli_edit",
             column_config={
                 "Concentrazione (mg/L)": st.column_config.NumberColumn(format="%.4f", min_value=0.0),
-                "Creatinina (mg/dL, opz.)": st.column_config.NumberColumn(format="%.2f", min_value=0.0),
             },
         )
 
-    # ---- PARSING TABELLE -> LISTE DI EVENTI ----
     def _parse_data_ora(data_str, ora_str):
         data_str = str(data_str).strip()
         ora_str  = str(ora_str).strip()
@@ -1477,16 +1325,12 @@ with tab1:
         conc_val = r.get("Concentrazione (mg/L)", None)
         if dt_row is None or conc_val is None or pd.isna(conc_val):
             continue
-        crea_val = r.get("Creatinina (mg/dL, opz.)", None)
-        crea_val = float(crea_val) if (crea_val is not None and not pd.isna(crea_val)) else None
         nuovi_liv.append({'dt': dt_row, 'conc': float(conc_val),
-                          'nota': str(r.get("Nota (opz.)", "") or ""),
-                          'creatinina': crea_val})
+                          'nota': str(r.get("Nota (opz.)", "") or "")})
 
     if not nuove_somm:
         st.warning("⚠️ Inserisci almeno una nuova somministrazione con data, ora e dose valide.")
 
-    # ---- COSTRUZIONE TIMELINE ----
     if usa_storico and storia_prev_db and t0_db:
         t0_assoluto = t0_db
     elif nuove_somm:
@@ -1504,10 +1348,9 @@ with tab1:
     )
 
     dt_val = (max((l['dt'] for l in nuovi_liv), default=None) or
-             max((s['dt'] for s in nuove_somm), default=datetime.now())
+              max((s['dt'] for s in nuove_somm), default=datetime.now())
              ).strftime('%Y-%m-%d %H:%M')
 
-    # Anteprima timeline
     with st.expander("👁️ Anteprima timeline completa prima di lanciare l'analisi", expanded=False):
         n_prev_dosi = len(storia_prev_db) if (usa_storico and storia_prev_db) else 0
         df_tl = pd.DataFrame([
@@ -1524,7 +1367,6 @@ with tab1:
             {'Ore da t=0': f"{l['ore']:.1f}h",
              'Data/Ora assoluta': (t0_assoluto + timedelta(hours=l['ore'])).strftime('%d/%m/%Y %H:%M'),
              'Conc. (mg/L)': f"{l['conc']:.4f}",
-             'Creatinina (mg/dL)': (f"{l['creatinina']:.2f}" if l.get('creatinina') is not None else '—'),
              'Nota': l.get('nota',''),
              'Origine': '📂 Storico' if i < n_prev_liv else '✏️ Nuovo'}
             for i, l in enumerate(livelli_correnti)])
@@ -1551,7 +1393,6 @@ with tab1:
                     t0_assoluto, salva=True,
                     modello_dalba=modello_dalba)
 
-# ---- TAB STORICO ----
 with tab2:
     monitoraggi = st.session_state['storico'].get('monitoraggi', [])
     if not monitoraggi:
