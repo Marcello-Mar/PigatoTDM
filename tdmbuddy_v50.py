@@ -32,6 +32,20 @@ DAPTOMICINA
   Bhavnani SM, Rubino CM, Ambrose PG, Drusano GL. Daptomycin exposure
   and the probability of elevations in the creatine phosphokinase
   level. Clin Infect Dis. 2010;50(12):1568-1574. doi:10.1086/652767
+  [target tossicità: Cmin >= 24.3 mg/L]
+  Louie A, Kaw P, Liu W, Jumbe N, Miller MH, Drusano GL. Pharmacodynamics
+  of daptomycin in a murine-thigh model of Staphylococcus aureus
+  infection. Antimicrob Agents Chemother. 2001;45:845-851.
+  [target efficacia S. aureus/MRSA: AUC/MIC >= 666, modello murino]
+  Canut A, Isla A, Betriu C, Gascón AR. Pharmacokinetic-pharmacodynamic
+  evaluation of daptomycin, tigecycline, and linezolid versus vancomycin
+  for the treatment of MRSA infections in four western European
+  countries. Eur J Clin Microbiol Infect Dis. 2012;31(9):2227-2235.
+  [adozione clinica del target 666 in adulti critici, citato in Soraluce 2018]
+  Safdar N, Andes D, Craig WA. In vivo pharmacodynamic activity of
+  daptomycin. Antimicrob Agents Chemother. 2004;48:63-68.
+  [target efficacia E. faecium: AUC/MIC libero 12.9, convertito a
+  AUC/MIC totale >= 143 in Wei 2020 assumendo legame proteico 91%]
 
 CIPROFLOXACINA
   Schlender JF, Teutonico D, Coboeken K, Schnizler K, Eissing T,
@@ -45,10 +59,14 @@ CIPROFLOXACINA
   Forrest A, Ballow CH, Nix DE, Birmingham MC, Schentag JJ. Development
   of a population pharmacokinetic model and optimal sampling strategies
   for intravenous ciprofloxacin. Antimicrob Agents Chemother. 1993;
-  37(5):1065-1072. doi:10.1128/aac.37.5.1065
-  Ambrose PG, Bhavnani SM, Rubino CM, et al. Pharmacokinetics-
-  pharmacodynamics of antimicrobial therapy: it's not just for mice
-  anymore. Clin Infect Dis. 2007;44(Suppl 2):S79-S86. doi:10.1086/510079
+  37(5):1065-1072. doi:10.1128/aac.37.5.1065 [modello PK]
+  Forrest A, Nix DE, Ballow CH, Goss TF, Birmingham MC, Schentag JJ.
+  Pharmacodynamics of intravenous ciprofloxacin in seriously ill
+  patients. Antimicrob Agents Chemother. 1993;37(5):1073-1081.
+  doi:10.1128/AAC.37.5.1073 [target efficacia AUC/MIC >= 125, 74
+  adulti acutamente critici — companion paper del precedente]
+  Nessuna soglia AUC quantitativa validata per la neurotossicità da
+  fluorochinoloni: non riportata nell'app per questo motivo.
 
 DALBAVANCINA
   Modello Mariani: dati IRCCS Istituto Giannina Gaslini, Genova.
@@ -102,42 +120,67 @@ FARMACI = ["Daptomicina", "Ciprofloxacina", "Dalbavancina"]
 FARMACO_INFO = {
     "Daptomicina": {
         "icona": "🩸",
-        "descrizione": "Lipopeptide, ICU/pediatrico, dosaggio regolare q24-48h",
+        "descrizione": "Lipopeptide ciclico — Soraluce 2018, Wei 2020, Ye 2022/2025, Lim 2021",
     },
     "Ciprofloxacina": {
         "icona": "🧬",
-        "descrizione": "Fluorochinolone, dosaggio regolare q12-24h",
+        "descrizione": "Fluorochinolone — Schlender 2018, Balbas-Martinez 2019",
     },
     "Dalbavancina": {
         "icona": "💉",
-        "descrizione": "Lipoglicopeptide long-acting, 1-2 dosi a settimane di distanza",
+        "descrizione": "Lipoglicopeptide — Mariani (Gaslini), Cojutti 2021",
     },
 }
 
-# Riferimenti bibliografici per fascia d'età, mostrati in piccolo in
-# cima al Passo 2 (non più in barra laterale, per coerenza tra farmaci).
+# Riferimenti bibliografici completi (modello PK, target di efficacia,
+# target di tossicità/sicurezza, con il setting/popolazione in cui
+# ciascuno è stato validato), mostrati in piccolo in cima al Passo 2.
 RIFERIMENTI_PER_FASCIA = {
     "Daptomicina": [
-        ("< 1 anno", "Ye L, Zhou H, et al. *Eur J Pharm Sci.* 2025;208:107058"),
-        ("1–17 anni", "Wei XC, et al. *J Clin Pharmacol.* 2020;60(6):768-774 "
-                      "(correzione IRC: Ye L, et al. *Front Pharmacol.* 2022;13:838599)"),
-        ("Adolescenti in HD/CCPD", "Lim SY, et al. *J Pediatr Pharmacol Ther.* 2021;26(2):123-132"),
-        ("≥ 18 anni", "Soraluce A, et al. *Int J Antimicrob Agents.* 2018;52(2):158-165"),
-        ("Soglia tossicità (tutte le età)", "Bhavnani SM, et al. *Clin Infect Dis.* 2010;50(12):1568-1574"),
+        ("PK — < 1 anno", "Ye L, Zhou H, et al. *Eur J Pharm Sci.* 2025;208:107058"),
+        ("PK — 1–17 anni", "Wei XC, et al. *J Clin Pharmacol.* 2020;60(6):768-774 "
+                           "(correzione insufficienza renale: Ye L, et al. *Front Pharmacol.* "
+                           "2022;13:838599)"),
+        ("PK — Adolescenti in HD/CCPD", "Lim SY, et al. *J Pediatr Pharmacol Ther.* 2021;26(2):123-132"),
+        ("PK — ≥ 18 anni", "Soraluce A, et al. *Int J Antimicrob Agents.* 2018;52(2):158-165 "
+                           "(adulti in terapia intensiva)"),
+        ("Target efficacia — S. aureus/MRSA, AUC/MIC ≥ 666",
+         "Louie A, et al. *Antimicrob Agents Chemother.* 2001;45:845-851 (modello murino, "
+         "thigh infection); adottato clinicamente in adulti critici da Canut A, et al. "
+         "*Eur J Clin Microbiol Infect Dis.* 2012;31(9):2227-2235"),
+        ("Target efficacia — E. faecium, AUC/MIC ≥ 143",
+         "Safdar N, Andes D, Craig WA. *Antimicrob Agents Chemother.* 2004;48:63-68 "
+         "(modello murino); conversione a concentrazione totale riportata in "
+         "Wei XC, et al. *J Clin Pharmacol.* 2020;60(6):768-774"),
+        ("Target tossicità — Cmin ≥ 24.3 mg/L",
+         "Bhavnani SM, et al. *Clin Infect Dis.* 2010;50(12):1568-1574 (trial randomizzato, "
+         "adulti con batteriemia ed endocardite)"),
     ],
     "Ciprofloxacina": [
-        ("Tutte le età (scaling pediatrico incluso)",
+        ("PK — tutte le età (scaling pediatrico incluso)",
          "Schlender JF, et al. *Clin Pharmacokinet.* 2018;57(12):1613-1634; "
          "Balbas-Martinez V, et al. *Eur J Pharm Sci.* 2019;128:171-179"),
         ("Variabilità individuale (IIV)", "Forrest A, et al. *Antimicrob Agents Chemother.* 1993;37(5):1065-1072"),
-        ("Target PK/PD", "Ambrose PG, et al. *Clin Infect Dis.* 2007;44(S2):S79-S86"),
+        ("Target efficacia — gram-negativi, AUC/MIC ≥ 125",
+         "Forrest A, Nix DE, Ballow CH, et al. *Antimicrob Agents Chemother.* 1993;37(5):1073-1081 "
+         "(74 adulti acutamente critici, ciprofloxacina EV 200mg q12h–400mg q8h)"),
+        ("Target tossicità", "Nessuna soglia AUC quantitativa validata per la neurotossicità "
+                             "da fluorochinoloni: il rischio è documentato soprattutto in "
+                             "insufficienza renale non corretta (case report), non riportiamo "
+                             "quindi un valore soglia numerico."),
     ],
     "Dalbavancina": [
-        ("Pediatrico, scaling allometrico (modello Mariani)",
+        ("PK — pediatrico, scaling allometrico (modello Mariani)",
          "Dati interni IRCCS Gaslini, non ancora pubblicato"),
-        ("Adulti, infezione osteoarticolare (modello Cojutti)",
+        ("PK — adulti, infezione osteoarticolare (modello Cojutti)",
          "Cojutti PG, et al. *Antimicrob Agents Chemother.* 2021;65(5):e02260-20"),
+        ("Target efficacia — fAUC24h/MIC 27.1 / 53.3 / 111.1",
+         "Cojutti PG, et al. *Antimicrob Agents Chemother.* 2021;65(5):e02260-20 "
+         "(Monte Carlo simulation, adulti con infezione osteoarticolare, n=15)"),
         ("Breakpoint MIC", "EUCAST Breakpoint Tables v.16.0, valide dal 2026-01-01 (eucast.org)"),
+        ("Target tossicità", "Nessuna soglia di concentrazione validata per la tossicità da "
+                             "dalbavancina; il monitoraggio di sicurezza segue la scheda "
+                             "tecnica DALVANCE."),
     ],
 }
 
@@ -218,7 +261,7 @@ CIPRO = {
 }
 CIPRO_PED = {(91,365):1.40, (365,730):1.30, (730,2190):1.20, (2190,4380):1.10, (4380,6570):1.00}
 CIPRO_FRAZ_RENAL = 0.70
-PD_CIPRO = {'AUC_MIC_target': 125, 'AUC_alta': 400}
+PD_CIPRO = {'AUC_MIC_target': 125}
 IRC_MAP = {"Lieve (GFR 60-90)":'mild', "Moderata (GFR 30-60)":'moderate',
            "Grave (GFR 15-30)":'severe', "ESRD (GFR <15)":'esrd'}
 
@@ -253,11 +296,17 @@ DALBA_MIC_OPZIONI = {
 }
 
 # Target fAUC24h/MIC — TUTTI E TRE dallo stesso Monte Carlo simulation
-# di Cojutti PG, et al. AAC 2021;65(5):e02260-20
+# di Cojutti PG, et al. AAC 2021;65(5):e02260-20. Etichette brevi per
+# la tendina (il dettaglio completo è mostrato sotto come didascalia).
 DALBA_TARGETS = {
-    'Target minimo (fAUC24h/MIC ≥ 27.1)': 27.1,
-    'Target intermedio (fAUC24h/MIC ≥ 53.3)': 53.3,
-    'Target restrittivo (fAUC24h/MIC ≥ 111.1) — infezioni complesse/osteoarticolari': 111.1,
+    'Target minimo (≥ 27.1)': 27.1,
+    'Target intermedio (≥ 53.3)': 53.3,
+    'Target restrittivo (≥ 111.1)': 111.1,
+}
+DALBA_TARGETS_DESC = {
+    'Target minimo (≥ 27.1)': 'infezioni non complicate',
+    'Target intermedio (≥ 53.3)': 'infezioni moderate',
+    'Target restrittivo (≥ 111.1)': 'infezioni complesse / osteoarticolari',
 }
 
 def dalba_soglia_totale(target_auc_mic, mic, f):
@@ -1037,7 +1086,7 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
                 auc_mic = AUC24_v / mic
                 emivita = float(np.log(2)*Vss_d/CL_ind)
                 ok_target = auc_mic >= PD_CIPRO['AUC_MIC_target']
-                tox = AUC24_v >= PD_CIPRO['AUC_alta']
+                tox = None  # nessuna soglia di tossicità AUC validata per ciprofloxacina
 
             # Tutto ciò che serve alla visualizzazione viene salvato in
             # session_state: il pannello Forecast (sotto) legge da qui,
@@ -1121,9 +1170,11 @@ if ('risultati' in st.session_state
         c5.metric("AUC₂₄/MIC (target ≥ 125)", f"{auc_mic:.0f}",
                  delta="✅ Target raggiunto" if ok_target else "⚠️ Sotto target",
                  delta_color="normal" if ok_target else "inverse")
-        c6.metric("AUC₂₄ (soglia neurotossicità ≥ 400)", f"{AUC24_v:.0f} mg·h/L",
-                 delta="⚠️ Esposizione elevata" if tox else "✅ Esposizione sicura",
-                 delta_color="inverse" if tox else "normal")
+        c6.metric("AUC₂₄ (esposizione sistemica)", f"{AUC24_v:.0f} mg·h/L",
+                 help="Nessuna soglia AUC quantitativa è validata in letteratura per la "
+                      "neurotossicità da fluorochinoloni. Il rischio è documentato "
+                      "soprattutto in insufficienza renale non corretta: valutare "
+                      "clinicamente, non solo sul valore di AUC.")
 
     st.markdown("### 📈 Profilo farmacocinetico")
     fig = disegna_grafico(farmaco, storia_completa, livelli_completi, CL_ind, V_ind,
@@ -1152,8 +1203,10 @@ if ('risultati' in st.session_state
         pd_block = (f"  Efficacia gram-negativi (AUC24/MIC >= 125): {auc_mic:.0f} "
                    f"-> {_esito(ok_target)}\n"
                    f"  Esposizione sistemica: AUC24 = {AUC24_v:.0f} mg*h/L\n"
-                   f"  Rischio neurotossicita' (AUC24 >= 400 mg*h/L): "
-                   f"{'monitorare, esposizione elevata' if tox else 'sicuro'}\n")
+                   f"  Nota sicurezza: nessuna soglia AUC quantitativa validata per la\n"
+                   f"  neurotossicita' da fluorochinoloni. Il rischio e' documentato\n"
+                   f"  soprattutto in insufficienza renale non corretta: valutare\n"
+                   f"  clinicamente.\n")
 
     referto = f"""\
 === TDM BUDDY v6.0 — REFERTO {farmaco.upper()} ===
@@ -1218,6 +1271,10 @@ AUC24 stimata (finestra 24h dopo l'ultima dose): {AUC24_v:.0f} mg*h/L
             st.caption("*EUCAST S. aureus* = breakpoint attuale, tabelle v.16.0 "
                       "(2026); *USCAST* = ente statunitense, soglia diversa da "
                       "EUCAST — non una versione precedente.")
+            if target_scelto in DALBA_TARGETS_DESC:
+                st.caption(f"**{target_scelto}** → {DALBA_TARGETS_DESC[target_scelto]} "
+                          f"(Cojutti PG, et al. *Antimicrob Agents Chemother.* "
+                          f"2021;65(5):e02260-20).")
 
             if target_scelto == "Trough C0/MIC ≥ 200":
                 soglia = dalba_soglia_trough_c0mic(mic_fc)
