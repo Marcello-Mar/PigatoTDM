@@ -114,6 +114,33 @@ FARMACO_INFO = {
     },
 }
 
+# Riferimenti bibliografici per fascia d'età, mostrati in piccolo in
+# cima al Passo 2 (non più in barra laterale, per coerenza tra farmaci).
+RIFERIMENTI_PER_FASCIA = {
+    "Daptomicina": [
+        ("< 1 anno", "Ye L, Zhou H, et al. *Eur J Pharm Sci.* 2025;208:107058"),
+        ("1–17 anni", "Wei XC, et al. *J Clin Pharmacol.* 2020;60(6):768-774 "
+                      "(correzione IRC: Ye L, et al. *Front Pharmacol.* 2022;13:838599)"),
+        ("Adolescenti in HD/CCPD", "Lim SY, et al. *J Pediatr Pharmacol Ther.* 2021;26(2):123-132"),
+        ("≥ 18 anni", "Soraluce A, et al. *Int J Antimicrob Agents.* 2018;52(2):158-165"),
+        ("Soglia tossicità (tutte le età)", "Bhavnani SM, et al. *Clin Infect Dis.* 2010;50(12):1568-1574"),
+    ],
+    "Ciprofloxacina": [
+        ("Tutte le età (scaling pediatrico incluso)",
+         "Schlender JF, et al. *Clin Pharmacokinet.* 2018;57(12):1613-1634; "
+         "Balbas-Martinez V, et al. *Eur J Pharm Sci.* 2019;128:171-179"),
+        ("Variabilità individuale (IIV)", "Forrest A, et al. *Antimicrob Agents Chemother.* 1993;37(5):1065-1072"),
+        ("Target PK/PD", "Ambrose PG, et al. *Clin Infect Dis.* 2007;44(S2):S79-S86"),
+    ],
+    "Dalbavancina": [
+        ("Pediatrico, scaling allometrico (modello Mariani)",
+         "Dati interni IRCCS Gaslini, non ancora pubblicato"),
+        ("Adulti, infezione osteoarticolare (modello Cojutti)",
+         "Cojutti PG, et al. *Antimicrob Agents Chemother.* 2021;65(5):e02260-20"),
+        ("Breakpoint MIC", "EUCAST Breakpoint Tables v.16.0, valide dal 2026-01-01 (eucast.org)"),
+    ],
+}
+
 # ============================================================
 # STORAGE — nessun database, solo session_state + JSON scaricabile.
 # Ogni sessione/file è scoped a UNA molecola.
@@ -121,6 +148,25 @@ FARMACO_INFO = {
 
 def storico_vuoto(farmaco=None):
     return {'codice_paziente': '', 'sesso': 'Maschio', 'farmaco': farmaco, 'monitoraggi': []}
+
+# Chiavi dei widget legati al singolo paziente/valutazione. Streamlit
+# mantiene lo stato di un widget associato alla sua key anche dopo che
+# session_state a monte è stato resettato — il parametro "value=" viene
+# ignorato una volta che quella key esiste già. Per evitare che dati di
+# un paziente (o di una molecola precedente) restino "a galla" nei
+# widget dopo un reset, queste chiavi vanno cancellate esplicitamente.
+CHIAVI_WIDGET_PAZIENTE = [
+    'input_codice_paziente', 'input_sesso', 'editor_dosi', 'editor_livelli',
+    'input_unita_eta', 'input_valore_eta', 'input_peso',
+    'input_modello_dalba', 'input_crea', 'input_mic', 'input_crrt',
+    'input_sc', 'input_qef', 'input_dialisi',
+    'fc_target', 'fc_mic_label', 'fc_mic_custom', 'fc_funb', 'fc_simula',
+    'fc_data_new', 'fc_ora_new', 'fc_dose_new',
+]
+
+def pulisci_widget_paziente():
+    for k in CHIAVI_WIDGET_PAZIENTE:
+        st.session_state.pop(k, None)
 
 if 'storico' not in st.session_state:
     st.session_state['storico'] = storico_vuoto()
@@ -586,13 +632,15 @@ st.title("💊 TDM Buddy v6.0")
 st.caption("Monitoraggio terapeutico bayesiano — Daptomicina, Ciprofloxacina, Dalbavancina")
 
 st.warning(
-    "⚠️ **Strumento a scopo educational / di supporto decisionale.** Nessun dato viene "
-    "conservato sul server: l'intera cronologia clinica esiste solo nel file JSON che "
-    "scarichi e gestisci localmente. Non inserire nomi, cognomi o date di nascita esatte "
-    "— usa un codice paziente non identificativo ed età espressa in anni/mesi/giorni. "
-    "Ogni file JSON è specifico per un paziente E per una molecola: non caricare lo "
-    "storico di un farmaco diverso da quello selezionato. Questo strumento non sostituisce "
-    "il giudizio clinico e non è un dispositivo medico certificato."
+    "⚠️ **Strumento esclusivamente a scopo educational.** Non fornisce supporto alle "
+    "decisioni cliniche e non è idoneo a orientare la terapia di pazienti reali: un "
+    "utilizzo con finalità di supporto decisionale ne configurerebbe la natura di "
+    "dispositivo medico, per cui questo strumento non è né validato né certificato. "
+    "Nessun dato viene conservato sul server: l'intera cronologia esiste solo nel file "
+    "JSON che scarichi e gestisci localmente. Non inserire nomi, cognomi o date di "
+    "nascita esatte — usa un codice paziente non identificativo. Ogni file JSON è "
+    "specifico per un paziente E per una molecola: non caricare lo storico di un "
+    "farmaco diverso da quello selezionato."
 )
 
 # ------------------------------------------------------------
@@ -629,8 +677,10 @@ with col_badge:
     st.info(f"{FARMACO_INFO[farmaco]['icona']} **Molecola in corso: {farmaco}**")
 with col_cambia:
     if st.button("🔄 Cambia molecola", use_container_width=True):
+        pulisci_widget_paziente()
         st.session_state['farmaco_attivo'] = None
         st.session_state['storico'] = storico_vuoto()
+        st.session_state.pop('risultati', None)
         st.rerun()
 
 # ------------------------------------------------------------
@@ -652,25 +702,37 @@ if file_up is not None:
                 f"oppure carica un file corretto."
             )
         else:
+            pulisci_widget_paziente()
             st.session_state['storico'] = dati_caricati
             st.sidebar.success(
                 f"✅ Storico caricato: {len(dati_caricati.get('monitoraggi', []))} "
                 f"analisi per il codice '{dati_caricati.get('codice_paziente','?')}'."
             )
+            st.rerun()
     except Exception:
         st.sidebar.error("File non valido o corrotto.")
 
 id_paz = st.sidebar.text_input(
     "Codice paziente (non identificativo)",
     value=st.session_state['storico'].get('codice_paziente', ''),
+    key="input_codice_paziente",
 )
 sesso = st.sidebar.selectbox(
     "Sesso biologico", ["Maschio", "Femmina"],
     index=0 if st.session_state['storico'].get('sesso', 'Maschio') == 'Maschio' else 1,
+    key="input_sesso",
 )
 st.session_state['storico']['codice_paziente'] = id_paz
 st.session_state['storico']['sesso'] = sesso
 st.session_state['storico']['farmaco'] = farmaco
+
+if st.sidebar.button("🆕 Nuovo paziente (stessa molecola)", use_container_width=True,
+                     help="Azzera codice paziente, tabelle dosi/livelli e risultati "
+                          "correnti. Non tocca file già scaricati."):
+    pulisci_widget_paziente()
+    st.session_state['storico'] = storico_vuoto(farmaco)
+    st.session_state.pop('risultati', None)
+    st.rerun()
 
 n_rec = len(st.session_state['storico'].get('monitoraggi', []))
 if n_rec > 0:
@@ -686,31 +748,6 @@ if n_rec > 0:
         mime="application/json", type="primary", use_container_width=True,
     )
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 📚 Riferimenti")
-if farmaco == "Daptomicina":
-    st.sidebar.markdown("""
-- Soraluce A, et al. *Int J Antimicrob Agents.* 2018;52(2):158-165.
-- Wei XC, et al. *J Clin Pharmacol.* 2020;60(6):768-774.
-- Ye L, et al. *Front Pharmacol.* 2022;13:838599.
-- Ye L, Zhou H, et al. *Eur J Pharm Sci.* 2025;208:107058.
-- Lim SY, et al. *J Pediatr Pharmacol Ther.* 2021;26(2):123-132.
-- Bhavnani SM, et al. *Clin Infect Dis.* 2010;50(12):1568-1574.
-""")
-elif farmaco == "Ciprofloxacina":
-    st.sidebar.markdown("""
-- Schlender JF, et al. *Clin Pharmacokinet.* 2018;57(12):1613-1634.
-- Balbas-Martinez V, et al. *Eur J Pharm Sci.* 2019;128:171-179.
-- Forrest A, et al. *Antimicrob Agents Chemother.* 1993;37(5):1065-1072.
-- Ambrose PG, et al. *Clin Infect Dis.* 2007;44(S2):S79-S86.
-""")
-else:
-    st.sidebar.markdown("""
-- Modello Mariani: dati interni IRCCS Gaslini (non pubblicato).
-- Cojutti PG, et al. *Antimicrob Agents Chemother.* 2021;65(5):e02260-20.
-- EUCAST Breakpoint Tables v.16.0, valide dal 2026-01-01 (eucast.org).
-""")
-
 if not id_paz:
     st.warning("👈 Inserisci un codice paziente nella barra laterale per procedere.")
     st.stop()
@@ -723,11 +760,10 @@ if not id_paz:
 monitoraggi_farmaco = st.session_state['storico'].get('monitoraggi', [])
 _ultimo = monitoraggi_farmaco[-1] if monitoraggi_farmaco else None
 
-_gg_def   = int(_ultimo.get('eta_giorni', 10950)) if _ultimo else 10950
-_peso_def = float(_ultimo.get('peso', 70.0)) if _ultimo else 70.0
-_crea_def = float(_ultimo.get('creatinina', 1.0)) if _ultimo else 1.0
-_mic_def  = float(_ultimo.get('mic', 0.0625 if farmaco=="Dalbavancina" else 1.0)) if _ultimo \
-           else (0.0625 if farmaco=="Dalbavancina" else 1.0)
+_gg_def   = int(_ultimo.get('eta_giorni')) if _ultimo else None
+_peso_def = float(_ultimo.get('peso')) if _ultimo else None
+_crea_def = float(_ultimo.get('creatinina')) if _ultimo else None
+_mic_def  = float(_ultimo.get('mic')) if _ultimo else None
 
 # ------------------------------------------------------------
 # STEP 2 — Dati biometrici e clinici
@@ -735,22 +771,44 @@ _mic_def  = float(_ultimo.get('mic', 0.0625 if farmaco=="Dalbavancina" else 1.0)
 
 st.markdown("## Passo 2 — Dati biometrici e clinici")
 
+with st.expander(f"📚 Modelli di riferimento applicati — {farmaco}", expanded=False):
+    for fascia, rif in RIFERIMENTI_PER_FASCIA[farmaco]:
+        st.caption(f"**{fascia}:** {rif}")
+
 with st.container(border=True):
     st.markdown("#### Età e peso al momento di questa valutazione")
-    st.caption("Possono cambiare rispetto all'ultima analisi: verificali sempre.")
-    col_e1, col_e2, col_e3, col_peso = st.columns(4)
-    with col_e1:
-        eta_anni_in = st.number_input("Anni", 0, 100, min(int(_gg_def // 365), 100))
-    with col_e2:
-        eta_mesi_in = st.number_input("Mesi", 0, 11, min(int((_gg_def % 365) // 30), 11))
-    with col_e3:
-        eta_giorni_in = st.number_input("Giorni", 0, 30, int((_gg_def % 365) % 30))
-    with col_peso:
-        peso = st.number_input("Peso (kg)", 0.3, 300.0, _peso_def)
+    st.caption("Possono cambiare rispetto all'ultima analisi: verificali sempre. "
+              "Campi obbligatori, lasciati vuoti finché non li compili.")
 
-    gg = int(round(eta_anni_in*365.25 + eta_mesi_in*30.44 + eta_giorni_in))
-    eta = gg / 365.25
-    st.caption(f"Età calcolata: **{gg} giorni** ({eta:.2f} anni)")
+    col_u, col_v, col_peso = st.columns(3)
+    unita_default = "Anni"
+    valore_eta_default = None
+    if _gg_def is not None:
+        valore_eta_default = round(_gg_def / 365.25, 2)
+
+    with col_u:
+        unita_eta = st.selectbox("Unità età", ["Anni", "Mesi", "Giorni"],
+                                 key="input_unita_eta")
+    max_per_unita = {"Anni": 100.0, "Mesi": 1200.0, "Giorni": 36500.0}
+    with col_v:
+        valore_eta = st.number_input(
+            f"Età ({unita_eta.lower()})", min_value=0.0, max_value=max_per_unita[unita_eta],
+            value=valore_eta_default, key="input_valore_eta",
+            help="Inserisci l'età nell'unità di misura scelta a sinistra.")
+    with col_peso:
+        peso = st.number_input("Peso (kg)", 0.3, 300.0, value=_peso_def, key="input_peso")
+
+    if valore_eta is None:
+        gg = None
+    elif unita_eta == "Anni":
+        gg = int(round(valore_eta * 365.25))
+    elif unita_eta == "Mesi":
+        gg = int(round(valore_eta * 30.44))
+    else:
+        gg = int(round(valore_eta))
+    eta = gg / 365.25 if gg is not None else None
+    st.caption(f"Età calcolata: **{gg} giorni** ({eta:.2f} anni)" if gg is not None
+              else "Età non ancora inserita.")
 
     modello_dalba = None
     if farmaco == "Dalbavancina":
@@ -759,39 +817,57 @@ with st.container(border=True):
         if _ultimo and _ultimo.get('modello_dalba') in opzioni_modello:
             idx_default = opzioni_modello.index(_ultimo['modello_dalba'])
         modello_dalba = st.selectbox("🧬 Modello PK di riferimento:", opzioni_modello,
-                                     index=idx_default)
+                                     index=idx_default, key="input_modello_dalba")
 
 with st.container(border=True):
     st.markdown("#### Funzione renale, MIC, dialisi")
     col1, col2, col3 = st.columns(3)
     with col1:
-        crea = st.number_input("Creatinina sierica (mg/dL)", 0.05, 25.0, _crea_def, 0.05)
+        crea_help = None if farmaco != "Dalbavancina" else (
+            "Non utilizzata dai modelli PK della dalbavancina (nessuna covariata "
+            "renale validata) — raccolta solo a scopo di registrazione clinica.")
+        crea = st.number_input("Creatinina sierica (mg/dL)", 0.05, 25.0, value=_crea_def,
+                               step=0.05, key="input_crea", help=crea_help)
         if farmaco == "Dalbavancina":
-            mic = st.number_input("MIC di riferimento (mg/L)", 0.008, 4.0, _mic_def,
-                                  step=0.001, format="%.4f",
+            mic = st.number_input("MIC di riferimento (mg/L)", 0.008, 4.0, value=_mic_def,
+                                  step=0.001, format="%.4f", key="input_mic",
                                   help="Il target PK/PD dettagliato con selezione MIC "
                                        "EUCAST/USCAST è disponibile nel pannello Forecast "
                                        "dopo l'analisi.")
         else:
-            mic = st.number_input(f"MIC {farmaco} (mg/L)", 0.001, 16.0, _mic_def,
-                                  step=0.001, format="%.4f")
+            mic = st.number_input(f"MIC {farmaco} (mg/L)", 0.001, 16.0, value=_mic_def,
+                                  step=0.001, format="%.4f", key="input_mic")
     with col2:
-        crrt = st.checkbox("Paziente in CRRT?")
+        crrt = st.checkbox("Paziente in CRRT?", key="input_crrt")
         if crrt:
-            Sc  = st.number_input("Sieving coefficient (Sc)", 0.01, 0.60, 0.20, 0.01)
-            Qef = st.number_input("Flusso effluente Qef (L/h)", 0.5, 6.0, 2.0, 0.1)
+            Sc  = st.number_input("Sieving coefficient (Sc)", 0.01, 0.60, 0.20, 0.01,
+                                  key="input_sc")
+            Qef = st.number_input("Flusso effluente Qef (L/h)", 0.5, 6.0, 2.0, 0.1,
+                                  key="input_qef")
         else:
             Sc, Qef = 0.20, 2.0
     with col3:
-        if farmaco == "Daptomicina" and gg < 6570:
+        if farmaco == "Daptomicina" and gg is not None and gg < 6570:
             opt = ["Nessuna", "Lieve (GFR 60-90)", "Moderata (GFR 30-60)",
                    "Grave (GFR 15-30)", "ESRD (GFR <15)"]
             if 4380 <= gg < 6570:
                 opt += ["Emodialisi (HD)", "Dialisi Peritoneale (CCPD)"]
-            dialisi = st.selectbox("Funzione renale / dialisi:", opt)
+            dialisi = st.selectbox("Funzione renale / dialisi:", opt, key="input_dialisi")
         else:
             dialisi = "Nessuna"
             st.caption("📌 ClCr calcolata con Cockcroft-Gault.")
+
+campi_mancanti = []
+if gg is None:
+    campi_mancanti.append("età")
+if peso is None:
+    campi_mancanti.append("peso")
+if mic is None:
+    campi_mancanti.append("MIC")
+if crea is None and farmaco != "Dalbavancina":
+    campi_mancanti.append("creatinina")
+if campi_mancanti:
+    st.warning(f"⚠️ Campi ancora da compilare: {', '.join(campi_mancanti)}.")
 
 # ------------------------------------------------------------
 # STEP 3 — Timeline dosi e livelli
@@ -803,8 +879,6 @@ st.info("💡 Le tabelle mostrano l'intera storia clinica del paziente per quest
        "aggiungi righe nuove per la valutazione odierna. Nessun limite al numero di "
        "dosi o livelli inseribili.")
 
-dose_def_map = {"Daptomicina": 500.0, "Dalbavancina": 1500.0, "Ciprofloxacina": 400.0}
-dose_def = dose_def_map[farmaco]
 if farmaco == "Dalbavancina":
     st.caption("📌 Dalbavancina: dosaggio tipico 22.5 mg/kg (<6 anni) o 18 mg/kg (≥6 anni), "
               "max 1500 mg/dose. Aggiungi una riga per ogni somministrazione realmente "
@@ -821,8 +895,7 @@ if _ultimo and 'storia_dosi' in _ultimo and _ultimo['storia_dosi']:
                           "Dose (mg)": s['dose']})
     t_ultimo_storico = _ultimo['storia_dosi'][-1]['ore']
 else:
-    dosi_list.append({"Data": date.today().strftime("%d/%m/%Y"), "Ora": "08:00",
-                      "Dose (mg)": dose_def})
+    dosi_list.append({"Data": "", "Ora": "", "Dose (mg)": None})
 
 liv_list = []
 if _ultimo and 'livelli' in _ultimo:
@@ -891,7 +964,9 @@ for _, r in df_liv_edit.iterrows():
 # ------------------------------------------------------------
 
 if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_width=True):
-    if not storia_completa:
+    if campi_mancanti:
+        st.error(f"⚠️ Compila prima i campi obbligatori: {', '.join(campi_mancanti)}.")
+    elif not storia_completa:
         st.error("Nessuna somministrazione valida in tabella.")
     elif not livelli_completi:
         st.error("Inserisci almeno un livello plasmatico valido.")
@@ -980,25 +1055,12 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
                 'ok_staph': ok_staph, 'ok_ent': ok_ent, 'ok_target': ok_target, 'tox': tox,
                 't_ultimo_storico': t_ultimo_storico, 'sesso': sesso, 'eta': eta, 'gg': gg,
                 'peso': peso, 'crea': crea, 'dialisi': dialisi, 'modello_dalba': modello_dalba,
+                'crrt': crrt, 'Sc': Sc, 'Qef': Qef,
+                'registrato': False,
             }
-
-            # ---- SALVATAGGIO NELLO STORICO (una sola volta per click) ----
-            record = {
-                'data_val': dt_val, 'farmaco': farmaco, 'eta_giorni': gg, 'peso': peso,
-                'creatinina': crea, 'crrt': bool(crrt), 'Sc': Sc, 'Qef': Qef, 'dialisi_tipo': dialisi,
-                'dose_mg': dose_mg, 'dose_mg_kg': dose_mg_kg, 'tau_h': tau_h_display,
-                'n_dosi': len(storia_completa), 'mic': mic, 'n_livelli': len(livelli_completi),
-                'CL_ind': CL_ind, 'V_ind': Vss_d, 'AUC24': AUC24_v, 'AUC_MIC': auc_mic,
-                'Cmin_ss': Cmin_ss, 'modello': prior['nm'], 'modello_dalba': modello_dalba,
-                'storia_dosi': storia_completa, 'livelli': livelli_completi,
-                'data_prima_dose': t0_assoluto.strftime('%Y-%m-%d %H:%M'),
-            }
-            st.session_state['storico']['monitoraggi'].append(record)
-            st.session_state['storico']['codice_paziente'] = id_paz
-            st.session_state['storico']['sesso'] = sesso
-            st.session_state['storico']['farmaco'] = farmaco
-            st.success("💾 Analisi calcolata e aggiunta allo storico di questa sessione. "
-                      "Scarica il JSON dalla barra laterale per conservarla.")
+            st.info("🧮 Calcolo completato. Controlla i risultati qui sotto — se vuoi "
+                   "ricalcolare con dati diversi puoi farlo liberamente prima di "
+                   "registrare l'occasione nello storico.")
 
 # ------------------------------------------------------------
 # VISUALIZZAZIONE PERSISTENTE DEI RISULTATI
@@ -1022,6 +1084,8 @@ if ('risultati' in st.session_state
     t_ultimo_storico = R['t_ultimo_storico']
     sesso, eta, gg = R['sesso'], R['eta'], R['gg']
     peso, crea, dialisi = R['peso'], R['crea'], R['dialisi']
+    crrt, Sc, Qef = R.get('crrt', False), R.get('Sc', 0.20), R.get('Qef', 2.0)
+    modello_dalba_r = R.get('modello_dalba')
 
     st.markdown("---")
     st.subheader("🔬 Risultati PK/PD")
@@ -1219,6 +1283,40 @@ AUC24 stimata (finestra 24h dopo l'ultima dose): {AUC24_v:.0f} mg*h/L
                 fig2 = disegna_forecast(t_arr_sim, c_arr_sim, soglia, t_new, dose_new,
                                         storia_completa)
                 st.plotly_chart(fig2, use_container_width=True, theme=None)
+
+    # ---- REGISTRAZIONE ESPLICITA NELLO STORICO ----
+    # Separata dal calcolo: premere "Avvia il calcolo" può servire solo a
+    # ricalcolare (correggere un refuso, provare una MIC diversa) senza
+    # per questo creare una nuova "occasione clinica" nello storico.
+    st.markdown("---")
+    if R.get('registrato'):
+        st.success("✅ Questa valutazione è già stata registrata nello storico di sessione. "
+                  "Ricalcolando otterrai una nuova valutazione da registrare separatamente.")
+    else:
+        st.info("La valutazione qui sopra **non è ancora stata registrata** nello storico "
+               "del paziente. Registrala solo quando corrisponde a un'occasione clinica "
+               "reale (dosi e prelievi effettivamente avvenuti).")
+        if st.button("💾 Registra questa valutazione nello storico", type="primary",
+                     use_container_width=True):
+            record = {
+                'data_val': dt_val, 'farmaco': farmaco, 'eta_giorni': gg, 'peso': peso,
+                'creatinina': crea, 'crrt': bool(crrt), 'Sc': Sc, 'Qef': Qef,
+                'dialisi_tipo': dialisi,
+                'dose_mg': dose_mg, 'dose_mg_kg': dose_mg_kg, 'tau_h': tau_h_display,
+                'n_dosi': len(storia_completa), 'mic': mic, 'n_livelli': len(livelli_completi),
+                'CL_ind': CL_ind, 'V_ind': Vss_d, 'AUC24': AUC24_v, 'AUC_MIC': auc_mic,
+                'Cmin_ss': Cmin_ss, 'modello': prior['nm'], 'modello_dalba': modello_dalba_r,
+                'storia_dosi': storia_completa, 'livelli': livelli_completi,
+                'data_prima_dose': t0_assoluto.strftime('%Y-%m-%d %H:%M'),
+            }
+            st.session_state['storico']['monitoraggi'].append(record)
+            st.session_state['storico']['codice_paziente'] = id_paz
+            st.session_state['storico']['sesso'] = sesso
+            st.session_state['storico']['farmaco'] = farmaco
+            st.session_state['risultati']['registrato'] = True
+            st.success("💾 Valutazione registrata nello storico di questa sessione. "
+                      "Scarica il JSON dalla barra laterale per conservarla.")
+            st.rerun()
 
 # ------------------------------------------------------------
 # STORICO DI SESSIONE
