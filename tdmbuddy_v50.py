@@ -906,6 +906,7 @@ with col_badge:
 with col_cambia:
     if st.button("🔄 Cambia molecola", use_container_width=True):
         pulisci_widget_paziente()
+        st.session_state.pop('_ultimo_file_caricato', None)
         st.session_state['farmaco_attivo'] = None
         st.session_state['storico'] = storico_vuoto()
         st.session_state.pop('risultati', None)
@@ -920,25 +921,38 @@ st.sidebar.caption(f"File compatibili: solo **{farmaco}**")
 
 file_up = st.sidebar.file_uploader("📤 Carica storico (JSON)", type=["json"])
 if file_up is not None:
-    try:
-        dati_caricati = json.load(file_up)
-        farmaco_file = dati_caricati.get('farmaco')
-        if farmaco_file != farmaco:
-            st.sidebar.error(
-                f"❌ Questo file è per **{farmaco_file or 'farmaco non specificato'}**, "
-                f"non per **{farmaco}**. Cambia molecola (bottone in alto) per caricarlo, "
-                f"oppure carica un file corretto."
-            )
-        else:
-            pulisci_widget_paziente()
-            st.session_state['storico'] = dati_caricati
-            st.sidebar.success(
-                f"✅ Storico caricato: {len(dati_caricati.get('monitoraggi', []))} "
-                f"analisi per il codice '{dati_caricati.get('codice_paziente','?')}'."
-            )
-            st.rerun()
-    except Exception:
-        st.sidebar.error("File non valido o corrotto.")
+    # Un UploadedFile resta "agganciato" al widget anche dopo un rerun
+    # (finché l'utente non lo rimuove o non ne carica uno diverso), quindi
+    # "file_up is not None" resterebbe vero ad ogni rerun successivo. Senza
+    # questo controllo, il blocco sotto (che pulisce i widget e richiama
+    # st.rerun()) si rieseguirebbe all'infinito ad ogni ciclo, impedendo al
+    # campo "codice paziente" di mostrare mai un valore stabile — con
+    # l'app apparentemente bloccata. Il fix: processare un file solo se è
+    # diverso dall'ultimo già caricato (nome+dimensione come identificativo).
+    file_id = f"{file_up.name}_{file_up.size}"
+    if st.session_state.get('_ultimo_file_caricato') != file_id:
+        try:
+            dati_caricati = json.load(file_up)
+            farmaco_file = dati_caricati.get('farmaco')
+            if farmaco_file != farmaco:
+                st.sidebar.error(
+                    f"❌ Questo file è per **{farmaco_file or 'farmaco non specificato'}**, "
+                    f"non per **{farmaco}**. Cambia molecola (bottone in alto) per caricarlo, "
+                    f"oppure carica un file corretto."
+                )
+                st.session_state['_ultimo_file_caricato'] = file_id
+            else:
+                pulisci_widget_paziente()
+                st.session_state['storico'] = dati_caricati
+                st.session_state['_ultimo_file_caricato'] = file_id
+                st.sidebar.success(
+                    f"✅ Storico caricato: {len(dati_caricati.get('monitoraggi', []))} "
+                    f"analisi per il codice '{dati_caricati.get('codice_paziente','?')}'."
+                )
+                st.rerun()
+        except Exception:
+            st.sidebar.error("File non valido o corrotto.")
+            st.session_state['_ultimo_file_caricato'] = file_id
 
 id_paz = st.sidebar.text_input(
     "Codice paziente (non identificativo)",
@@ -958,6 +972,7 @@ if st.sidebar.button("🆕 Nuovo paziente (stessa molecola)", use_container_widt
                      help="Azzera codice paziente, tabelle dosi/livelli e risultati "
                           "correnti. Non tocca file già scaricati."):
     pulisci_widget_paziente()
+    st.session_state.pop('_ultimo_file_caricato', None)
     st.session_state['storico'] = storico_vuoto(farmaco)
     st.session_state.pop('risultati', None)
     st.rerun()
