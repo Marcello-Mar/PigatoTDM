@@ -76,13 +76,30 @@ DALBAVANCINA
   dosing consideration for optimal treatment of adult patients with
   staphylococcal osteoarticular infections. Antimicrob Agents
   Chemother. 2021;65(5):e02260-20. doi:10.1128/AAC.02260-20
-  (target fAUC24h/MIC 27.1 / 53.3 / 111.1 e breakpoint EUCAST/USCAST
-  entrambi citati in questo stesso lavoro)
+  [modello PK adulti; target fAUC24h/MIC 27.1 / 53.3 / 111.1]
+  Cojutti PG, Rinaldi M, Gatti M, Tedeschi S, Viale P, Pea F.
+  Usefulness of therapeutic drug monitoring in estimating the
+  duration of dalbavancin optimal target attainment in staphylococcal
+  osteoarticular infections: a proof-of-concept. Int J Antimicrob
+  Agents. 2021;58:106445. doi:10.1016/j.ijantimicag.2021.106445
+  [soglie di trough fisse: 4.02 mg/L vs MIC 0.0625; 8.04 mg/L vs
+  MIC 0.125 -- derivate da correlazione R²=0.99 tra AUC24h totale e
+  singola concentrazione, sfruttando l'emivita molto lunga]
+  Baiardi G, Cameran Caviglia M, Boni S, Di Paolo A, Marini V,
+  Cangemi G, Cafaro A, Pontali E, Mattioli F. Multidose Dalbavancin
+  Population Pharmacokinetic Analysis for Prolonged Target Attainment
+  in Patients Requiring Long-Term Treatment. Antibiotics. 2025;14:190.
+  doi:10.3390/antibiotics14020190 [target fT>4xMIC tempo-dipendente;
+  soglia totale = 4xMIC/frazione libera; tratta EUCAST/USCAST come
+  convergenti a 0.25 mg/L]
   EUCAST Clinical Breakpoint Tables v.16.0, valide dal 2026-01-01.
   European Committee on Antimicrobial Susceptibility Testing.
-  www.eucast.org (breakpoint dalbavancina/S. aureus: S ≤ 0.125 mg/L,
-  valore stabile nelle tabelle EUCAST dal 2016; verificare l'ultima
-  versione ufficiale alla data della prescrizione).
+  www.eucast.org -- breakpoint ATTUALE dalbavancina/Staphylococcus
+  spp.: S <= 0.25 mg/L. NOTA IMPORTANTE: Cojutti (AAC 2021, IJAA 2021)
+  utilizzava il breakpoint EUCAST storico di 0.125 mg/L, in vigore
+  all'epoca di quelle pubblicazioni e successivamente rivisto a 0.25.
+  Verificare comunque l'ultima versione ufficiale su eucast.org, dato
+  che i breakpoint possono essere rivisti nuovamente nel tempo.
 
 CORREZIONI v5.7.1 (Gemini) -> v6.0:
   - Rimosso il meccanismo di "Bayesian Updating" che rileggeva lo
@@ -172,12 +189,23 @@ RIFERIMENTI_PER_FASCIA = {
     "Dalbavancina": [
         ("PK — pediatrico, scaling allometrico (modello Mariani)",
          "Dati interni IRCCS Gaslini, non ancora pubblicato"),
-        ("PK — adulti, infezione osteoarticolare (modello Cojutti)",
+        ("PK — adulti, infezione osteoarticolare, valori fissi (modello Cojutti)",
          "Cojutti PG, et al. *Antimicrob Agents Chemother.* 2021;65(5):e02260-20"),
-        ("Target efficacia — fAUC24h/MIC 27.1 / 53.3 / 111.1",
+        ("PK — adulti, trattamento prolungato, scaling allometrico (modello Baiardi)",
+         "Baiardi G, et al. *Antibiotics.* 2025;14:190 (n=30, ClCr>30 mL/min, "
+         "IIV completa su CL/V1/Q/V2)"),
+        ("Target efficacia — AUC24h/MIC ≥ 111.1 (adatta alla MIC scelta)",
          "Cojutti PG, et al. *Antimicrob Agents Chemother.* 2021;65(5):e02260-20 "
          "(Monte Carlo simulation, adulti con infezione osteoarticolare, n=15)"),
-        ("Breakpoint MIC", "EUCAST Breakpoint Tables v.16.0, valide dal 2026-01-01 (eucast.org)"),
+        ("Target efficacia — fT > 4×MIC, tempo-dipendente (adatta alla MIC scelta)",
+         "Baiardi G, et al. *Antibiotics.* 2025;14:190 (Monte Carlo su 3000 "
+         "pazienti virtuali 40-200 kg; attività battericida in vitro a "
+         "concentrazioni libere = 4×MIC)"),
+        ("Breakpoint MIC — attuale (EUCAST 2026)",
+         "Staphylococcus spp.: S ≤ 0.25 mg/L (verificare l'ultima tabella su eucast.org)"),
+        ("Breakpoint MIC — storico, usato da Cojutti 2021",
+         "0.125 mg/L (EUCAST, breakpoint in vigore all'epoca di quelle "
+         "pubblicazioni, successivamente rivisto a 0.25 mg/L)"),
         ("Target tossicità", "Nessuna soglia di concentrazione validata per la tossicità da "
                              "dalbavancina; il monitoraggio di sicurezza segue la scheda "
                              "tecnica DALVANCE."),
@@ -200,7 +228,7 @@ def storico_vuoto(farmaco=None):
 # widget dopo un reset, queste chiavi vanno cancellate esplicitamente.
 CHIAVI_WIDGET_PAZIENTE = [
     'input_codice_paziente', 'input_sesso', 'editor_dosi', 'editor_livelli',
-    'input_unita_eta', 'input_valore_eta', 'input_peso',
+    'input_unita_eta', 'input_valore_eta', 'input_peso', 'input_altezza',
     'input_modello_dalba', 'input_crea', 'input_mic', 'input_crrt',
     'input_sc', 'input_qef', 'input_dialisi',
     'fc_target', 'fc_mic_label', 'fc_mic_custom', 'fc_funb', 'fc_simula',
@@ -271,57 +299,76 @@ IRC_MAP = {"Lieve (GFR 60-90)":'mild', "Moderata (GFR 30-60)":'moderate',
 
 DALBA_PARAMS = {
     'CL_typ70': 0.0305, 'V1_typ70': 4.81, 'Q_typ70': 0.0081, 'V2_typ70': 4.81,
-    'omega_CL': 0.198, 'sigma': 0.375, 't_inf': 0.5, 'fu': 0.07,
+    'omega_CL': 0.198, 'omega_V1': 0.0, 'omega_Q': 0.0, 'omega_V2': 0.0,
+    'sigma': 0.375, 't_inf': 0.5, 'fu': 0.07,
+    'scaling_allometrico': True, 'iiv_completa': False,
     'nome': "Modello Mariani (IRCCS Gaslini, dati non pubblicati, scaling allometrico)",
 }
 COJUTTI_PARAMS = {
     'CL_typ70': 0.106, 'V1_typ70': 17.4, 'Q_typ70': 0.103, 'V2_typ70': 15.1,
-    'omega_CL': 0.362, 'sigma': 0.18, 't_inf': 0.5, 'fu': 0.07,
+    'omega_CL': 0.362, 'omega_V1': 0.0, 'omega_Q': 0.0, 'omega_V2': 0.0,
+    'sigma': 0.18, 't_inf': 0.5, 'fu': 0.07,
+    'scaling_allometrico': False, 'iiv_completa': False,
     'nome': "Cojutti PG, et al. Antimicrob Agents Chemother 2021;65(5):e02260-20 "
             "(adulti, osteoarticolare, n=15, valori di popolazione fissi)",
 }
+# Baiardi G, et al. Antibiotics 2025;14:190 — Tabella 2: CL, V1, Q, V2
+# stimati con IIV completa su tutti e quattro i parametri (non solo su
+# CL come Mariani), E con scaling allometrico a esponenti fissi
+# (0.75 su CL/Q, 1 su V1/V2), come dichiarato nel testo. Popolazione:
+# 30 adulti, trattamento prolungato (>6 settimane), ClCr sempre >30
+# mL/min. Il riferimento di normalizzazione (70 kg) non è dichiarato
+# esplicitamente nel testo dei risultati; è assunto per coerenza con
+# lo standard di Holford 1996 citato dagli stessi autori come base del
+# loro scaling allometrico.
+BAIARDI_PARAMS = {
+    'CL_typ70': 0.0273, 'V1_typ70': 3.6, 'Q_typ70': 0.0225, 'V2_typ70': 6.4,
+    'omega_CL': 0.22, 'omega_V1': 0.173, 'omega_Q': 0.559, 'omega_V2': 0.301,
+    'sigma': 0.144, 't_inf': 0.5, 'fu': 0.07,
+    'scaling_allometrico': True, 'iiv_completa': True,
+    'nome': "Baiardi G, et al. Antibiotics 2025;14:190 (adulti, trattamento "
+            "prolungato >6 settimane, n=30, ClCr>30 mL/min, scaling allometrico; "
+            "riferimento 70 kg assunto, non esplicitato nel testo)",
+}
 DALBA_MODELLI = {
     'Mariani — pediatrico, allometrico (Gaslini)': DALBA_PARAMS,
-    'Cojutti 2021 — adulti, osteoarticolare (AAC)': COJUTTI_PARAMS,
+    'Cojutti 2021 — adulti, osteoarticolare, valori fissi (AAC)': COJUTTI_PARAMS,
+    'Baiardi 2025 — adulti, trattamento prolungato, allometrico (Antibiotics)': BAIARDI_PARAMS,
 }
 
-# MIC di riferimento: EUCAST (0.125) e USCAST (0.25) sono DUE ENTI
-# DIVERSI con soglie diverse — 0.25 non è una versione "precedente"
-# di EUCAST. Fonte per entrambe: Cojutti PG, et al. AAC 2021;65(5):
-# e02260-20, che le cita esplicitamente insieme.
+# Breakpoint EUCAST per dalbavancina/Staphylococcus spp.: il valore
+# ATTUALE (2026) è 0.25 mg/L (S≤0.25, R>0.25). Cojutti PG, et al. AAC
+# 2021 e IJAA 2021 usavano invece 0.125 mg/L, il breakpoint EUCAST
+# storico in vigore all'epoca — poi rivisto. Baiardi G, et al.
+# Antibiotics 2025;14:190 tratta già "EUCAST/USCAST" come convergenti
+# su 0.25. Verificare comunque l'ultima tabella ufficiale su eucast.org.
 DALBA_MIC_OPZIONI = {
-    'MIC90 osteoarticolare — Cojutti 2021 (0.0625 mg/L)': 0.0625,
-    'EUCAST S. aureus, breakpoint attuale (≤0.125 mg/L)': 0.125,
-    'USCAST S. aureus (≤0.25 mg/L)': 0.25,
+    'EUCAST 2026, Staphylococcus spp. (0.25 mg/L)': 0.25,
+    'EUCAST storico ≤2021 (0.125 mg/L)': 0.125,
 }
 
-# Target fAUC24h/MIC — TUTTI E TRE dallo stesso Monte Carlo simulation
-# di Cojutti PG, et al. AAC 2021;65(5):e02260-20. Etichette brevi per
-# la tendina (il dettaglio completo è mostrato sotto come didascalia).
-DALBA_TARGETS = {
-    'Target minimo (≥ 27.1)': 27.1,
-    'Target intermedio (≥ 53.3)': 53.3,
-    'Target restrittivo (≥ 111.1)': 111.1,
-}
-DALBA_TARGETS_DESC = {
-    'Target minimo (≥ 27.1)': 'infezioni non complicate',
-    'Target intermedio (≥ 53.3)': 'infezioni moderate',
-    'Target restrittivo (≥ 111.1)': 'infezioni complesse / osteoarticolari',
-}
-
+# Target PK/PD — SOLO DUE, entrambi calcolati dinamicamente sulla MIC
+# scelta sopra (nessuna soglia fissa legata a una MIC specifica):
+#   - AUC24h/MIC >= 111.1: il target storico più restrittivo di
+#     Cojutti PG, et al. AAC 2021;65(5):e02260-20 (Monte Carlo,
+#     adulti con infezione osteoarticolare, n=15)
+#   - fT > 4xMIC: target tempo-dipendente di Baiardi G, et al.
+#     Antibiotics 2025;14:190, basato su attività battericida in
+#     vitro a concentrazioni libere = 4xMIC
 def dalba_soglia_totale(target_auc_mic, mic, f):
-    """Soglia di concentrazione totale equivalente al target fAUC24h/MIC scelto."""
+    """Soglia di concentrazione totale equivalente al target AUC24h/MIC scelto."""
     return (target_auc_mic * mic) / (24.0 * f)
 
-def dalba_soglia_trough_c0mic(mic):
+def dalba_soglia_4x_mic(mic, f):
     """
-    Target di trough C0/MIC >= 200 (concentrazione TOTALE, rapporto
-    diretto, non richiede la frazione libera). Riportato in letteratura
-    TDM sulla dalbavancina come equivalente a C0 ~ 25 mg/L al
-    breakpoint EUCAST di 0.125 mg/L. Verificare la fonte primaria
-    prima dell'uso clinico definitivo.
+    Target di trough tempo-dipendente 100% fT > 4×MIC, da
+    Baiardi G, et al. Antibiotics 2025;14:190 (basato sull'attività
+    battericida in vitro a concentrazioni libere pari a 4×MIC:
+    Lin 2005, Goldstein 2007). Soglia totale = 4×MIC / frazione libera.
+    A differenza delle soglie fisse di Cojutti IJAA 2021, questa scala
+    correttamente con qualunque MIC selezionata.
     """
-    return 200.0 * mic
+    return (4.0 * mic) / f
 
 # ============================================================
 # MOTORI PK
@@ -391,6 +438,130 @@ def calcola_clcr(eta_a, peso, crea, sesso):
         return 60.0
     clcr = ((140-eta_a)*peso)/(72*crea)
     return max(clcr*0.85 if sesso == "Femmina" else clcr, 1.0)
+
+# ------------------------------------------------------------
+# eGFR — tre formule, applicate in base all'età, con calcolo
+# automatico di TUTTE quelle applicabili quando gli intervalli si
+# sovrappongono (Schwartz Bedside e CKiD U25 in età pediatrica,
+# CKiD U25 e Cockcroft-Gault in età 18-25).
+# ------------------------------------------------------------
+
+def egfr_schwartz_bedside(altezza_cm, crea):
+    """
+    Schwartz "Bedside" (Schwartz GJ, et al. New equations to estimate
+    GFR in children with CKD. J Am Soc Nephrol. 2009;20:629-637).
+    eGFR (mL/min/1.73m^2) = 0.413 * altezza(cm) / creatinina(mg/dL).
+    Validata in età pediatrica (~1-17 anni).
+    """
+    if crea is None or crea <= 0 or altezza_cm is None or altezza_cm <= 0:
+        return None
+    return 0.413 * altezza_cm / crea
+
+
+def egfr_ckid_u25(altezza_cm, crea, eta_anni, sesso):
+    """
+    CKiD U25 su creatinina (Pierce CB, Muñoz A, Ng DK, Warady BA,
+    Furth SL, Schwartz GJ. Age- and sex-dependent clinical equations
+    to estimate glomerular filtration rates in children and young
+    adults with chronic kidney disease. Kidney Int. 2021;99(4):
+    948-956. doi:10.1016/j.kint.2020.10.047).
+    eGFR (mL/min/1.73m^2) = k * altezza(m) / creatinina(mg/dL), con k
+    dipendente da età e sesso. Valida per età 1-25 anni.
+    """
+    if crea is None or crea <= 0 or altezza_cm is None or altezza_cm <= 0 or eta_anni is None:
+        return None
+    if eta_anni < 1 or eta_anni > 25:
+        return None
+    altezza_m = altezza_cm / 100.0
+    maschio = (sesso == "Maschio")
+    if eta_anni < 12:
+        k = (39.0 if maschio else 36.1) * (1.008 ** (eta_anni - 12))
+    elif eta_anni < 18:
+        k = (39.0 * (1.045 ** (eta_anni - 12)) if maschio
+            else 36.1 * (1.023 ** (eta_anni - 12)))
+    else:
+        k = 50.8 if maschio else 41.4
+    return k * altezza_m / crea
+
+
+def calcola_egfr_tutte(eta_anni, peso, altezza_cm, crea, sesso):
+    """
+    Calcola TUTTE le formule eGFR applicabili all'età del paziente
+    (mostrando entrambe quando gli intervalli si sovrappongono, come
+    richiesto). Restituisce un dict {nome_formula: valore_o_None}.
+    """
+    risultati = {}
+    if eta_anni is None or crea is None or crea <= 0:
+        return risultati
+
+    if 1 <= eta_anni <= 17:
+        risultati['Schwartz Bedside (mL/min/1.73m²)'] = egfr_schwartz_bedside(altezza_cm, crea)
+    if 1 <= eta_anni <= 25:
+        risultati['CKiD U25 (mL/min/1.73m²)'] = egfr_ckid_u25(altezza_cm, crea, eta_anni, sesso)
+    if eta_anni >= 18:
+        risultati['Cockcroft-Gault (mL/min)'] = calcola_clcr(eta_anni, peso, crea, sesso)
+    return risultati
+
+
+def costruisci_csv_long(storico):
+    """
+    Costruisce un dataset in formato LONG (una riga per evento: dose,
+    livello plasmatico, o valutazione biometrica) a partire dallo
+    storico di sessione. Ogni riga porta con sé il contesto completo
+    (biometria + eGFR di quella valutazione), secondo la convenzione
+    standard del formato long per dati longitudinali. Usa .get() con
+    default ovunque per restare compatibile anche con record salvati
+    da versioni precedenti dell'app (nessun crash su chiavi mancanti).
+    """
+    colonne = ['codice_paziente', 'farmaco', 'id_valutazione', 'data_valutazione',
+              'tipo_evento', 'data_ora_evento', 'ore_da_t0', 'valore', 'unita', 'nota',
+              'sesso', 'eta_giorni', 'eta_anni', 'peso_kg', 'altezza_cm', 'creatinina_mgdl',
+              'eGFR_Schwartz_Bedside', 'eGFR_CKiD_U25', 'eGFR_Cockcroft_Gault']
+
+    codice = storico.get('codice_paziente', '')
+    farmaco = storico.get('farmaco', '')
+    sesso_pz = storico.get('sesso', '')
+    righe = []
+
+    for i, rec in enumerate(storico.get('monitoraggi', [])):
+        eta_giorni = rec.get('eta_giorni')
+        eta_anni = round(eta_giorni/365.25, 2) if eta_giorni is not None else None
+        egfr = rec.get('egfr', {}) or {}
+        try:
+            t0 = datetime.strptime(rec['data_prima_dose'], '%Y-%m-%d %H:%M')
+        except Exception:
+            t0 = None
+
+        contesto = {
+            'codice_paziente': codice, 'farmaco': farmaco, 'sesso': sesso_pz,
+            'id_valutazione': i, 'data_valutazione': rec.get('data_val'),
+            'eta_giorni': eta_giorni, 'eta_anni': eta_anni,
+            'peso_kg': rec.get('peso'), 'altezza_cm': rec.get('altezza'),
+            'creatinina_mgdl': rec.get('creatinina'),
+            'eGFR_Schwartz_Bedside': egfr.get('Schwartz Bedside (mL/min/1.73m²)'),
+            'eGFR_CKiD_U25': egfr.get('CKiD U25 (mL/min/1.73m²)'),
+            'eGFR_Cockcroft_Gault': egfr.get('Cockcroft-Gault (mL/min)'),
+        }
+
+        righe.append({**contesto, 'tipo_evento': 'biometria', 'ore_da_t0': None,
+                      'data_ora_evento': rec.get('data_val'), 'valore': None,
+                      'unita': '', 'nota': ''})
+
+        for d in rec.get('storia_dosi', []) or []:
+            data_ora = (t0 + timedelta(hours=d['ore'])).strftime('%Y-%m-%d %H:%M') if t0 else ''
+            righe.append({**contesto, 'tipo_evento': 'dose', 'ore_da_t0': d.get('ore'),
+                          'data_ora_evento': data_ora, 'valore': d.get('dose'),
+                          'unita': 'mg', 'nota': ''})
+
+        for l in rec.get('livelli', []) or []:
+            data_ora = (t0 + timedelta(hours=l['ore'])).strftime('%Y-%m-%d %H:%M') if t0 else ''
+            righe.append({**contesto, 'tipo_evento': 'livello', 'ore_da_t0': l.get('ore'),
+                          'data_ora_evento': data_ora, 'valore': l.get('conc'),
+                          'unita': 'mg/L', 'nota': l.get('nota', '')})
+
+    if not righe:
+        return pd.DataFrame(columns=colonne)
+    return pd.DataFrame(righe)[colonne]
 
 # ============================================================
 # PRIOR DI POPOLAZIONE
@@ -475,21 +646,29 @@ def prior_cipro(sesso, gg, peso, crea, crrt, dialisi):
 
 def prior_dalba(peso, modello_scelto):
     p = DALBA_MODELLI[modello_scelto]
-    if modello_scelto.startswith('Mariani'):
+
+    if p.get('scaling_allometrico', False):
         fw = peso/70.0
         CL_pop = p['CL_typ70']*(fw**0.75); V1_pop = p['V1_typ70']*fw
         Q_pop  = p['Q_typ70']*(fw**0.75);  V2_pop = p['V2_typ70']*fw
-        note = ("Scaling allometrico applicato (CL,Q: peso/70^0.75; V1,V2: peso/70). "
-                "Nessuna covariata renale/età ritenuta significativa nel modello originale.")
+        note = "Scaling allometrico applicato (CL,Q: peso/70^0.75; V1,V2: peso/70). "
     else:
         CL_pop, V1_pop, Q_pop, V2_pop = p['CL_typ70'], p['V1_typ70'], p['Q_typ70'], p['V2_typ70']
         note = ("⚠️ Nessuno scaling per peso disponibile nella pubblicazione originale: "
-                "valori di popolazione fissi, derivati da 15 adulti con infezione "
-                "osteoarticolare. Usare con cautela per pazienti molto diversi da questa coorte.")
+                "valori di popolazione fissi. ")
+
+    if p.get('iiv_completa', False):
+        note += ("Variabilità individuale stimata su tutti e quattro i parametri "
+                "(CL, V1, Q, V2) — MAP con 4 gradi di libertà.")
+    else:
+        note += ("Nessuna covariata renale/età ritenuta significativa; variabilità "
+                "individuale stimata solo su CL — V1/Q/V2 fissi.")
 
     return {'CL_p':CL_pop, 'V_p':V1_pop, 'Q_p':Q_pop, 'V2_p':V2_pop,
-            'oCL':p['omega_CL'], 'oV1':0.0, 'oQ':0.0, 'oV2':0.0,
-            'sig':p['sigma'], 't_inf':p['t_inf'], 'nm':p['nome'], 'note':note}
+            'oCL':p['omega_CL'], 'oV1':p.get('omega_V1',0.0),
+            'oQ':p.get('omega_Q',0.0), 'oV2':p.get('omega_V2',0.0),
+            'sig':p['sigma'], 't_inf':p['t_inf'], 'nm':p['nome'], 'note':note,
+            'iiv_completa': p.get('iiv_completa', False)}
 
 # ============================================================
 # MAP BAYESIANO (N livelli arbitrari)
@@ -791,10 +970,19 @@ if n_rec > 0:
     cols_sb = [c for c in ['data_val', 'creatinina', 'mic'] if c in df_sb.columns]
     st.sidebar.dataframe(df_sb[cols_sb].tail(4), use_container_width=True, hide_index=True)
     st.sidebar.download_button(
-        "📥 Scarica storico aggiornato",
+        "📥 Scarica storico aggiornato (JSON)",
         data=json.dumps(st.session_state['storico'], indent=2, ensure_ascii=False).encode('utf-8'),
         file_name=f"TDMBuddy_{farmaco}_{id_paz or 'paziente'}.json",
         mime="application/json", type="primary", use_container_width=True,
+    )
+    df_long = costruisci_csv_long(st.session_state['storico'])
+    st.sidebar.download_button(
+        "📊 Scarica dataset long (CSV)",
+        data=df_long.to_csv(index=False).encode('utf-8'),
+        file_name=f"TDMBuddy_{farmaco}_{id_paz or 'paziente'}_long.csv",
+        mime="text/csv", use_container_width=True,
+        help="Una riga per evento (dose, livello plasmatico, valutazione "
+             "biometrica con eGFR) — pronto per analisi in R/pandas/Excel.",
     )
 
 if not id_paz:
@@ -811,6 +999,7 @@ _ultimo = monitoraggi_farmaco[-1] if monitoraggi_farmaco else None
 
 _gg_def   = int(_ultimo.get('eta_giorni')) if _ultimo else None
 _peso_def = float(_ultimo.get('peso')) if _ultimo else None
+_altezza_def = float(_ultimo['altezza']) if (_ultimo and _ultimo.get('altezza')) else None
 _crea_def = float(_ultimo.get('creatinina')) if _ultimo else None
 _mic_def  = float(_ultimo.get('mic')) if _ultimo else None
 
@@ -825,11 +1014,12 @@ with st.expander(f"📚 Modelli di riferimento applicati — {farmaco}", expande
         st.caption(f"**{fascia}:** {rif}")
 
 with st.container(border=True):
-    st.markdown("#### Età e peso al momento di questa valutazione")
+    st.markdown("#### Età, peso e altezza al momento di questa valutazione")
     st.caption("Possono cambiare rispetto all'ultima analisi: verificali sempre. "
-              "Campi obbligatori, lasciati vuoti finché non li compili.")
+              "Campi obbligatori, lasciati vuoti finché non li compili. L'altezza "
+              "serve al calcolo automatico dell'eGFR (Schwartz Bedside / CKiD U25).")
 
-    col_u, col_v, col_peso = st.columns(3)
+    col_u, col_v, col_peso, col_alt = st.columns(4)
     unita_default = "Anni"
     valore_eta_default = None
     if _gg_def is not None:
@@ -846,6 +1036,12 @@ with st.container(border=True):
             help="Inserisci l'età nell'unità di misura scelta a sinistra.")
     with col_peso:
         peso = st.number_input("Peso (kg)", 0.3, 300.0, value=_peso_def, key="input_peso")
+    with col_alt:
+        altezza = st.number_input("Altezza (cm)", 30.0, 250.0, value=_altezza_def,
+                                  key="input_altezza",
+                                  help="Facoltativa per pazienti >25 anni (serve solo "
+                                       "a Cockcroft-Gault, che non la richiede); "
+                                       "necessaria per Schwartz Bedside e CKiD U25.")
 
     if valore_eta is None:
         gg = None
@@ -905,6 +1101,19 @@ with st.container(border=True):
         else:
             dialisi = "Nessuna"
             st.caption("📌 ClCr calcolata con Cockcroft-Gault.")
+
+# ---- eGFR automatico (tutte le formule applicabili all'età) ----
+eta_anni_calc = gg / 365.25 if gg is not None else None
+egfr_valori = calcola_egfr_tutte(eta_anni_calc, peso, altezza, crea, sesso)
+if egfr_valori:
+    with st.container(border=True):
+        st.markdown("#### 🧮 eGFR calcolata automaticamente")
+        cols_egfr = st.columns(len(egfr_valori))
+        for col, (nome_f, valore_f) in zip(cols_egfr, egfr_valori.items()):
+            col.metric(nome_f, f"{valore_f:.1f}" if valore_f is not None else "N/D — manca altezza")
+        if len(egfr_valori) > 1:
+            st.caption("Più formule applicabili a questa età: mostrate entrambe, "
+                      "come richiesto — non viene scelta una sola in automatico.")
 
 campi_mancanti = []
 if gg is None:
@@ -1063,17 +1272,22 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
 
             elif farmaco == "Dalbavancina":
                 prior = prior_dalba(peso, modello_dalba)
-                CL_ind, tipo_fit = map_dalba(prior['CL_p'], prior['V_p'], prior['Q_p'],
-                                             prior['V2_p'], prior['oCL'], prior['sig'],
-                                             storia_completa, livelli_completi, prior['t_inf'])
-                V_ind, Q_ind, V2_ind = prior['V_p'], prior['Q_p'], prior['V2_p']
+                if prior['iiv_completa']:
+                    CL_ind, V_ind, Q_ind, V2_ind, tipo_fit = map_2cmt(
+                        prior['CL_p'], prior['V_p'], prior['Q_p'], prior['V2_p'],
+                        prior['oCL'], prior['oV1'], prior['oQ'], prior['oV2'], prior['sig'],
+                        storia_completa, livelli_completi, prior['t_inf'])
+                else:
+                    CL_ind, tipo_fit = map_dalba(prior['CL_p'], prior['V_p'], prior['Q_p'],
+                                                 prior['V2_p'], prior['oCL'], prior['sig'],
+                                                 storia_completa, livelli_completi, prior['t_inf'])
+                    V_ind, Q_ind, V2_ind = prior['V_p'], prior['Q_p'], prior['V2_p']
                 Vss_d = V_ind + V2_ind
                 AUC24_v, Cmax_ss, Cmin_ss = metriche_esposizione_24h(
                     pk_2cmt, (CL_ind, V_ind, Q_ind, V2_ind), storia_completa, prior['t_inf'])
                 auc_mic = AUC24_v / mic
                 emivita = float(np.log(2)*Vss_d/CL_ind)
-                target_riferimento = list(DALBA_TARGETS.values())[0]
-                ok_target = auc_mic >= target_riferimento
+                ok_target = auc_mic >= 111.1
                 tox = False
 
             else:
@@ -1105,7 +1319,8 @@ if st.button("🚀 Avvia il calcolo bayesiano", type="primary", use_container_wi
                 'dose_mg_kg': dose_mg_kg, 'tau_h_display': tau_h_display, 'mic': mic,
                 'ok_staph': ok_staph, 'ok_ent': ok_ent, 'ok_target': ok_target, 'tox': tox,
                 't_ultimo_storico': t_ultimo_storico, 'sesso': sesso, 'eta': eta, 'gg': gg,
-                'peso': peso, 'crea': crea, 'dialisi': dialisi, 'modello_dalba': modello_dalba,
+                'peso': peso, 'altezza': altezza, 'crea': crea, 'dialisi': dialisi,
+                'modello_dalba': modello_dalba, 'egfr_valori': egfr_valori,
                 'crrt': crrt, 'Sc': Sc, 'Qef': Qef,
                 'registrato': False,
             }
@@ -1135,6 +1350,8 @@ if ('risultati' in st.session_state
     t_ultimo_storico = R['t_ultimo_storico']
     sesso, eta, gg = R['sesso'], R['eta'], R['gg']
     peso, crea, dialisi = R['peso'], R['crea'], R['dialisi']
+    altezza_r = R.get('altezza')
+    egfr_valori_r = R.get('egfr_valori', {})
     crrt, Sc, Qef = R.get('crrt', False), R.get('Sc', 0.20), R.get('Qef', 2.0)
     modello_dalba_r = R.get('modello_dalba')
 
@@ -1162,12 +1379,12 @@ if ('risultati' in st.session_state
                  delta="⚠️ Rischio CPK" if tox else "✅ Sicuro",
                  delta_color="inverse" if tox else "normal")
     elif farmaco == "Dalbavancina":
-        c5.metric("fAUC₂₄h/MIC (target minimo ≥ 27.1)", f"{auc_mic:.0f}",
+        c5.metric("AUC₂₄h/MIC (target ≥ 111.1, Cojutti 2021)", f"{auc_mic:.0f}",
                  delta="✅ Target raggiunto" if ok_target else "⚠️ Sotto target",
                  delta_color="normal" if ok_target else "inverse")
         c6.metric("Cmax / Cmin previste", f"{Cmax_ss:.1f} / {Cmin_ss:.1f} mg/L",
-                 help="Target su infezioni complesse e pianificazione redose "
-                      "nel pannello Forecast qui sotto.")
+                 help="Scegli target e MIC nel pannello Forecast qui sotto per "
+                      "la pianificazione della prossima dose.")
     else:
         c5.metric("AUC₂₄/MIC (target ≥ 125)", f"{auc_mic:.0f}",
                  delta="✅ Target raggiunto" if ok_target else "⚠️ Sotto target",
@@ -1188,12 +1405,12 @@ if ('risultati' in st.session_state
         return "target raggiunto" if ok else "insufficiente — rivalutare la posologia"
 
     if farmaco == "Dalbavancina":
-        pd_block = (f"  Efficacia (fAUC24h/MIC >= 27.1, target minimo): {auc_mic:.0f} "
+        pd_block = (f"  Efficacia (AUC24h/MIC >= 111.1, Cojutti 2021): {auc_mic:.0f} "
                    f"-> {_esito(ok_target)}\n"
                    f"  Cmax prevista (24h dopo l'ultima dose): {Cmax_ss:.1f} mg/L\n"
                    f"  Cmin prevista (24h dopo l'ultima dose): {Cmin_ss:.1f} mg/L\n"
-                   f"  Nota: per il target restrittivo (infezioni complesse) e la\n"
-                   f"  pianificazione della prossima dose vedere il pannello Forecast.\n")
+                   f"  Nota: target alternativo fT>4xMIC (Baiardi 2025) e\n"
+                   f"  pianificazione della prossima dose nel pannello Forecast.\n")
     elif farmaco == "Daptomicina":
         pd_block = (f"  Efficacia vs S. aureus/MRSA (AUC24/MIC >= 666): {auc_mic:.0f} "
                    f"-> {_esito(ok_staph)}\n"
@@ -1210,15 +1427,20 @@ if ('risultati' in st.session_state
                    f"  soprattutto in insufficienza renale non corretta: valutare\n"
                    f"  clinicamente.\n")
 
+    egfr_referto = "\n".join(f"{k}: {v:.1f}" if v is not None else f"{k}: N/D"
+                             for k, v in egfr_valori_r.items()) or "Non applicabile / dati insufficienti"
+
     referto = f"""\
 === TDM BUDDY v6.0 — REFERTO {farmaco.upper()} ===
-Data: {dt_val}  |  Codice paziente: {id_paz}  |  Sesso: {sesso}  |  Età: {eta:.1f} anni  |  Peso: {peso} kg
+Data: {dt_val}  |  Codice paziente: {id_paz}  |  Sesso: {sesso}  |  Età: {eta:.1f} anni  |  Peso: {peso} kg  |  Altezza: {altezza_r if altezza_r else 'N/D'} cm
 
 [MODELLO APPLICATO]
 {prior['nm']}
 
 [DATI CLINICI]
 Creatinina sierica: {crea} mg/dL
+eGFR calcolata:
+{egfr_referto}
 Dialisi / CRRT: {dialisi}
 Dose più recente: {dose_mg:.0f} mg ({dose_mg_kg:.1f} mg/kg)
 Intervallo mediano tra dosi: {(f'{tau_h_display:.1f} h' if tau_h_display else 'N/D (una sola dose)')}
@@ -1244,25 +1466,29 @@ AUC24 stimata (finestra 24h dopo l'ultima dose): {AUC24_v:.0f} mg*h/L
             st.markdown("#### 🔮 Forecast — pianificazione della prossima dose")
             st.caption("Proietta il profilo del paziente in avanti nel tempo per "
                       "stimare quando la concentrazione scenderà sotto la soglia "
-                      "target scelta.")
+                      "target scelta. Entrambi i target si adattano alla MIC scelta.")
+
+            OPZ_TARGET_DALBA = [
+                "AUC24h/MIC ≥ 111.1 — target storico più restrittivo (Cojutti 2021)",
+                "fT > 4×MIC — tempo-dipendente (Baiardi 2025)",
+            ]
 
             colF1, colF2, colF3 = st.columns(3)
             with colF1:
                 target_scelto = st.selectbox(
-                    "Target PK/PD:",
-                    list(DALBA_TARGETS.keys()) + ["Trough C0/MIC ≥ 200"],
-                    help="Tutti e tre i target fAUC24h/MIC sono dallo stesso "
-                         "Monte Carlo simulation: Cojutti PG, et al. Antimicrob "
-                         "Agents Chemother 2021;65(5):e02260-20.",
+                    "Target PK/PD:", OPZ_TARGET_DALBA,
+                    help="AUC/MIC: Cojutti PG, et al. Antimicrob Agents Chemother "
+                         "2021;65(5):e02260-20. fT>4×MIC: Baiardi G, et al. "
+                         "Antibiotics 2025;14:190.",
                     key="fc_target",
                 )
             with colF2:
-                mic_label = st.selectbox("MIC / breakpoint:",
+                mic_label = st.selectbox("MIC:",
                                          list(DALBA_MIC_OPZIONI.keys()) + ["Personalizzata"],
                                          key="fc_mic_label")
                 if mic_label == "Personalizzata":
                     mic_fc = st.number_input("MIC personalizzata (mg/L)", 0.001, 4.0,
-                                             0.125, step=0.001, format="%.4f", key="fc_mic_custom")
+                                             0.25, step=0.001, format="%.4f", key="fc_mic_custom")
                 else:
                     mic_fc = DALBA_MIC_OPZIONI[mic_label]
             with colF3:
@@ -1270,20 +1496,19 @@ AUC24 stimata (finestra 24h dopo l'ultima dose): {AUC24_v:.0f} mg*h/L
                                        DALBA_PARAMS['fu'], 0.01, key="fc_funb",
                                        help="Default 0.07 (93% legame proteico).")
 
-            st.caption("*EUCAST S. aureus* = breakpoint attuale, tabelle v.16.0 "
-                      "(2026); *USCAST* = ente statunitense, soglia diversa da "
-                      "EUCAST — non una versione precedente.")
-            if target_scelto in DALBA_TARGETS_DESC:
-                st.caption(f"**{target_scelto}** → {DALBA_TARGETS_DESC[target_scelto]} "
-                          f"(Cojutti PG, et al. *Antimicrob Agents Chemother.* "
-                          f"2021;65(5):e02260-20).")
+            st.caption("Il breakpoint **EUCAST 2026** per dalbavancina/"
+                      "*Staphylococcus* spp. è **0.25 mg/L**. Cojutti (AAC 2021, "
+                      "IJAA 2021) usava il breakpoint EUCAST storico di 0.125 mg/L, "
+                      "poi rivisto: verificare sempre l'ultima tabella su eucast.org.")
 
-            if target_scelto == "Trough C0/MIC ≥ 200":
-                soglia = dalba_soglia_trough_c0mic(mic_fc)
-                desc = f"C0/MIC ≥ 200 → soglia totale = {soglia:.2f} mg/L"
+            if target_scelto.startswith("fT > 4×MIC"):
+                soglia = dalba_soglia_4x_mic(mic_fc, f_unb)
+                desc = (f"fT > 4×MIC (Baiardi 2025) a MIC={mic_fc} mg/L → "
+                       f"soglia totale = 4×{mic_fc}/{f_unb} = {soglia:.2f} mg/L")
             else:
-                soglia = dalba_soglia_totale(DALBA_TARGETS[target_scelto], mic_fc, f_unb)
-                desc = f"{target_scelto} → soglia totale equivalente = {soglia:.2f} mg/L"
+                soglia = dalba_soglia_totale(111.1, mic_fc, f_unb)
+                desc = (f"AUC24h/MIC≥111.1 (Cojutti 2021) a MIC={mic_fc} mg/L → "
+                       f"soglia totale equivalente = {soglia:.2f} mg/L")
 
             st.info(f"📐 Soglia calcolata: **{desc}**")
 
@@ -1359,7 +1584,9 @@ AUC24 stimata (finestra 24h dopo l'ultima dose): {AUC24_v:.0f} mg*h/L
                      use_container_width=True):
             record = {
                 'data_val': dt_val, 'farmaco': farmaco, 'eta_giorni': gg, 'peso': peso,
-                'creatinina': crea, 'crrt': bool(crrt), 'Sc': Sc, 'Qef': Qef,
+                'altezza': altezza_r,
+                'creatinina': crea, 'egfr': egfr_valori_r,
+                'crrt': bool(crrt), 'Sc': Sc, 'Qef': Qef,
                 'dialisi_tipo': dialisi,
                 'dose_mg': dose_mg, 'dose_mg_kg': dose_mg_kg, 'tau_h': tau_h_display,
                 'n_dosi': len(storia_completa), 'mic': mic, 'n_livelli': len(livelli_completi),
