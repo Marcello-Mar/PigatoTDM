@@ -120,15 +120,15 @@ FARMACI = ["Daptomicina", "Ciprofloxacina", "Dalbavancina"]
 FARMACO_INFO = {
     "Daptomicina": {
         "icona": "🩸",
-        "descrizione": "Lipopeptide ciclico",
+        "descrizione": "Lipopeptide — Soraluce, Wei, Ye, Lim",
     },
     "Ciprofloxacina": {
         "icona": "🧬",
-        "descrizione": "Fluorochinolone",
+        "descrizione": "Fluorochinolone — Schlender, Balbas-Martinez",
     },
     "Dalbavancina": {
         "icona": "💉",
-        "descrizione": "Lipoglicopeptide",
+        "descrizione": "Lipoglicopeptide — Mariani, Cojutti",
     },
 }
 
@@ -1145,9 +1145,9 @@ if ('risultati' in st.session_state
         st.info(prior['note'])
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("Clearance (CL) del paziente", f"{CL_ind:.3f} L/h",
+    c1.metric("Clearance (CL)", f"{CL_ind:.3f} L/h",
              delta=f"Popolazione: {prior['CL_p']:.3f} L/h", delta_color="off")
-    c2.metric("Volume di distribuzione (Vss)", f"{Vss_d:.1f} L",
+    c2.metric("Volume (Vss)", f"{Vss_d:.1f} L",
              delta=f"Popolazione: {(prior['V_p'] + prior.get('V2_p',0)):.1f} L", delta_color="off")
     c3.metric("Emivita (T½)", f"{emivita:.1f} h")
 
