@@ -239,6 +239,39 @@ def pulisci_widget_paziente():
     for k in CHIAVI_WIDGET_PAZIENTE:
         st.session_state.pop(k, None)
 
+
+def imposta_widget_da_json(dati_caricati):
+    """
+    Scrive DIRETTAMENTE lo stato dei widget scalari (non le tabelle
+    dosi/livelli, gestite a parte) usando le loro chiavi di
+    session_state, invece di affidarsi al solo pattern "pop() + value="
+    per farli ripopolare al rerun successivo. Scrittura diretta della
+    chiave è il pattern più robusto raccomandato da Streamlit per
+    aggiornare un widget da codice, e non dipende da quale valore la
+    UI stesse mostrando prima. Va chiamata SEMPRE prima di st.rerun(),
+    mai durante il rendering dei widget stessi.
+    """
+    st.session_state['input_codice_paziente'] = dati_caricati.get('codice_paziente', '') or ''
+    st.session_state['input_sesso'] = dati_caricati.get('sesso', 'Maschio') or 'Maschio'
+
+    monitoraggi = dati_caricati.get('monitoraggi', [])
+    ultimo = monitoraggi[-1] if monitoraggi else None
+    if ultimo:
+        gg = ultimo.get('eta_giorni')
+        if gg is not None:
+            st.session_state['input_unita_eta'] = 'Anni'
+            st.session_state['input_valore_eta'] = round(gg / 365.25, 2)
+        if ultimo.get('peso') is not None:
+            st.session_state['input_peso'] = float(ultimo['peso'])
+        if ultimo.get('altezza') is not None:
+            st.session_state['input_altezza'] = float(ultimo['altezza'])
+        if ultimo.get('creatinina') is not None:
+            st.session_state['input_crea'] = float(ultimo['creatinina'])
+        if ultimo.get('mic') is not None:
+            st.session_state['input_mic'] = float(ultimo['mic'])
+        if ultimo.get('modello_dalba'):
+            st.session_state['input_modello_dalba'] = ultimo['modello_dalba']
+
 if 'storico' not in st.session_state:
     st.session_state['storico'] = storico_vuoto()
 if 'farmaco_attivo' not in st.session_state:
@@ -943,6 +976,7 @@ if file_up is not None:
                 st.session_state['_ultimo_file_caricato'] = file_id
             else:
                 pulisci_widget_paziente()
+                imposta_widget_da_json(dati_caricati)
                 st.session_state['storico'] = dati_caricati
                 st.session_state['_ultimo_file_caricato'] = file_id
                 st.sidebar.success(
