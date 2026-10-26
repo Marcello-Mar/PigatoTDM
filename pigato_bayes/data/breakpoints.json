@@ -1,0 +1,579 @@
+{
+ "fonte": "EUCAST Clinical Breakpoint Tables v16.1, valide dal 24/06/2026 (foglio xlsx ufficiale, letto il 26/10/2026)",
+ "nota": "S = breakpoint di sensibilità (S ≤); R = breakpoint di resistenza (R >). S nullo = nessuna categoria S (EUCAST 0,001: solo 'I'). Valori tra parentesi in EUCAST = breakpoint con nota d'uso limitato. In terapia empirica l'app propone come MIC di riferimento il valore R (massima MIC ancora S o I), modificabile. R_men = breakpoint di resistenza per meningite, usato quando la sede è SNC.",
+ "gruppi": {
+  "enterobacterales": "Enterobacterales",
+  "p_aeruginosa": "Pseudomonas aeruginosa",
+  "acinetobacter": "Acinetobacter spp.",
+  "s_maltophilia": "Stenotrophomonas maltophilia",
+  "s_aureus": "Staphylococcus aureus",
+  "cons": "Stafilococchi coagulasi-negativi",
+  "enterococcus": "Enterococcus spp.",
+  "strep_abcg": "Streptococchi gruppi A, B, C, G",
+  "s_pneumoniae": "Streptococcus pneumoniae",
+  "viridans": "Streptococchi viridanti",
+  "h_influenzae": "Haemophilus influenzae",
+  "pkpd": "Breakpoint PK/PD (non specie-correlati)"
+ },
+ "farmaci": {
+  "piperacillin-tazobactam": {
+   "enterobacterales": {
+    "S": 8,
+    "R": 8,
+    "ATU": 16
+   },
+   "p_aeruginosa": {
+    "S": null,
+    "R": 16
+   },
+   "enterococcus": {
+    "S": null,
+    "R": 16,
+    "nota": "solo E. faecalis"
+   },
+   "h_influenzae": {
+    "S": 0.25,
+    "R": 0.25
+   },
+   "pkpd": {
+    "S": 8,
+    "R": 16
+   }
+  },
+  "meropenem": {
+   "enterobacterales": {
+    "S": 2,
+    "R": 8,
+    "nota": "meningite: S ≤2, R >2",
+    "R_men": 2
+   },
+   "p_aeruginosa": {
+    "S": 2,
+    "R": 8,
+    "nota": "meningite: S ≤2, R >2",
+    "R_men": 2
+   },
+   "acinetobacter": {
+    "S": 2,
+    "R": 8,
+    "nota": "meningite: S ≤2, R >2",
+    "R_men": 2
+   },
+   "s_pneumoniae": {
+    "S": 2,
+    "R": 2,
+    "nota": "meningite: S ≤0,25, R >0,25",
+    "R_men": 0.25
+   },
+   "viridans": {
+    "S": 2,
+    "R": 2
+   },
+   "h_influenzae": {
+    "S": 2,
+    "R": 2,
+    "nota": "meningite: S ≤0,25, R >0,25",
+    "R_men": 0.25
+   },
+   "pkpd": {
+    "S": 2,
+    "R": 8
+   }
+  },
+  "ceftazidime": {
+   "enterobacterales": {
+    "S": 1,
+    "R": 4
+   },
+   "p_aeruginosa": {
+    "S": null,
+    "R": 8
+   },
+   "pkpd": {
+    "S": 4,
+    "R": 8
+   }
+  },
+  "cefepime": {
+   "enterobacterales": {
+    "S": 1,
+    "R": 4
+   },
+   "p_aeruginosa": {
+    "S": null,
+    "R": 8
+   },
+   "s_pneumoniae": {
+    "S": 1,
+    "R": 2
+   },
+   "viridans": {
+    "S": 0.5,
+    "R": 0.5
+   },
+   "h_influenzae": {
+    "S": 0.25,
+    "R": 0.25
+   },
+   "pkpd": {
+    "S": 4,
+    "R": 8
+   }
+  },
+  "ampicillin": {
+   "enterobacterales": {
+    "S": 8,
+    "R": 8
+   },
+   "enterococcus": {
+    "S": 4,
+    "R": 4
+   },
+   "s_pneumoniae": {
+    "S": 0.5,
+    "R": 1,
+    "nota": "endocardite e meningite: S ≤0,06, R >0,06",
+    "R_men": 0.06
+   },
+   "viridans": {
+    "S": 0.5,
+    "R": 2,
+    "nota": "endocardite: S ≤0,5, R >0,5"
+   },
+   "h_influenzae": {
+    "S": 1,
+    "R": 1
+   },
+   "pkpd": {
+    "S": 2,
+    "R": 8
+   }
+  },
+  "ampicillin-sulbactam": {
+   "enterobacterales": {
+    "S": 8,
+    "R": 8
+   },
+   "h_influenzae": {
+    "S": 1,
+    "R": 1
+   },
+   "pkpd": {
+    "S": 2,
+    "R": 8
+   },
+   "acinetobacter": {
+    "S": null,
+    "R": null,
+    "nota": "EUCAST: evidenza insufficiente (IE)"
+   }
+  },
+  "avibactam-ceftazidime": {
+   "enterobacterales": {
+    "S": 8,
+    "R": 8
+   },
+   "p_aeruginosa": {
+    "S": 8,
+    "R": 8
+   },
+   "pkpd": {
+    "S": 8,
+    "R": 8
+   }
+  },
+  "meropenem-vaborbactam": {
+   "enterobacterales": {
+    "S": 8,
+    "R": 8
+   },
+   "p_aeruginosa": {
+    "S": 8,
+    "R": 8
+   },
+   "pkpd": {
+    "S": 8,
+    "R": 8
+   }
+  },
+  "cefiderocol": {
+   "enterobacterales": {
+    "S": 2,
+    "R": 2
+   },
+   "p_aeruginosa": {
+    "S": 2,
+    "R": 2
+   },
+   "pkpd": {
+    "S": 2,
+    "R": 2
+   }
+  },
+  "ceftobiprole": {
+   "enterobacterales": {
+    "S": 0.25,
+    "R": 0.25
+   },
+   "s_aureus": {
+    "S": 2,
+    "R": 2
+   },
+   "s_pneumoniae": {
+    "S": 0.5,
+    "R": 0.5
+   },
+   "pkpd": {
+    "S": 4,
+    "R": 4
+   }
+  },
+  "ceftaroline": {
+   "enterobacterales": {
+    "S": 0.5,
+    "R": 0.5
+   },
+   "s_aureus": {
+    "S": 1,
+    "R": 2,
+    "nota": "polmonite: S ≤1, R >1"
+   },
+   "s_pneumoniae": {
+    "S": 0.25,
+    "R": 0.25
+   },
+   "h_influenzae": {
+    "S": 0.03,
+    "R": 0.03
+   },
+   "pkpd": {
+    "S": 0.5,
+    "R": 0.5
+   }
+  },
+  "ceftolozane-tazobactam": {
+   "enterobacterales": {
+    "S": 2,
+    "R": 2
+   },
+   "p_aeruginosa": {
+    "S": 4,
+    "R": 4
+   },
+   "h_influenzae": {
+    "S": 0.5,
+    "R": 0.5,
+    "nota": "solo polmonite"
+   },
+   "pkpd": {
+    "S": 4,
+    "R": 4
+   }
+  },
+  "avibactam-aztreonam": {
+   "enterobacterales": {
+    "S": 4,
+    "R": 4
+   }
+  },
+  "linezolid": {
+   "s_aureus": {
+    "S": 4,
+    "R": 4
+   },
+   "cons": {
+    "S": 4,
+    "R": 4
+   },
+   "enterococcus": {
+    "S": 4,
+    "R": 4
+   },
+   "strep_abcg": {
+    "S": 2,
+    "R": 2
+   },
+   "s_pneumoniae": {
+    "S": 2,
+    "R": 2
+   },
+   "pkpd": {
+    "S": 2,
+    "R": 2
+   }
+  },
+  "levofloxacin": {
+   "enterobacterales": {
+    "S": 0.5,
+    "R": 1
+   },
+   "p_aeruginosa": {
+    "S": null,
+    "R": 2
+   },
+   "acinetobacter": {
+    "S": 0.5,
+    "R": 1
+   },
+   "s_aureus": {
+    "S": null,
+    "R": 1
+   },
+   "cons": {
+    "S": null,
+    "R": 1
+   },
+   "strep_abcg": {
+    "S": null,
+    "R": 2
+   },
+   "s_pneumoniae": {
+    "S": null,
+    "R": 2
+   },
+   "h_influenzae": {
+    "S": 0.06,
+    "R": 0.06
+   },
+   "pkpd": {
+    "S": 0.5,
+    "R": 1
+   }
+  },
+  "ciprofloxacin": {
+   "enterobacterales": {
+    "S": 0.25,
+    "R": 0.5,
+    "nota": "meningite: S ≤0,125; Salmonella: S ≤0,06",
+    "R_men": 0.125
+   },
+   "p_aeruginosa": {
+    "S": null,
+    "R": 0.5
+   },
+   "acinetobacter": {
+    "S": null,
+    "R": 1
+   },
+   "s_aureus": {
+    "S": null,
+    "R": 2,
+    "nota": "breakpoint tra parentesi (uso limitato)"
+   },
+   "h_influenzae": {
+    "S": 0.03,
+    "R": 0.03
+   },
+   "pkpd": {
+    "S": 0.25,
+    "R": 0.5
+   }
+  },
+  "fosfomycin": {
+   "enterobacterales": {
+    "S": 8,
+    "R": 8,
+    "nota": "solo E. coli, infezioni di origine urinaria (EV); altre indicazioni: vedi note EUCAST"
+   }
+  },
+  "dalbavancin": {
+   "s_aureus": {
+    "S": 0.25,
+    "R": 0.25
+   },
+   "cons": {
+    "S": 0.25,
+    "R": 0.25
+   },
+   "strep_abcg": {
+    "S": 0.125,
+    "R": 0.125
+   },
+   "viridans": {
+    "S": 0.125,
+    "R": 0.125,
+    "nota": "solo gruppo S. anginosus"
+   },
+   "pkpd": {
+    "S": 0.25,
+    "R": 0.25
+   }
+  },
+  "vancomycin": {
+   "s_aureus": {
+    "S": 2,
+    "R": 2
+   },
+   "cons": {
+    "S": 4,
+    "R": 4
+   },
+   "enterococcus": {
+    "S": 4,
+    "R": 4
+   },
+   "strep_abcg": {
+    "S": 2,
+    "R": 2
+   },
+   "s_pneumoniae": {
+    "S": 2,
+    "R": 2
+   },
+   "viridans": {
+    "S": 2,
+    "R": 2
+   }
+  },
+  "teicoplanin": {
+   "s_aureus": {
+    "S": 2,
+    "R": 2
+   },
+   "cons": {
+    "S": 4,
+    "R": 4
+   },
+   "enterococcus": {
+    "S": 2,
+    "R": 2
+   },
+   "strep_abcg": {
+    "S": 2,
+    "R": 2
+   },
+   "s_pneumoniae": {
+    "S": 2,
+    "R": 2
+   },
+   "viridans": {
+    "S": 2,
+    "R": 2
+   }
+  },
+  "daptomycin": {
+   "s_aureus": {
+    "S": 1,
+    "R": 1
+   },
+   "strep_abcg": {
+    "S": 1,
+    "R": 1
+   }
+  },
+  "gentamicin": {
+   "enterobacterales": {
+    "S": 2,
+    "R": 2,
+    "nota": "sistemico: breakpoint tra parentesi, in associazione"
+   },
+   "acinetobacter": {
+    "S": 4,
+    "R": 4
+   },
+   "s_aureus": {
+    "S": 2,
+    "R": 2
+   },
+   "pkpd": {
+    "S": 0.5,
+    "R": 0.5
+   }
+  },
+  "amikacin": {
+   "enterobacterales": {
+    "S": 8,
+    "R": 8,
+    "nota": "sistemico: breakpoint tra parentesi, in associazione"
+   },
+   "p_aeruginosa": {
+    "S": 16,
+    "R": 16
+   },
+   "acinetobacter": {
+    "S": 8,
+    "R": 8
+   },
+   "s_aureus": {
+    "S": 16,
+    "R": 16
+   },
+   "pkpd": {
+    "S": 1,
+    "R": 1
+   }
+  },
+  "tobramycin": {
+   "enterobacterales": {
+    "S": 2,
+    "R": 2,
+    "nota": "sistemico: breakpoint tra parentesi, in associazione"
+   },
+   "p_aeruginosa": {
+    "S": 2,
+    "R": 2
+   },
+   "acinetobacter": {
+    "S": 4,
+    "R": 4
+   },
+   "s_aureus": {
+    "S": 2,
+    "R": 2
+   },
+   "pkpd": {
+    "S": 0.5,
+    "R": 0.5
+   }
+  },
+  "colistin": {
+   "enterobacterales": {
+    "S": 2,
+    "R": 2
+   },
+   "p_aeruginosa": {
+    "S": 4,
+    "R": 4
+   },
+   "acinetobacter": {
+    "S": 2,
+    "R": 2
+   }
+  },
+  "sulfamethoxazole-trimethoprim": {
+   "enterobacterales": {
+    "S": 0.5,
+    "R": 0.5,
+    "nota": "Serratia: R >2"
+   },
+   "acinetobacter": {
+    "S": 0.5,
+    "R": 0.5
+   },
+   "s_maltophilia": {
+    "S": null,
+    "R": 2
+   },
+   "s_aureus": {
+    "S": 0.5,
+    "R": 0.5
+   },
+   "cons": {
+    "S": 0.5,
+    "R": 0.5
+   },
+   "strep_abcg": {
+    "S": 0.5,
+    "R": 0.5
+   },
+   "s_pneumoniae": {
+    "S": 1,
+    "R": 1
+   },
+   "h_influenzae": {
+    "S": 0.5,
+    "R": 0.5
+   }
+  }
+ }
+}

@@ -1,0 +1,1265 @@
+{
+ "src": "Gatti et al. Crit Care 2022;26:178 · Gatti & Pea, Expert Rev Clin Pharmacol 2023;16:1035–1051 · plus per-agent Consensus literature syntheses (2024–2026) for glyco-/lipo-peptides, aminoglycosides, polymyxin, sulfonamide and novel β-lactams",
+ "note": "Targets for critically ill adults. Css = steady-state concentration (continuous/extended infusion); Cmin = trough; Cmax = peak; all interpreted against the pathogen MIC. Adjustments are the authors' ECPA rules.",
+ "note_it": "Target riferiti all'adulto critico. Css = concentrazione allo steady state (infusione continua/estesa); Cmin = valle; Cmax = picco; tutti interpretati rispetto alla MIC del patogeno. Gli aggiustamenti sono le regole ECPA degli autori.",
+ "agents": [
+  {
+   "d": "Piperacillin–tazobactam",
+   "g": "Traditional β-lactam",
+   "ind": "Multi-susceptible & ESBL (low-risk) Enterobacterales; P. aeruginosa",
+   "tgt": [
+    "Css 4–8 × MIC (piperacillin)",
+    "Tazobactam Css > 4 mg/L"
+   ],
+   "tox": "Cmin > 361 mg/L (neurotoxicity)",
+   "dec": [
+    "−50% if Css > 10 × MIC",
+    "−25% if Css 8–10 × MIC"
+   ],
+   "inc": [
+    "+50% if Css < 2 × MIC",
+    "+25% if Css 2–4 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h haematology & paediatrics / 72 h other",
+   "drv": "Renal function — ARC → underexposure; renal failure / high-intensity CRRT → overexposure",
+   "it": "Piperacillina–tazobactam",
+   "id": "piperacillin-tazobactam",
+   "pen": "Piperacillin + tazobactam",
+   "g_it": "β-lattamico tradizionale",
+   "ind_it": "Enterobacterales multisensibili ed ESBL (basso rischio); P. aeruginosa",
+   "tox_it": "Cmin > 361 mg/L (neurotossicità)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h in ematologia e pediatria / 72 h negli altri",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; insufficienza renale / CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Css 4–8 × MIC (piperacillina)",
+    "Tazobactam Css > 4 mg/L"
+   ],
+   "dec_it": [
+    "−50% se Css > 10 × MIC",
+    "−25% se Css 8–10 × MIC"
+   ],
+   "inc_it": [
+    "+50% se Css < 2 × MIC",
+    "+25% se Css 2–4 × MIC"
+   ]
+  },
+  {
+   "d": "Meropenem",
+   "g": "Traditional β-lactam",
+   "ind": "ESBL (high-risk) & P. aeruginosa infections",
+   "tgt": [
+    "Css 4–8 × MIC",
+    "VAP: narrow to Css/MIC 6–8"
+   ],
+   "tox": "Cmin > 64.2 mg/L (neurotoxicity)",
+   "dec": [
+    "−50% if Css > 10 × MIC",
+    "−25% if Css 8–10 × MIC"
+   ],
+   "inc": [
+    "+50% if Css < 2 × MIC",
+    "+25% if Css 2–4 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; renal failure / high-intensity CRRT → over",
+   "it": "Meropenem",
+   "id": "meropenem",
+   "pen": "Meropenem",
+   "g_it": "β-lattamico tradizionale",
+   "ind_it": "Infezioni da ESBL (alto rischio) e P. aeruginosa",
+   "tox_it": "Cmin > 64,2 mg/L (neurotossicità)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; insufficienza renale / CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Css 4–8 × MIC",
+    "VAP: restringere a Css/MIC 6–8"
+   ],
+   "dec_it": [
+    "−50% se Css > 10 × MIC",
+    "−25% se Css 8–10 × MIC"
+   ],
+   "inc_it": [
+    "+50% se Css < 2 × MIC",
+    "+25% se Css 2–4 × MIC"
+   ]
+  },
+  {
+   "d": "Ceftazidime",
+   "g": "Traditional β-lactam",
+   "ind": "Multi-susceptible Enterobacterales & P. aeruginosa",
+   "tgt": [
+    "Css 4–8 × MIC"
+   ],
+   "tox": "Not defined (NA)",
+   "dec": [
+    "−50% if Css > 10 × MIC",
+    "−25% if Css 8–10 × MIC"
+   ],
+   "inc": [
+    "+50% if Css < 2 × MIC",
+    "+25% if Css 2–4 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; renal failure / high-intensity CRRT → over",
+   "it": "Ceftazidima",
+   "id": "ceftazidime",
+   "pen": "Ceftazidime",
+   "g_it": "β-lattamico tradizionale",
+   "ind_it": "Enterobacterales multisensibili e P. aeruginosa",
+   "tox_it": "Non definita (NA)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; insufficienza renale / CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Css 4–8 × MIC"
+   ],
+   "dec_it": [
+    "−50% se Css > 10 × MIC",
+    "−25% se Css 8–10 × MIC"
+   ],
+   "inc_it": [
+    "+50% se Css < 2 × MIC",
+    "+25% se Css 2–4 × MIC"
+   ]
+  },
+  {
+   "d": "Cefepime",
+   "g": "Traditional β-lactam",
+   "ind": "Enterobacterales / P. aeruginosa; AmpC-producers",
+   "tgt": [
+    "Css 4–8 × MIC"
+   ],
+   "tox": "Cmin > 36 mg/L (neurotoxicity)",
+   "dec": [
+    "−50% if Css > 10 × MIC",
+    "−25% if Css 8–10 × MIC"
+   ],
+   "inc": [
+    "+50% if Css < 2 × MIC",
+    "+25% if Css 2–4 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; renal failure / high-intensity CRRT → over",
+   "it": "Cefepime",
+   "id": "cefepime",
+   "pen": "Cefepime",
+   "g_it": "β-lattamico tradizionale",
+   "ind_it": "Enterobacterales / P. aeruginosa; produttori di AmpC",
+   "tox_it": "Cmin > 36 mg/L (neurotossicità)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; insufficienza renale / CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Css 4–8 × MIC"
+   ],
+   "dec_it": [
+    "−50% se Css > 10 × MIC",
+    "−25% se Css 8–10 × MIC"
+   ],
+   "inc_it": [
+    "+50% se Css < 2 × MIC",
+    "+25% se Css 2–4 × MIC"
+   ]
+  },
+  {
+   "d": "Ampicillin",
+   "g": "Traditional β-lactam",
+   "ind": "Multi-susceptible Enterobacterales; E. faecalis",
+   "tgt": [
+    "Css 4–8 × MIC"
+   ],
+   "tox": "Not defined (NA)",
+   "dec": [
+    "−50% if Css > 10 × MIC",
+    "−25% if Css 8–10 × MIC"
+   ],
+   "inc": [
+    "+50% if Css < 2 × MIC",
+    "+25% if Css 2–4 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; renal failure → over",
+   "it": "Ampicillina",
+   "id": "ampicillin",
+   "pen": "Ampicillin",
+   "g_it": "β-lattamico tradizionale",
+   "ind_it": "Enterobacterales multisensibili; E. faecalis",
+   "tox_it": "Non definita (NA)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; insufficienza renale → sovraesposizione",
+   "tgt_it": [
+    "Css 4–8 × MIC"
+   ],
+   "dec_it": [
+    "−50% se Css > 10 × MIC",
+    "−25% se Css 8–10 × MIC"
+   ],
+   "inc_it": [
+    "+50% se Css < 2 × MIC",
+    "+25% se Css 2–4 × MIC"
+   ]
+  },
+  {
+   "d": "Ampicillin–sulbactam",
+   "g": "Traditional β-lactam",
+   "ind": "CRAB (carbapenem-resistant A. baumannii) infections",
+   "tgt": [
+    "Css 4–8 × MIC (ampicillin)"
+   ],
+   "tox": "Not defined (NA)",
+   "dec": [
+    "−50% if Css > 10 × MIC",
+    "−25% if Css 8–10 × MIC"
+   ],
+   "inc": [
+    "+50% if Css < 2 × MIC",
+    "+25% if Css 2–4 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; renal failure → over",
+   "it": "Ampicillina–sulbactam",
+   "id": "ampicillin-sulbactam",
+   "pen": "Ampicillin + sulbactam",
+   "g_it": "β-lattamico tradizionale",
+   "ind_it": "Infezioni da CRAB (A. baumannii resistente ai carbapenemi)",
+   "tox_it": "Non definita (NA)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; insufficienza renale → sovraesposizione",
+   "tgt_it": [
+    "Css 4–8 × MIC (ampicillina)"
+   ],
+   "dec_it": [
+    "−50% se Css > 10 × MIC",
+    "−25% se Css 8–10 × MIC"
+   ],
+   "inc_it": [
+    "+50% se Css < 2 × MIC",
+    "+25% se Css 2–4 × MIC"
+   ]
+  },
+  {
+   "d": "Ceftazidime–avibactam",
+   "g": "Novel β-lactam",
+   "ind": "KPC-producing Enterobacterales; DTR P. aeruginosa",
+   "tgt": [
+    "Ceftazidime Css/MIC 4–8",
+    "PLUS avibactam Css/CT > 1 (CT = 4 mg/L, EUCAST)"
+   ],
+   "tox": "Not defined yet (NA)",
+   "dec": [
+    "As traditional β-lactams (Css/MIC-based)"
+   ],
+   "inc": [
+    "As traditional β-lactams (Css/MIC-based)"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; high-intensity CRRT → over",
+   "it": "Ceftazidima–avibactam",
+   "id": "avibactam-ceftazidime",
+   "pen": "Ceftazidime + avibactam",
+   "g_it": "Nuovo β-lattamico",
+   "ind_it": "Enterobacterales produttori di KPC; P. aeruginosa DTR",
+   "tox_it": "Non ancora definita (NA)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Ceftazidima Css/MIC 4–8",
+    "PIÙ avibactam Css/CT > 1 (CT = 4 mg/L, EUCAST)"
+   ],
+   "dec_it": [
+    "Come i β-lattamici tradizionali (basato su Css/MIC)"
+   ],
+   "inc_it": [
+    "Come i β-lattamici tradizionali (basato su Css/MIC)"
+   ]
+  },
+  {
+   "d": "Meropenem–vaborbactam",
+   "g": "Novel β-lactam",
+   "ind": "KPC-producing Enterobacterales; DTR P. aeruginosa",
+   "tgt": [
+    "Meropenem Css/MIC 4–8",
+    "PLUS vaborbactam AUC/MIC > 24"
+   ],
+   "tox": "Not defined yet (NA)",
+   "dec": [
+    "As traditional β-lactams (Css/MIC-based)"
+   ],
+   "inc": [
+    "As traditional β-lactams (Css/MIC-based)"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; high-intensity CRRT → over",
+   "it": "Meropenem–vaborbactam",
+   "id": "meropenem-vaborbactam",
+   "pen": "Meropenem + vaborbactam",
+   "g_it": "Nuovo β-lattamico",
+   "ind_it": "Enterobacterales produttori di KPC; P. aeruginosa DTR",
+   "tox_it": "Non ancora definita (NA)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Meropenem Css/MIC 4–8",
+    "PIÙ vaborbactam AUC/MIC > 24"
+   ],
+   "dec_it": [
+    "Come i β-lattamici tradizionali (basato su Css/MIC)"
+   ],
+   "inc_it": [
+    "Come i β-lattamici tradizionali (basato su Css/MIC)"
+   ]
+  },
+  {
+   "d": "Cefiderocol",
+   "g": "Novel β-lactam",
+   "ind": "KPC/OXA-48 Enterobacterales; DTR P. aeruginosa; CRAB",
+   "tgt": [
+    "Css/MIC 4–8"
+   ],
+   "tox": "Not defined yet (NA)",
+   "dec": [
+    "As traditional β-lactams (Css/MIC-based)"
+   ],
+   "inc": [
+    "As traditional β-lactams (Css/MIC-based)"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; high-intensity CRRT → over",
+   "it": "Cefiderocol",
+   "id": "cefiderocol",
+   "pen": "Cefiderocol",
+   "g_it": "Nuovo β-lattamico",
+   "ind_it": "Enterobacterales KPC/OXA-48; P. aeruginosa DTR; CRAB",
+   "tox_it": "Non ancora definita (NA)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Css/MIC 4–8"
+   ],
+   "dec_it": [
+    "Come i β-lattamici tradizionali (basato su Css/MIC)"
+   ],
+   "inc_it": [
+    "Come i β-lattamici tradizionali (basato su Css/MIC)"
+   ]
+  },
+  {
+   "d": "Ceftobiprole",
+   "g": "Novel β-lactam",
+   "ind": "MRSA infections",
+   "tgt": [
+    "Css/MIC or AUC/MIC (as traditional β-lactams)"
+   ],
+   "tox": "Not defined yet (NA)",
+   "dec": [
+    "As traditional β-lactams"
+   ],
+   "inc": [
+    "As traditional β-lactams"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; high-intensity CRRT → over",
+   "it": "Ceftobiprolo",
+   "id": "ceftobiprole",
+   "pen": "Ceftobiprole",
+   "g_it": "Nuovo β-lattamico",
+   "ind_it": "Infezioni da MRSA",
+   "tox_it": "Non ancora definita (NA)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; CRRT ad alta intensità → sovraesposizione",
+   "tgt_it": [
+    "Css/MIC o AUC/MIC (come i β-lattamici tradizionali)"
+   ],
+   "dec_it": [
+    "Come i β-lattamici tradizionali"
+   ],
+   "inc_it": [
+    "Come i β-lattamici tradizionali"
+   ]
+  },
+  {
+   "d": "Linezolid",
+   "g": "Oxazolidinone",
+   "ind": "MRSA, VRE, resistant Gram-positive infections",
+   "tgt": [
+    "Cmin 2–8 mg/L",
+    "AUC/MIC also used"
+   ],
+   "tox": "Cmin > 8 mg/L (thrombocytopenia)",
+   "dec": [
+    "−50% if Cmin > 15 mg/L",
+    "−25% if Cmin 8–15 mg/L"
+   ],
+   "inc": [
+    "+50% if Cmin < 1 mg/L",
+    "+25% if Cmin 1–2 mg/L"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal + hepatic function; drug–drug interactions; obesity (minor)",
+   "it": "Linezolid",
+   "id": "linezolid",
+   "pen": "Linezolid",
+   "g_it": "Ossazolidinone",
+   "ind_it": "Infezioni da MRSA, VRE e Gram-positivi resistenti",
+   "tox_it": "Cmin > 8 mg/L (trombocitopenia)",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale + epatica; interazioni farmacologiche; obesità (minore)",
+   "tgt_it": [
+    "Cmin 2–8 mg/L",
+    "Si usa anche l'AUC/MIC"
+   ],
+   "dec_it": [
+    "−50% se Cmin > 15 mg/L",
+    "−25% se Cmin 8–15 mg/L"
+   ],
+   "inc_it": [
+    "+50% se Cmin < 1 mg/L",
+    "+25% se Cmin 1–2 mg/L"
+   ]
+  },
+  {
+   "d": "Levofloxacin",
+   "g": "Fluoroquinolone",
+   "ind": "Susceptible Gram-negative & Gram-positive infections",
+   "tgt": [
+    "Cmax 10 × MIC",
+    "AUC24/MIC > 125",
+    "Keep Cmin < 3 mg/L"
+   ],
+   "tox": "Not defined (NA) — keep Cmin low to limit toxicity/resistance",
+   "dec": [
+    "Space to q36–48h if Cmin > 2 mg/L"
+   ],
+   "inc": [
+    "+25% if Cmax < 10 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; AKI → over",
+   "it": "Levofloxacina",
+   "id": "levofloxacin",
+   "pen": "Levofloxacin",
+   "g_it": "Fluorochinolone",
+   "ind_it": "Infezioni da Gram-negativi e Gram-positivi sensibili",
+   "tox_it": "Non definita (NA) — mantenere bassa la Cmin per limitare tossicità/resistenze",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; AKI → sovraesposizione",
+   "tgt_it": [
+    "Cmax 10 × MIC",
+    "AUC24/MIC > 125",
+    "Mantenere Cmin < 3 mg/L"
+   ],
+   "dec_it": [
+    "Distanziare a q36–48h se Cmin > 2 mg/L"
+   ],
+   "inc_it": [
+    "+25% se Cmax < 10 × MIC"
+   ]
+  },
+  {
+   "d": "Ciprofloxacin",
+   "g": "Fluoroquinolone",
+   "ind": "Susceptible Gram-negative infections",
+   "tgt": [
+    "Cmax 10 × MIC",
+    "AUC24/MIC > 125",
+    "Keep Cmin < 2 mg/L"
+   ],
+   "tox": "Not defined (NA) — keep Cmin low to limit toxicity/resistance",
+   "dec": [
+    "−25% if Cmin > 2 mg/L"
+   ],
+   "inc": [
+    "+25% if Cmax < 10 × MIC"
+   ],
+   "tim": "First ECPA 24–48 h; reassess 24 h ICU / 48 h / 72 h",
+   "drv": "Renal function — ARC → under; AKI → over",
+   "it": "Ciprofloxacina",
+   "id": "ciprofloxacin",
+   "pen": "Ciprofloxacin",
+   "g_it": "Fluorochinolone",
+   "ind_it": "Infezioni da Gram-negativi sensibili",
+   "tox_it": "Non definita (NA) — mantenere bassa la Cmin per limitare tossicità/resistenze",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare a 24 h in TI / 48 h / 72 h",
+   "drv_it": "Funzione renale — ARC → sottoesposizione; AKI → sovraesposizione",
+   "tgt_it": [
+    "Cmax 10 × MIC",
+    "AUC24/MIC > 125",
+    "Mantenere Cmin < 2 mg/L"
+   ],
+   "dec_it": [
+    "−25% se Cmin > 2 mg/L"
+   ],
+   "inc_it": [
+    "+25% se Cmax < 10 × MIC"
+   ]
+  },
+  {
+   "d": "Fluconazole",
+   "g": "Azole antifungal",
+   "ind": "Candida spp. (except C. glabrata / krusei)",
+   "tgt": [
+    "Cmin 10–20 mg/L",
+    "AUC/MIC > 55–100 (Candida)"
+   ],
+   "tox": "Not defined (NA)",
+   "dec": [
+    "−50% if Cmin > 50 mg/L",
+    "−25% if Cmin 30–50 mg/L"
+   ],
+   "inc": [
+    "+25% if Cmin < 10 mg/L"
+   ],
+   "tim": "First ECPA 48 h (ICU); reassess twice weekly / 72 h",
+   "drv": "Renal function",
+   "it": "Fluconazolo",
+   "id": "fluconazole",
+   "pen": "Fluconazole",
+   "g_it": "Antifungino azolico",
+   "ind_it": "Candida spp. (eccetto C. glabrata / krusei)",
+   "tox_it": "Non definita (NA)",
+   "tim_it": "Prima ECPA a 48 h (TI); rivalutare due volte a settimana / 72 h",
+   "drv_it": "Funzione renale",
+   "tgt_it": [
+    "Cmin 10–20 mg/L",
+    "AUC/MIC > 55–100 (Candida)"
+   ],
+   "dec_it": [
+    "−50% se Cmin > 50 mg/L",
+    "−25% se Cmin 30–50 mg/L"
+   ],
+   "inc_it": [
+    "+25% se Cmin < 10 mg/L"
+   ]
+  },
+  {
+   "d": "Voriconazole",
+   "g": "Azole antifungal",
+   "ind": "Aspergillus, Fusarium, Candida infections",
+   "tgt": [
+    "Cmin 1–3 mg/L",
+    "AUC/MIC > 25–50 (Aspergillus)"
+   ],
+   "tox": "Cmin > 3–4 mg/L (hepatotoxicity, neurotoxicity)",
+   "dec": [
+    "Stop if Cmin > 8–10 mg/L",
+    "−25–50% if Cmin 3.5–8 mg/L"
+   ],
+   "inc": [
+    "Shorten to q6–8h if Cmin < 1 mg/L"
+   ],
+   "tim": "First ECPA 48 h (ICU); reassess twice weekly / 72 h",
+   "drv": "Hepatic (CYP2C19); DDIs; saturable kinetics",
+   "it": "Voriconazolo",
+   "id": "voriconazole",
+   "pen": "Voriconazole",
+   "g_it": "Antifungino azolico",
+   "ind_it": "Infezioni da Aspergillus, Fusarium, Candida",
+   "tox_it": "Cmin > 3–4 mg/L (epatotossicità, neurotossicità)",
+   "tim_it": "Prima ECPA a 48 h (TI); rivalutare due volte a settimana / 72 h",
+   "drv_it": "Epatica (CYP2C19); interazioni; cinetica saturabile",
+   "tgt_it": [
+    "Cmin 1–3 mg/L",
+    "AUC/MIC > 25–50 (Aspergillus)"
+   ],
+   "dec_it": [
+    "Sospendere se Cmin > 8–10 mg/L",
+    "−25–50% se Cmin 3,5–8 mg/L"
+   ],
+   "inc_it": [
+    "Accorciare a q6–8h se Cmin < 1 mg/L"
+   ]
+  },
+  {
+   "d": "Posaconazole",
+   "g": "Azole antifungal",
+   "ind": "Prophylaxis of Aspergillus; Mucor infections",
+   "tgt": [
+    "Cmin 1–3 mg/L",
+    "AUC/MIC > 25–50 (Aspergillus)"
+   ],
+   "tox": "Cmin > 3 mg/L (pseudohyperaldosteronism)",
+   "dec": [
+    "−25–50% if Cmin > 3 mg/L"
+   ],
+   "inc": [
+    "Shorten to q12h if Cmin < 1 mg/L"
+   ],
+   "tim": "First ECPA 72 h; reassess twice weekly",
+   "drv": "Absorption (formulation, PPI, mucositis); DDIs",
+   "it": "Posaconazolo",
+   "id": "posaconazole",
+   "pen": "Posaconazole",
+   "g_it": "Antifungino azolico",
+   "ind_it": "Profilassi di Aspergillus; infezioni da Mucor",
+   "tox_it": "Cmin > 3 mg/L (pseudoiperaldosteronismo)",
+   "tim_it": "Prima ECPA a 72 h; rivalutare due volte a settimana",
+   "drv_it": "Assorbimento (formulazione, IPP, mucosite); interazioni",
+   "tgt_it": [
+    "Cmin 1–3 mg/L",
+    "AUC/MIC > 25–50 (Aspergillus)"
+   ],
+   "dec_it": [
+    "−25–50% se Cmin > 3 mg/L"
+   ],
+   "inc_it": [
+    "Accorciare a q12h se Cmin < 1 mg/L"
+   ]
+  },
+  {
+   "d": "Isavuconazole",
+   "g": "Azole antifungal",
+   "ind": "Aspergillus, Mucor infections",
+   "tgt": [
+    "Cmin 1–5.1 mg/L (efficacy up to 7 mg/L)",
+    "AUC/MIC > 25–50 (Aspergillus)"
+   ],
+   "tox": "Cmin > 5.1 mg/L (GI disorders: nausea, hyporexia)",
+   "dec": [
+    "−25–50% if Cmin > 5 mg/L"
+   ],
+   "inc": [
+    "+25–50% if Cmin < 1 mg/L"
+   ],
+   "tim": "First ECPA 72–96 h; reassess twice weekly",
+   "drv": "Hepatic; DDIs",
+   "it": "Isavuconazolo",
+   "id": "isavuconazole",
+   "pen": "Isavuconazole",
+   "g_it": "Antifungino azolico",
+   "ind_it": "Infezioni da Aspergillus, Mucor",
+   "tox_it": "Cmin > 5,1 mg/L (disturbi gastrointestinali: nausea, iporessia)",
+   "tim_it": "Prima ECPA a 72–96 h; rivalutare due volte a settimana",
+   "drv_it": "Epatica; interazioni",
+   "tgt_it": [
+    "Cmin 1–5,1 mg/L (efficacia fino a 7 mg/L)",
+    "AUC/MIC > 25–50 (Aspergillus)"
+   ],
+   "dec_it": [
+    "−25–50% se Cmin > 5 mg/L"
+   ],
+   "inc_it": [
+    "+25–50% se Cmin < 1 mg/L"
+   ]
+  },
+  {
+   "d": "Fosfomycin",
+   "g": "Other antibacterial",
+   "ind": "S. aureus, Enterobacterales, P. aeruginosa (combination)",
+   "tgt": [
+    "fAUC/MIC 20–75 (S. aureus)",
+    "fAUC/MIC > 83.3 (Enterobacterales)",
+    "fAUC/MIC > 40.8 (P. aeruginosa)"
+   ],
+   "tox": "Not defined (NA) — watch hypernatraemia / hypokalaemia clinically",
+   "dec": [
+    "Renal-function guided (as β-lactams)"
+   ],
+   "inc": [
+    "Renal-function guided (as β-lactams)"
+   ],
+   "tim": "As traditional / novel β-lactams",
+   "drv": "Renal function — ARC & high-intensity CRRT → under; AKI → over",
+   "it": "Fosfomicina",
+   "id": "fosfomycin",
+   "pen": "Fosfomycin",
+   "g_it": "Altro antibatterico",
+   "ind_it": "S. aureus, Enterobacterales, P. aeruginosa (in associazione)",
+   "tox_it": "Non definita (NA) — sorvegliare clinicamente ipernatriemia / ipokaliemia",
+   "tim_it": "Come i β-lattamici tradizionali / nuovi",
+   "drv_it": "Funzione renale — ARC e CRRT ad alta intensità → sottoesposizione; AKI → sovraesposizione",
+   "tgt_it": [
+    "fAUC/MIC 20–75 (S. aureus)",
+    "fAUC/MIC > 83,3 (Enterobacterales)",
+    "fAUC/MIC > 40,8 (P. aeruginosa)"
+   ],
+   "dec_it": [
+    "Guidato dalla funzione renale (come i β-lattamici)"
+   ],
+   "inc_it": [
+    "Guidato dalla funzione renale (come i β-lattamici)"
+   ]
+  },
+  {
+   "d": "Dalbavancin",
+   "g": "Other antibacterial",
+   "ind": "MRSA / staphylococcal subacute–chronic (e.g. osteoarticular, outpatient)",
+   "tgt": [
+    "fAUC/MIC > 111.1 (Staphylococci)",
+    "Cmin > 8.04 mg/L (subacute–chronic MRSA)"
+   ],
+   "tox": "Not defined (NA)",
+   "dec": [
+    "Extend dosing interval (long-acting)"
+   ],
+   "inc": [
+    "Additional 1500 mg dose if Cmin below target"
+   ],
+   "tim": "Long-acting: 1500 mg day 1 + 1500 mg day 8; reassess ~weekly",
+   "drv": "Renal function (slow elimination, t½ ~2 weeks)",
+   "it": "Dalbavancina",
+   "id": "dalbavancin",
+   "pen": "Dalbavancin",
+   "g_it": "Altro antibatterico",
+   "ind_it": "Infezioni stafilococciche/MRSA subacute–croniche (es. osteoarticolari, ambulatoriali)",
+   "tox_it": "Non definita (NA)",
+   "tim_it": "A lunga durata: 1500 mg giorno 1 + 1500 mg giorno 8; rivalutare ~settimanalmente",
+   "drv_it": "Funzione renale (eliminazione lenta, t½ ~2 settimane)",
+   "tgt_it": [
+    "fAUC/MIC > 111,1 (stafilococchi)",
+    "Cmin > 8,04 mg/L (MRSA subacuto–cronico)"
+   ],
+   "dec_it": [
+    "Estendere l'intervallo di somministrazione (a lunga durata)"
+   ],
+   "inc_it": [
+    "Dose aggiuntiva di 1500 mg se Cmin sotto target"
+   ]
+  },
+  {
+   "d": "Ganciclovir / valganciclovir",
+   "g": "Antiviral",
+   "ind": "CMV infection / disease",
+   "tgt": [
+    "Cmin 0.7–2 mg/L"
+   ],
+   "tox": "Not defined (NA) — myelotoxicity risk clinically",
+   "dec": [
+    "Stop if Cmin > 5 mg/L",
+    "−25–50% if Cmin 2–5 mg/L"
+   ],
+   "inc": [
+    "Shorten to q6–8h if Cmin < 0.5 mg/L"
+   ],
+   "tim": "First ECPA 24–48 h; reassess per renal function",
+   "drv": "Renal function",
+   "it": "Ganciclovir / valganciclovir",
+   "id": "ganciclovir-ganciclovir",
+   "pen": null,
+   "g_it": "Antivirale",
+   "ind_it": "Infezione / malattia da CMV",
+   "tox_it": "Non definita (NA) — rischio di mielotossicità da sorvegliare clinicamente",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare in base alla funzione renale",
+   "drv_it": "Funzione renale",
+   "tgt_it": [
+    "Cmin 0,7–2 mg/L"
+   ],
+   "dec_it": [
+    "Sospendere se Cmin > 5 mg/L",
+    "−25–50% se Cmin 2–5 mg/L"
+   ],
+   "inc_it": [
+    "Accorciare a q6–8h se Cmin < 0,5 mg/L"
+   ]
+  },
+  {
+   "d": "Acyclovir",
+   "g": "Antiviral",
+   "ind": "HSV / VZV infection",
+   "tgt": [
+    "Cmin 1–3 mg/L"
+   ],
+   "tox": "Not defined (NA) — neuro/nephrotoxicity risk clinically",
+   "dec": [
+    "Stop if Cmin > 5 mg/L",
+    "−25–50% if Cmin 3–5 mg/L"
+   ],
+   "inc": [
+    "Shorten to q6h if Cmin < 0.5 mg/L"
+   ],
+   "tim": "First ECPA 24–48 h; reassess per renal function",
+   "drv": "Renal function",
+   "it": "Aciclovir",
+   "id": "aciclovir",
+   "pen": null,
+   "g_it": "Antivirale",
+   "ind_it": "Infezione da HSV / VZV",
+   "tox_it": "Non definita (NA) — rischio di neuro/nefrotossicità da sorvegliare clinicamente",
+   "tim_it": "Prima ECPA a 24–48 h; rivalutare in base alla funzione renale",
+   "drv_it": "Funzione renale",
+   "tgt_it": [
+    "Cmin 1–3 mg/L"
+   ],
+   "dec_it": [
+    "Sospendere se Cmin > 5 mg/L",
+    "−25–50% se Cmin 3–5 mg/L"
+   ],
+   "inc_it": [
+    "Accorciare a q6h se Cmin < 0,5 mg/L"
+   ]
+  },
+  {
+   "d": "Vancomycin",
+   "g": "Glycopeptide",
+   "ind": "Serious MRSA / Gram-positive infection",
+   "tgt": [
+    "AUC₀–₂₄/MIC 400–600 mg·h/L (MIC 1)",
+    "Trough 15–20 mg/L = fallback surrogate"
+   ],
+   "tox": "AUC₂₄ >600 mg·h/L or trough ≥20 mg/L (AKI; OR 2.39)",
+   "dec": [
+    "Reduce dose / extend interval to keep AUC₂₄ ≤600",
+    "Lower initial target to 400–500 in renal impairment"
+   ],
+   "inc": [
+    "Increase to reach AUC₂₄ ≥400 (aim ~500 ± 20%)"
+   ],
+   "tim": "Bayesian AUC with peak+trough (peak 30–60 min after 3rd-dose infusion, trough 30–60 min pre-4th dose); consider day-2 sampling if severe / high AKI risk",
+   "drv": "Renal function — ARC (CrCl >130) lowers exposure; CRRT/RRT alters clearance; ECMO no independent effect",
+   "src": "Matsumoto 2022 (JSC/JSTDM guideline); Tsutsuura 2021; Lim 2023; Zasowski 2017",
+   "it": "Vancomicina",
+   "id": "vancomycin",
+   "pen": "Vancomycin",
+   "g_it": "Glicopeptide",
+   "ind_it": "Infezione grave da MRSA / Gram-positivi",
+   "tox_it": "AUC₂₄ >600 mg·h/L o valle ≥20 mg/L (AKI; OR 2,39)",
+   "tim_it": "AUC bayesiana con picco+valle (picco 30–60 min dopo l'infusione della 3ª dose, valle 30–60 min prima della 4ª); considerare prelievi in giornata 2 se grave / alto rischio di AKI",
+   "drv_it": "Funzione renale — l'ARC (CrCl >130) riduce l'esposizione; CRRT/RRT alterano la clearance; l'ECMO non ha effetto indipendente",
+   "tgt_it": [
+    "AUC₀–₂₄/MIC 400–600 mg·h/L (MIC 1)",
+    "Valle 15–20 mg/L = surrogato di ripiego"
+   ],
+   "dec_it": [
+    "Ridurre la dose / estendere l'intervallo per mantenere AUC₂₄ ≤600",
+    "Nell'insufficienza renale abbassare il target iniziale a 400–500"
+   ],
+   "inc_it": [
+    "Aumentare fino a AUC₂₄ ≥400 (obiettivo ~500 ± 20%)"
+   ]
+  },
+  {
+   "d": "Teicoplanin",
+   "g": "Glycopeptide",
+   "ind": "MRSA / Gram-positive; E. faecium bloodstream infection",
+   "tgt": [
+    "Trough Cmin 15–30 mg/L (serious MRSA); 20–40 mg/L complicated",
+    "AUC₂₄/MIC ≥610 (MRSA)",
+    "Mild: ≥10–15 mg/L"
+   ],
+   "tox": "Cmin >40–60 mg/L (nephrotoxicity); AE OR 2.08 per +20 mg/L",
+   "dec": [
+    "If Cmin >30: hold, remeasure daily, restart lower once 10–30 mg/L"
+   ],
+   "inc": [
+    "If Cmin <10: increase, recheck before 5th dose (2nd dose if renal impairment)",
+    "Prefer interval extension over unit-dose reduction in renal impairment"
+   ],
+   "tim": "First trough day 4 (loading phase); recheck at steady state (~day 10); sample 5–15 min pre-dose; reassess q48–72h",
+   "drv": "Renal function; CRRT/ECMO → frequent underexposure (≈78% low on ECMO)",
+   "src": "JAC 2021 guideline; Hanai 2021 meta-analysis; Pea 2020; Gatti 2025",
+   "it": "Teicoplanina",
+   "id": "teicoplanin",
+   "pen": "Teicoplanin",
+   "g_it": "Glicopeptide",
+   "ind_it": "MRSA / Gram-positivi; batteriemia da E. faecium",
+   "tox_it": "Cmin >40–60 mg/L (nefrotossicità); eventi avversi OR 2,08 ogni +20 mg/L",
+   "tim_it": "Prima valle in giornata 4 (fase di carico); ricontrollare allo steady state (~giorno 10); prelievo 5–15 min pre-dose; rivalutare ogni q48–72h",
+   "drv_it": "Funzione renale; CRRT/ECMO → frequente sottoesposizione (≈78% bassi in ECMO)",
+   "tgt_it": [
+    "Valle Cmin 15–30 mg/L (MRSA grave); 20–40 mg/L nelle forme complicate",
+    "AUC₂₄/MIC ≥610 (MRSA)",
+    "Forme lievi: ≥10–15 mg/L"
+   ],
+   "dec_it": [
+    "Se Cmin >30: sospendere, ridosare ogni giorno, riprendere a dose più bassa quando 10–30 mg/L"
+   ],
+   "inc_it": [
+    "Se Cmin <10: aumentare, ricontrollare prima della 5ª dose (2ª dose se insufficienza renale)",
+    "Nell'insufficienza renale preferire l'estensione dell'intervallo alla riduzione della singola dose"
+   ]
+  },
+  {
+   "d": "Daptomycin",
+   "g": "Lipopeptide",
+   "ind": "MRSA/Gram-positive bacteraemia, endocarditis, BJI (NOT pneumonia)",
+   "tgt": [
+    "AUC₂₄/MIC ≥666 (S. aureus)",
+    "Practical AUC₂₄ 666–939 mg·h/L",
+    "Enterococcus: fAUC/MIC >27–143"
+   ],
+   "tox": "Cmin ≥24.3 mg/L (CPK rise / myopathy); AUC₂₄ >939 mg·h/L",
+   "dec": [
+    "Model-based: 6 mg/kg q24h in CRRT balances efficacy/safety (8 mg/kg ↑ toxicity)"
+   ],
+   "inc": [
+    "ARC / CrCl >90: up to ~700 mg/day for PTA",
+    "q24h preferred — q48h inadequate even on CRRT"
+   ],
+   "tim": "First TDM ≥3 days; trough pre-dose for safety; AUC from 2 samples (~2 h post-infusion + trough) or single mid-interval 7–11 h (30–43 mg/L)",
+   "drv": "Renal function — ARC lowers exposure; renal impairment / CRRT raises it",
+   "src": "Grégoire 2020; Soraluce 2018; Heitzmann 2022; Olney 2024; Xie 2020",
+   "it": "Daptomicina",
+   "id": "daptomycin",
+   "pen": "Daptomycin",
+   "g_it": "Lipopeptide",
+   "ind_it": "Batteriemia, endocardite, infezioni osteoarticolari da MRSA/Gram-positivi (NON polmonite)",
+   "tox_it": "Cmin ≥24,3 mg/L (rialzo del CPK / miopatia); AUC₂₄ >939 mg·h/L",
+   "tim_it": "Primo TDM dopo ≥3 giorni; valle pre-dose per la sicurezza; AUC da 2 prelievi (~2 h post-infusione + valle) o prelievo unico a metà intervallo 7–11 h (30–43 mg/L)",
+   "drv_it": "Funzione renale — l'ARC riduce l'esposizione; insufficienza renale / CRRT la aumentano",
+   "tgt_it": [
+    "AUC₂₄/MIC ≥666 (S. aureus)",
+    "AUC₂₄ pratica 666–939 mg·h/L",
+    "Enterococcus: fAUC/MIC >27–143"
+   ],
+   "dec_it": [
+    "Basato su modello: 6 mg/kg q24h in CRRT bilancia efficacia/sicurezza (8 mg/kg ↑ tossicità)"
+   ],
+   "inc_it": [
+    "ARC / CrCl >90: fino a ~700 mg/die per la PTA",
+    "q24h preferibile — q48h inadeguato anche in CRRT"
+   ]
+  },
+  {
+   "d": "Gentamicin",
+   "g": "Aminoglycoside",
+   "ind": "Gram-negative infection (concentration-dependent); Gram-positive synergy",
+   "tgt": [
+    "Cmax/MIC ≥8–10",
+    "AUC₂₄/MIC 70–100 (≥110 severe)"
+   ],
+   "tox": "Cmin >2 mg/L (aim <0.5–1); AUC₂₄ >700 mg·h/L → nephro/ototoxicity",
+   "dec": [
+    "Extend interval beyond 24 h if CKD-EPI <50 mL/min/1.73 m²",
+    "ICU: consider 25% dose reduction"
+   ],
+   "inc": [
+    "ARC / preserved renal function: higher dose to keep Cmax/MIC ≥8–10"
+   ],
+   "tim": "Peak 30 min after infusion + trough pre-dose (redose when trough acceptable). Neonates: trough ≤1, peak 8–12; children: trough ≤0.5, peak 15–20",
+   "drv": "Renal function dominant; low albumin ↑Vd lowers Cmax; CRRT intensity ↑clearance",
+   "src": "Hodiamont 2022 & 2017; Abbasi 2023; Smit 2020",
+   "it": "Gentamicina",
+   "id": "gentamicin",
+   "pen": "Gentamicin",
+   "g_it": "Aminoglicoside",
+   "ind_it": "Infezione da Gram-negativi (concentrazione-dipendente); sinergia sui Gram-positivi",
+   "tox_it": "Cmin >2 mg/L (obiettivo <0,5–1); AUC₂₄ >700 mg·h/L → nefro/ototossicità",
+   "tim_it": "Picco 30 min dopo l'infusione + valle pre-dose (risomministrare quando la valle è accettabile). Neonati: valle ≤1, picco 8–12; bambini: valle ≤0,5, picco 15–20",
+   "drv_it": "Funzione renale dominante; l'ipoalbuminemia ↑Vd e abbassa la Cmax; l'intensità della CRRT ↑clearance",
+   "tgt_it": [
+    "Cmax/MIC ≥8–10",
+    "AUC₂₄/MIC 70–100 (≥110 nelle forme gravi)"
+   ],
+   "dec_it": [
+    "Estendere l'intervallo oltre le 24 h se CKD-EPI <50 mL/min/1,73 m²",
+    "TI: considerare una riduzione della dose del 25%"
+   ],
+   "inc_it": [
+    "ARC / funzione renale conservata: dose maggiore per mantenere Cmax/MIC ≥8–10"
+   ]
+  },
+  {
+   "d": "Amikacin",
+   "g": "Aminoglycoside",
+   "ind": "Gram-negative infection (concentration-dependent)",
+   "tgt": [
+    "Cmax/MIC ≥8–10 (peak ≈8–12× MIC)",
+    "Practical peak 20–50 mg/L (60–80 high-dose)",
+    "AUC₀–₂₄/MIC ~80"
+   ],
+   "tox": "Cmin >5 mg/L (aim <2.5; conservative <1); Cmin >10 clearly nephrotoxic",
+   "dec": [
+    "If Cpeak/MIC >12: −25–30% daily dose",
+    "If Cmin >5: prolong interval +12 h up to 72 h, redose only when ≤5 mg/L"
+   ],
+   "inc": [
+    "If Cpeak/MIC <8: +25–30% daily dose",
+    "ARC: higher dose"
+   ],
+   "tim": "Peak 30 min after a 30-min infusion; add 8 h sample for Bayesian AUC. Neonates: Cmax ≥15–24, Cmin ≤3–5",
+   "drv": "Renal function (CrCl) + body weight (adjusted BW); RRT modality",
+   "src": "Steffens 2025; Duszyńska 2013; Cajade 2024; Orzechowski 2026",
+   "it": "Amikacina",
+   "id": "amikacin",
+   "pen": "Amikacin",
+   "g_it": "Aminoglicoside",
+   "ind_it": "Infezione da Gram-negativi (concentrazione-dipendente)",
+   "tox_it": "Cmin >5 mg/L (obiettivo <2,5; conservativo <1); Cmin >10 chiaramente nefrotossica",
+   "tim_it": "Picco 30 min dopo un'infusione di 30 min; aggiungere un prelievo a 8 h per l'AUC bayesiana. Neonati: Cmax ≥15–24, Cmin ≤3–5",
+   "drv_it": "Funzione renale (CrCl) + peso corporeo (peso corretto); modalità di RRT",
+   "tgt_it": [
+    "Cmax/MIC ≥8–10 (picco ≈8–12× MIC)",
+    "Picco pratico 20–50 mg/L (60–80 ad alte dosi)",
+    "AUC₀–₂₄/MIC ~80"
+   ],
+   "dec_it": [
+    "Se Cpicco/MIC >12: −25–30% della dose giornaliera",
+    "Se Cmin >5: prolungare l'intervallo di +12 h fino a 72 h, risomministrare solo quando ≤5 mg/L"
+   ],
+   "inc_it": [
+    "Se Cpicco/MIC <8: +25–30% della dose giornaliera",
+    "ARC: dose maggiore"
+   ]
+  },
+  {
+   "d": "Tobramycin",
+   "g": "Aminoglycoside",
+   "ind": "Gram-negative (P. aeruginosa, nonfermenters); cystic fibrosis",
+   "tgt": [
+    "AUC₂₄/MIC ≥80 (nonfermenters)",
+    "Cmax/MIC ≥10",
+    "CF: AUC₂₄ 80–120; peak 30–40 mg/L"
+   ],
+   "tox": "Cmin >1 mg/L / fails to fall ≤1 before redose (nephrotoxicity); higher AUC₀–₇₂ → AKI",
+   "dec": [
+    "Extend interval if renal function low or trough not ≤1 mg/L"
+   ],
+   "inc": [
+    "ARC (↑clearance 1.5–1.7×): higher mg/kg",
+    "Renal-stratified first dose (Hashiguchi): 15→7 mg/kg across eGFR bands"
+   ],
+   "tim": "Peak 30 min post-infusion + trough (redose when ≤1); or peak + 24 h after first dose for early AUC",
+   "drv": "Renal function / ARC; CRRT ↑clearance; in obesity eGFR (not weight) predicts clearance",
+   "src": "Hashiguchi 2023; Smit 2019; Avedissian 2021; Harwood 2025",
+   "it": "Tobramicina",
+   "id": "tobramycin",
+   "pen": "Tobramycin",
+   "g_it": "Aminoglicoside",
+   "ind_it": "Gram-negativi (P. aeruginosa, non fermentanti); fibrosi cistica",
+   "tox_it": "Cmin >1 mg/L / non scende a ≤1 prima della dose successiva (nefrotossicità); AUC₀–₇₂ più alta → AKI",
+   "tim_it": "Picco 30 min post-infusione + valle (risomministrare quando ≤1); oppure picco + 24 h dopo la prima dose per un'AUC precoce",
+   "drv_it": "Funzione renale / ARC; la CRRT ↑clearance; nell'obesità è l'eGFR (non il peso) a predire la clearance",
+   "tgt_it": [
+    "AUC₂₄/MIC ≥80 (non fermentanti)",
+    "Cmax/MIC ≥10",
+    "FC: AUC₂₄ 80–120; picco 30–40 mg/L"
+   ],
+   "dec_it": [
+    "Estendere l'intervallo se la funzione renale è ridotta o la valle non è ≤1 mg/L"
+   ],
+   "inc_it": [
+    "ARC (↑clearance 1,5–1,7×): mg/kg più alti",
+    "Prima dose stratificata per funzione renale (Hashiguchi): da 15 a 7 mg/kg lungo le fasce di eGFR"
+   ]
+  },
+  {
+   "d": "Colistin (colistimethate)",
+   "g": "Polymyxin",
+   "ind": "MDR Gram-negative (A. baumannii, P. aeruginosa, CRE)",
+   "tgt": [
+    "fAUC₀–₂₄/MIC ~12 (target attainment)",
+    "Practical: plasma Css,avg ~2 mg/L (AUCss,24h ~50 mg·h/L)",
+    "Lung infections need higher / often inadequate by IV"
+   ],
+   "tox": "Css,avg >2.5 mg/L (nephrotoxicity); 3–4 mg/L exceeds safety limit",
+   "dec": [
+    "Reduce to keep Css,avg ≤2.5 mg/L, especially on CRRT (high exposure)"
+   ],
+   "inc": [
+    "Loading dose then maintenance for target Css,avg ~2 (Nation 2016 algorithm)",
+    "HD: 1.5 MIU on non-HD days + 1.5 MIU supplemental after HD"
+   ],
+   "tim": "Trough just before next dose on day 3–4 ≈ Css,avg (flat profile); steady state only after >72–96 h; repeat early TDM (high variability)",
+   "drv": "Renal function — higher CrCl lowers exposure; CRRT/HD markedly change clearance; low albumin a covariate",
+   "src": "Nation 2016 (CID); De Pascale 2024; Rychlíčková 2023; Jacobs 2016",
+   "it": "Colistina (colistimetato)",
+   "id": "colistin",
+   "pen": "Colistin",
+   "g_it": "Polimixina",
+   "ind_it": "Gram-negativi MDR (A. baumannii, P. aeruginosa, CRE)",
+   "tox_it": "Css,media >2,5 mg/L (nefrotossicità); 3–4 mg/L supera il limite di sicurezza",
+   "tim_it": "Valle subito prima della dose successiva in giornata 3–4 ≈ Css,media (profilo piatto); steady state solo dopo >72–96 h; ripetere precocemente il TDM (alta variabilità)",
+   "drv_it": "Funzione renale — un CrCl più alto riduce l'esposizione; CRRT/HD modificano marcatamente la clearance; l'ipoalbuminemia è una covariata",
+   "tgt_it": [
+    "fAUC₀–₂₄/MIC ~12 (raggiungimento del target)",
+    "Pratico: Css,media plasmatica ~2 mg/L (AUCss,24h ~50 mg·h/L)",
+    "Le infezioni polmonari richiedono livelli più alti / spesso inadeguata per via EV"
+   ],
+   "dec_it": [
+    "Ridurre per mantenere Css,media ≤2,5 mg/L, soprattutto in CRRT (esposizione elevata)"
+   ],
+   "inc_it": [
+    "Dose di carico poi mantenimento per una Css,media target ~2 (algoritmo di Nation 2016)",
+    "HD: 1,5 MIU nei giorni senza dialisi + 1,5 MIU supplementari dopo la HD"
+   ]
+  },
+  {
+   "d": "Cotrimoxazole (TMP–SMX)",
+   "g": "Sulfonamide",
+   "ind": "PCP (main TDM setting); melioidosis, Nocardia, some MDR-GN",
+   "tgt": [
+    "No universal PK/PD index established",
+    "PCP: TMP >5 mg/L and SMX >100 mg/L (peak)",
+    "Melioidosis: AUC₀–₂₄/MIC >25"
+   ],
+   "tox": "TMP >15 mg/L; SMX >200 mg/L; N-acetyl-SMX >75 mg/L (delirium, hyperkalaemia, acidosis, myoclonus, renal tubular obstruction)",
+   "dec": [
+    "Reduce total dose 16.7% at eGFR 30; 33.3% at eGFR 10 mL/min/1.73 m²"
+   ],
+   "inc": [
+    "Double the SMX dose on CRRT (SMX preferentially removed)"
+   ],
+   "tim": "Peak/steady-state levels in PCP; monthly SMX in chronic mycoses until cure",
+   "drv": "Renal function (lower eGFR ↑exposure, esp. TMP); CRRT/dialysis ↑SMX clearance; weight affects SMX more than TMP",
+   "src": "Leegwater 2024 (Clin Pharmacol Ther); Brown 2014; Joos 1995; Cheng 2009",
+   "it": "Cotrimossazolo (TMP–SMX)",
+   "id": "sulfamethoxazole-trimethoprim",
+   "pen": "Cotrimoxazole",
+   "g_it": "Sulfamidico",
+   "ind_it": "PCP (principale contesto di TDM); melioidosi, Nocardia, alcuni Gram-negativi MDR",
+   "tox_it": "TMP >15 mg/L; SMX >200 mg/L; N-acetil-SMX >75 mg/L (delirium, iperkaliemia, acidosi, mioclono, ostruzione tubulare renale)",
+   "tim_it": "Livelli di picco/steady state nella PCP; SMX mensile nelle micosi croniche fino a guarigione",
+   "drv_it": "Funzione renale (eGFR più basso ↑esposizione, soprattutto TMP); CRRT/dialisi ↑clearance dell'SMX; il peso influenza più l'SMX del TMP",
+   "tgt_it": [
+    "Nessun indice PK/PD universale stabilito",
+    "PCP: TMP >5 mg/L e SMX >100 mg/L (picco)",
+    "Melioidosi: AUC₀–₂₄/MIC >25"
+   ],
+   "dec_it": [
+    "Ridurre la dose totale del 16,7% con eGFR 30; del 33,3% con eGFR 10 mL/min/1,73 m²"
+   ],
+   "inc_it": [
+    "Raddoppiare la dose di SMX in CRRT (l'SMX è rimosso preferenzialmente)"
+   ]
+  },
+  {
+   "d": "Ceftaroline",
+   "g": "Novel β-lactam",
+   "ind": "MRSA / Gram-positive infection",
+   "tgt": [
+    "%fT>MIC (β-lactam index)",
+    "ICU: 100% fT>MIC (aggressive 100% fT>4×MIC)",
+    "S. aureus 35% fT>MIC kill; ≥50% suppresses resistance"
+   ],
+   "tox": "Not established (upper ceiling 100% fT<10×MIC used, not toxicity-validated)",
+   "dec": [
+    "Adjust assuming linear PK by target attainment + renal function; repeat TDM if renal function changes or toxicity suspected"
+   ],
+   "inc": [
+    "ARC/MRSA: 600 mg loading + 50 mg/h continuous infusion",
+    "CRRT: ~400–600 mg q12h by effluent flow"
+   ],
+   "tim": "Trough / steady-state sampling; reassess if renal function or clinical course changes",
+   "drv": "Renal function — ARC lowers exposure; CRRT adds ~35% clearance and ↑Vd",
+   "src": "Fresan 2023; Riccobene 2021; Chauzy 2022; Kalaria 2021",
+   "it": "Ceftarolina",
+   "id": "ceftaroline",
+   "pen": "Ceftaroline",
+   "g_it": "Nuovo β-lattamico",
+   "ind_it": "Infezione da MRSA / Gram-positivi",
+   "tox_it": "Non stabilita (si usa un tetto superiore 100% fT<10×MIC, non validato per la tossicità)",
+   "tim_it": "Prelievo di valle / allo steady state; rivalutare se cambiano la funzione renale o il decorso clinico",
+   "drv_it": "Funzione renale — l'ARC riduce l'esposizione; la CRRT aggiunge ~35% di clearance e ↑Vd",
+   "tgt_it": [
+    "%fT>MIC (indice dei β-lattamici)",
+    "TI: 100% fT>MIC (aggressivo 100% fT>4×MIC)",
+    "S. aureus: 35% fT>MIC per l'effetto battericida; ≥50% sopprime le resistenze"
+   ],
+   "dec_it": [
+    "Aggiustare assumendo una PK lineare in base al raggiungimento del target + funzione renale; ripetere il TDM se cambia la funzione renale o si sospetta tossicità"
+   ],
+   "inc_it": [
+    "ARC/MRSA: 600 mg di carico + 50 mg/h in infusione continua",
+    "CRRT: ~400–600 mg q12h in base al flusso di effluente"
+   ]
+  },
+  {
+   "d": "Ceftolozane–tazobactam",
+   "g": "Novel β-lactam",
+   "ind": "DTR P. aeruginosa; ESBL Enterobacterales",
+   "tgt": [
+    "%fT>MIC (intermittent) — ICU aggressive 100% fT>MIC",
+    "Continuous infusion: ceftolozane fCss/MIC >4 (Css/MIC or Cmin/MIC 4–8)",
+    "ESBL: + tazobactam fCss/CT ≥1 (CT 4 mg/L)"
+   ],
+   "tox": "Not established (NA)",
+   "dec": [
+    "−50% if ceftolozane Cmin/Css >10×MIC",
+    "−25% if 8–10×MIC and tazobactam Css/CT >4"
+   ],
+   "inc": [
+    "+50% if ceftolozane Cmin/Css <2×MIC",
+    "+25% if 2–4×MIC and/or tazobactam Css/CT <1"
+   ],
+   "tim": "Monitor ceftolozane Cmin or Css vs MIC (+ tazobactam vs CT in ESBL); sample at steady state (after 4–5 doses)",
+   "drv": "Renal function — ARC lowers exposure; CRRT effluent flow ↑clearance; ECMO minimal direct effect",
+   "src": "Gatti 2025 (Ther Drug Monit); Sime 2019; Pai 2025; Nicolau 2021",
+   "it": "Ceftolozano–tazobactam",
+   "id": "ceftolozane-tazobactam",
+   "pen": "Ceftolozane + tazobactam",
+   "g_it": "Nuovo β-lattamico",
+   "ind_it": "P. aeruginosa DTR; Enterobacterales ESBL",
+   "tox_it": "Non stabilita (NA)",
+   "tim_it": "Monitorare Cmin o Css del ceftolozano rispetto alla MIC (+ tazobactam rispetto alla CT negli ESBL); prelievo allo steady state (dopo 4–5 dosi)",
+   "drv_it": "Funzione renale — l'ARC riduce l'esposizione; il flusso di effluente in CRRT ↑clearance; effetto diretto minimo dell'ECMO",
+   "tgt_it": [
+    "%fT>MIC (intermittente) — in TI aggressivo 100% fT>MIC",
+    "Infusione continua: ceftolozano fCss/MIC >4 (Css/MIC o Cmin/MIC 4–8)",
+    "ESBL: + tazobactam fCss/CT ≥1 (CT 4 mg/L)"
+   ],
+   "dec_it": [
+    "−50% se Cmin/Css del ceftolozano >10×MIC",
+    "−25% se 8–10×MIC e tazobactam Css/CT >4"
+   ],
+   "inc_it": [
+    "+50% se Cmin/Css del ceftolozano <2×MIC",
+    "+25% se 2–4×MIC e/o tazobactam Css/CT <1"
+   ]
+  },
+  {
+   "d": "Aztreonam–avibactam",
+   "g": "Novel β-lactam",
+   "ind": "MBL-producing Enterobacterales; serious Gram-negative",
+   "tgt": [
+    "Aztreonam 60% fT>MIC (nominal MIC 8)",
+    "+ avibactam 50% fT>CT (CT 2.5 mg/L)",
+    "Joint simultaneous attainment; PTA ≥90%"
+   ],
+   "tox": "Not established (NA) — AEs: ↑hepatic enzymes 26.5%, diarrhoea 14.7%, no exposure cutoff",
+   "dec": [
+    "No concentration-based rule; use renal-function dosing (reduce in impairment)"
+   ],
+   "inc": [
+    "Loading dose + 3-h or continuous infusion for rapid joint target; ARC → standard/high dose"
+   ],
+   "tim": "No validated range; trough/peak measured case-by-case (e.g. around 4th dose)",
+   "drv": "Renal function dominant — ARC lowers exposure (esp. avibactam); infection type (lowest in cIAI); capillary leak ↑Vd",
+   "src": "Xie 2025; Das 2024; Al Musawa 2024; Cornely 2019",
+   "it": "Aztreonam–avibactam",
+   "id": "avibactam-aztreonam",
+   "pen": "Aztreonam + avibactam",
+   "g_it": "Nuovo β-lattamico",
+   "ind_it": "Enterobacterales produttori di MBL; infezioni gravi da Gram-negativi",
+   "tox_it": "Non stabilita (NA) — eventi avversi: ↑enzimi epatici 26,5%, diarrea 14,7%, nessun cut-off di esposizione",
+   "tim_it": "Nessun intervallo validato; valle/picco misurati caso per caso (es. intorno alla 4ª dose)",
+   "drv_it": "Funzione renale dominante — l'ARC riduce l'esposizione (soprattutto dell'avibactam); tipo di infezione (più bassa nelle cIAI); capillary leak ↑Vd",
+   "tgt_it": [
+    "Aztreonam 60% fT>MIC (MIC nominale 8)",
+    "+ avibactam 50% fT>CT (CT 2,5 mg/L)",
+    "Raggiungimento congiunto simultaneo; PTA ≥90%"
+   ],
+   "dec_it": [
+    "Nessuna regola basata sulle concentrazioni; dosare in base alla funzione renale (ridurre se compromessa)"
+   ],
+   "inc_it": [
+    "Dose di carico + infusione in 3 h o continua per un rapido target congiunto; ARC → dose standard/alta"
+   ]
+  }
+ ],
+ "auc_targets": [
+  {
+   "d": "Vancomycin",
+   "index": "AUC₂₄/MIC",
+   "lo": 400,
+   "hi": 600,
+   "ratio": true,
+   "tox": 20,
+   "note": "serious MRSA (MIC 1)"
+  },
+  {
+   "d": "Teicoplanin",
+   "index": "AUC₂₄/MIC",
+   "lo": 610,
+   "hi": 900,
+   "ratio": true,
+   "tox": 40,
+   "note": "MRSA (or trough 15–30 mg/L)"
+  },
+  {
+   "d": "Daptomycin",
+   "index": "AUC₂₄/MIC",
+   "lo": 666,
+   "hi": 939,
+   "ratio": true,
+   "tox": 24.3,
+   "note": "S. aureus (Cmin <24.3 for safety)"
+  }
+ ]
+}
