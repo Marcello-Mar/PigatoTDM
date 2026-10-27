@@ -106,9 +106,8 @@ def render():
     regola = rules.REGOLE.get(fid, {'tipo': 'info', 'analita': ag['it'].lower()})
     nome = ag['it']
 
-    c1, c2 = st.columns([5, 1])
-    c1.info(f"Consulenza in corso: **{nome}** · {ag['g_it']}")
-    if c2.button("Cambia farmaco", width="stretch", key=f"{P}_cambia"):
+    st.info(f"Consulenza in corso: **{nome}** · {ag['g_it']}")
+    if st.sidebar.button("Cambia farmaco", width="stretch", key=f"{P}_cambia"):
         _pulisci()
         st.session_state.pop(_k('farmaco'), None)
         storage.reset(MODULO)
@@ -140,52 +139,49 @@ def render():
     ui.passo("Passo 2")
     st.markdown("### Paziente e funzione renale")
     with st.container(border=True):
-        a, b, c, d, e = st.columns(5)
+        a, b, c = st.columns(3, vertical_alignment="bottom")
         unita = a.selectbox("Unità età", ["Anni", "Mesi", "Giorni"], key=_k('eta_unita'))
         eta_val = b.number_input(f"Età ({unita.lower()})", 0.0, {"Anni": 100.0, "Mesi": 1200.0, "Giorni": 36500.0}[unita],
                                  value=None, key=_k('eta_val'))
-        peso = c.number_input("Peso (kg)", 0.3, 300.0, value=None, key=_k('peso'))
-        altezza = d.number_input("Altezza/lunghezza (cm)", 25.0, 250.0, value=None, key=_k('altezza'))
-        crea = e.number_input("Creatinina (mg/dL)", 0.05, 25.0, value=None, step=0.01, format="%.2f", key=_k('crea'))
+        peso = c.number_input("Peso (kg)", 0.3, 300.0, value=None, format="%.1f", key=_k('peso'))
+        a, b, c = st.columns(3, vertical_alignment="bottom")
+        altezza = a.number_input("Altezza (cm)", 25.0, 250.0, value=None, format="%.0f", key=_k('altezza'))
+        crea = b.number_input("Creatinina (mg/dL)", 0.05, 25.0, value=None, step=0.01, format="%.2f", key=_k('crea'))
         gg = int(round(eta_val * {"Anni": 365.25, "Mesi": 30.44, "Giorni": 1}[unita])) if eta_val is not None else None
         eta = gg / 365.25 if gg is not None else None
-        a, b = st.columns(2)
+        rrt = c.selectbox("Depurazione extrarenale", ["Nessuna", "CRRT", "Emodialisi intermittente",
+                                                      "Dialisi peritoneale"], key=_k('rrt'))
         eg_sett = None
         if eta is not None and eta < 1:
-            eg_sett = a.number_input("EG alla nascita (sett.)", 22.0, 42.0, value=None, key=_k('eg'))
-        rrt = b.selectbox("Depurazione extrarenale", ["Nessuna", "CRRT", "Emodialisi intermittente",
-                                                      "Dialisi peritoneale"], key=_k('rrt'))
+            eg_sett = st.number_input("EG alla nascita (sett.)", 22.0, 42.0, value=None, key=_k('eg'))
     eg = renal.egfr_scelta(eta, sesso, peso, altezza, crea, eg_sett) if (eta is not None and crea) else None
     if eg:
-        cols = st.columns(len(eg['tutte']) + 1)
-        for col, (kf, v) in zip(cols, eg['tutte'].items()):
-            col.metric(renal.ETICHETTE[kf] + (" ✓" if kf == eg['chiave'] else ""),
-                       f"{ui.n(v, 0)} {'mL/min' if kf == 'cg' else 'mL/min/1,73 m²'}")
-        if eg.get('assoluta'):
-            cols[-1].metric("Clearance assoluta", f"{ui.n(eg['assoluta'], 0)} mL/min")
+        ui.schede(ui.schede_egfr(eg))
         st.caption(eg['nota'])
 
     # ---------------- Terapia ----------------
     ui.passo("Passo 3")
     st.markdown("### Terapia in atto")
     tipo = regola['tipo']
+    unita_dose = "MUI" if fid == 'colistin' else "mg"
     with st.container(border=True):
-        a, b, c, d = st.columns(4)
+        a, b, c, d = st.columns(4, vertical_alignment="bottom")
         modalita = a.selectbox("Somministrazione", ["Infusione continua", "Infusione estesa", "Intermittente"],
                                index=0 if tipo in ('css', 'fauc') else 2, key=_k('modalita'))
         if modalita == "Infusione continua":
-            dose_die = b.number_input("Dose giornaliera (mg/die)", 0.0, 100000.0, value=None, step=50.0,
+            dose_die = b.number_input(f"Dose giornaliera ({unita_dose}/die)", 0.0, 100000.0, value=None,
+                                      step=0.5 if unita_dose == "MUI" else 50.0,
                                       key=_k('dose_die'))
             dose_som, tau, tinf = None, 24.0, 24.0
         else:
-            dose_som = b.number_input("Dose per somministrazione (mg)", 0.0, 20000.0, value=None, step=10.0,
+            dose_som = b.number_input(f"Dose per somministrazione ({unita_dose})", 0.0, 20000.0, value=None,
+                                      step=0.5 if unita_dose == "MUI" else 10.0,
                                       key=_k('dose_som'))
             tau = c.number_input("Intervallo (h)", 1.0, 168.0, 8.0 if tipo == 'css' else 24.0, 1.0, key=_k('tau'))
             tinf = d.number_input("Durata infusione (h)", 0.05, 24.0, 3.0 if modalita == "Infusione estesa" else 0.5,
                                   0.05, key=_k('tinf'))
             dose_die = dose_som * 24.0 / tau if dose_som else None
         carico = st.checkbox("Previa dose di carico", value=(modalita == "Infusione continua"), key=_k('carico'))
-        unita_dose = "MUI" if fid == 'colistin' else "mg"
         if fid == 'colistin':
             st.caption("Colistimetato: inserisci la dose in MUI al posto dei mg (le etichette del referto useranno MUI).")
         if dose_die and peso:
@@ -201,7 +197,7 @@ def render():
     st.markdown("### Sede d'infezione, patogeno, MIC")
     pen_mol = PEN['molecules'].get(ag.get('pen') or '')
     with st.container(border=True):
-        a, b = st.columns(2)
+        a, b = st.columns(2, vertical_alignment="bottom")
         sedi = ["sistemico"] + list(PEN['site_labels'])
         etich = {"sistemico": "Sangue / sistemica", **PEN['site_labels']}
         sede = a.selectbox("Sede", sedi, format_func=lambda s: etich[s], key=_k('sede'))
@@ -212,14 +208,15 @@ def render():
                                 help="Kp armonizzato PIGATO = C(sito, totale)/C(plasma, totale). Modificabile.")
             if kp_info:
                 st.caption(kp_info)
-        a, b, c, d = st.columns(4)
+        a, b = st.columns(2, vertical_alignment="bottom")
         gruppi_bp = BP['farmaci'].get(fid, {})
         gruppo = a.selectbox("Gruppo di patogeni", ["—"] + list(gruppi_bp),
                              format_func=lambda g: BP['gruppi'].get(g, g), key=_k('gruppo'))
         patogeno = b.text_input("Patogeno (testo del referto)",
                                 value=BP['gruppi'].get(gruppo, "") if gruppo != "—" else "", key=_k(f'patogeno_{gruppo}'))
-        empirica = c.radio("Terapia", ["Mirata (MIC misurata)", "Empirica (breakpoint EUCAST)"], key=_k('empirica')) \
-            .startswith("Empirica")
+        c, d = st.columns(2, vertical_alignment="center")
+        empirica = c.radio("Terapia", ["Mirata (MIC misurata)", "Empirica (breakpoint EUCAST)"], key=_k('empirica'),
+                           horizontal=True).startswith("Empirica")
         mic_def = None
         if empirica and gruppo != "—":
             bpg = gruppi_bp.get(gruppo, {})
@@ -251,7 +248,7 @@ def render():
     firma = hashlib.md5(json.dumps([val['azione'], val['pct'], nuova_dose, mic, kp, sede, lv.get('conc'),
                                     dose_die, modalita], default=str).encode()).hexdigest()[:8]
     with st.container(border=True):
-        a, b, c = st.columns(3)
+        a, b = st.columns(2, vertical_alignment="bottom")
         azioni = ["RIDUCI", "MANTIENI", "AUMENTA", "SOSPENDI", "ALLUNGA INTERVALLO", "DOSE AGGIUNTIVA"]
         azione = a.selectbox("Azione (confermare o modificare)", azioni,
                              index=azioni.index(val['azione']) if val['azione'] in azioni else 1, key=_k(f'azione_{firma}'))
@@ -259,7 +256,7 @@ def render():
                             value=float(nuova_dose) if nuova_dose else (float(dose_die) if dose_die else None),
                             step=50.0, key=_k(f'nuova_{firma}'))
         tim_def = _ricontrollo_default(ag, eta)
-        ricontrollo = c.text_input("Ricontrollo", value=tim_def, key=_k('ricontrollo'))
+        ricontrollo = st.text_input("Ricontrollo", value=tim_def, key=_k('ricontrollo'))
         regime_txt = st.text_input("Nuovo regime (testo libero, facoltativo)",
                                    value=_regime_default(nd, modalita, tau, unita_dose, azione),
                                    key=_k(f'regime_{firma}_{azione}_{nd}'))
@@ -270,7 +267,7 @@ def render():
     referto = _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, dose_die, unita_dose,
                                carico, peso, eg, rrt, kp, val, mic, mic_le, empirica, commento, ricontrollo, pen_mol, eta)
     st.markdown("### Referto")
-    st.code(referto, language='text')
+    st.code(referto, language='text', wrap_lines=True)
     st.download_button("Scarica il referto (.txt)", data=referto.encode('utf-8'),
                        file_name=f"Referto_TDM_{nome.replace(' ', '_').replace('/', '-')}_{codice}_{date.today():%Y%m%d}.txt",
                        mime="text/plain", key=_k('dl_txt'))
@@ -298,7 +295,7 @@ def render():
     with st.expander(f"Consulenze registrate — {nome} ({len(mon)})"):
         for i, r in enumerate(mon):
             st.markdown(f"**#{i} · {r.get('data_val')} · {r.get('azione')}**")
-            st.code(r.get('referto', ''), language='text')
+            st.code(r.get('referto', ''), language='text', wrap_lines=True)
         if mon:
             sel = st.selectbox("Rimuovi una consulenza", ["—"] + [f"#{i}" for i in range(len(mon))], key=_k('rm_sel'))
             if sel != "—" and st.button("Rimuovi", key=_k('rm')):
@@ -309,7 +306,8 @@ def render():
 # ------------------------------------------------------------------
 
 def _tabella_livelli(chiave, etichetta, n_righe=1):
-    df = st.data_editor(pd.DataFrame([{"Data": date.today().strftime('%d/%m/%Y'), "Conc. (mg/L)": None}] * n_righe),
+    df0 = pd.DataFrame([{"Data": date.today().strftime('%d/%m/%Y'), "Conc. (mg/L)": float('nan')}] * n_righe)
+    df = st.data_editor(df0,
                         num_rows="dynamic", width="stretch", key=_k(chiave),
                         column_config={"Conc. (mg/L)": st.column_config.NumberColumn(format="%.2f", min_value=0.0)})
     out = []
@@ -363,7 +361,7 @@ def _input_livelli(tipo, regola, modalita, tau, tinf, nome):
                 if css is not None:
                     lv['registro'].append({'analita': regola['analita'], 'tipo': 'Css', 'conc': css})
             else:
-                a, b, c, d = st.columns(4)
+                a, b, c, d = st.columns(4, vertical_alignment="bottom")
                 picco = t1 = valle = t2 = None
                 if mod != "Solo valle":
                     picco = a.number_input("Picco (mg/L)", 0.0, 1000.0, value=None, step=0.1, key=_k('picco'))
@@ -387,7 +385,7 @@ def _input_livelli(tipo, regola, modalita, tau, tinf, nome):
         elif tipo == 'amino':
             st.caption(f"Con un solo livello random (es. a 10 h) usa il modulo TDM bayesiana per {nome.lower()}: "
                        "stima la clearance e propone dose e intervallo.")
-            a, b = st.columns(2)
+            a, b = st.columns(2, vertical_alignment="bottom")
             picco = a.number_input("Picco 30 min dopo fine infusione (mg/L)", 0.0, 300.0, value=None, step=0.1,
                                    key=_k('picco'))
             valle = b.number_input("Valle prima della dose (mg/L)", 0.0, 100.0, value=None, step=0.1, key=_k('valle'))
@@ -396,7 +394,7 @@ def _input_livelli(tipo, regola, modalita, tau, tinf, nome):
                 if x is not None:
                     lv['registro'].append({'analita': regola['analita'], 'tipo': tl, 'conc': x})
         elif tipo == 'smx':
-            a, b = st.columns(2)
+            a, b = st.columns(2, vertical_alignment="bottom")
             tmp = a.number_input("Trimetoprim, picco (mg/L)", 0.0, 100.0, value=None, step=0.1, key=_k('tmp'))
             smx = b.number_input("Sulfametossazolo, picco (mg/L)", 0.0, 1000.0, value=None, step=1.0, key=_k('smx'))
             lv.update(tmp=tmp, smx=smx)
@@ -573,19 +571,19 @@ def _valuta(tipo, regola, lv, mic, kp, sede, dose_die, BP, gruppo, fid):
 
 
 def _mostra_valutazione(v, regola):
-    cols = st.columns(4)
+    voci = []
     if v.get('r_plasma') is not None:
         lab = {"auc": "AUC24/MIC", "fauc": "fAUC24/MIC", "amino": "Picco/MIC", "fq": "Cmax/MIC"}.get(regola['tipo'], "C/MIC plasma")
-        cols[0].metric(lab, _fmt_ratio(v['r_plasma']))
-    if v.get('c_sito') is not None:
-        cols[1].metric("Concentrazione al sito", f"{ui.n(v['c_sito'], 1)} mg/L")
-        cols[2].metric("C sito/MIC", _fmt_ratio(v['r_sito']))
+        voci.append({'k': lab, 'v': _fmt_ratio(v['r_plasma'])})
     if v.get('auc') is not None:
-        cols[1].metric("AUC24", f"{ui.n(v['auc'], 0)} mg·h/L")
-    colore = {'MANTIENI': 'g', 'RIDUCI': 'b', 'AUMENTA': 'y', 'SOSPENDI': 'r', 'ALLUNGA INTERVALLO': 'o',
-              'DOSE AGGIUNTIVA': 'y'}.get(v['azione'], 'b')
+        voci.append({'k': "AUC24", 'v': ui.n(v['auc'], 0), 'u': "mg·h/L"})
+    if v.get('c_sito') is not None:
+        voci.append({'k': "Concentrazione al sito", 'v': ui.n(v['c_sito'], 1), 'u': "mg/L"})
+        voci.append({'k': "C sito/MIC", 'v': _fmt_ratio(v['r_sito'])})
     pct = f" {'+' if v['pct'] > 0 else ''}{v['pct']}%" if v['pct'] not in (0, -100) else ""
-    cols[3].markdown("Proposta<br>" + ui.chip(v['azione'] + pct, colore), unsafe_allow_html=True)
+    voci.append({'k': "Proposta", 'v': v['azione'] + pct, 'sel': True,
+                 'stato': 'ok' if v['azione'] == 'MANTIENI' else None})
+    ui.schede(voci)
     if v.get('r_decisione') is not None and v.get('r_sito') is not None:
         st.caption(f"Decisione sul rapporto più basso ({v['base']}): ×{_fmt_ratio(v['r_decisione'])} la MIC.")
     if v.get('tox'):

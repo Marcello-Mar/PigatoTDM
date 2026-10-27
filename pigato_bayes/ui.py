@@ -18,22 +18,37 @@ EMBLEMA_SVG = """<svg viewBox="0 0 200 200" width="44" height="44" role="img" ar
 <circle cx="127" cy="150" r="4.6" stroke-width="3"/><circle cx="142" cy="150" r="4.6" stroke-width="3"/></svg>"""
 
 CSS = """
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
 <style>
-:root{--pg-ink:#0E2C52;--pg-ink-soft:#41607F;--pg-ink-faint:#6C86A5;--pg-line:#D3DEED;--pg-wine:#AE7E22;--pg-tint:#E7EFF9;}
-@media (prefers-color-scheme:dark){:root{--pg-ink:#E8F0FB;--pg-ink-soft:#AEC4E0;--pg-ink-faint:#7C96B7;--pg-line:#20375A;--pg-wine:#D6B15A;--pg-tint:#122D51;}}
-html, body, [class*="st-"], .stMarkdown, .stTextInput, .stNumberInput, .stSelectbox, button {font-family:"IBM Plex Sans",system-ui,sans-serif;}
-h1, h2, h3 {font-family:"IBM Plex Serif",Georgia,serif !important; font-weight:600 !important; letter-spacing:.01em;}
-code, pre, .pg-mono {font-family:"IBM Plex Mono",monospace !important;}
-.pg-head{display:flex;align-items:center;gap:14px;margin:0 0 4px 0}
-.pg-word{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:30px;letter-spacing:.06em;color:var(--pg-ink);line-height:1}
-.pg-tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pg-wine);margin-top:4px}
-.pg-inst{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--pg-ink-faint);line-height:1.45;margin-left:auto;text-align:right}
-.pg-step{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pg-ink-faint);margin:18px 0 2px}
-.pg-chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;margin-right:6px}
+/* Il font si imposta da .streamlit/config.toml (theme.font): qui niente regole
+   globali su span/div, che sostituivano anche il font delle icone Material. */
+:root{--pg-ink:#0E2C52;--pg-ink-soft:#41607F;--pg-ink-faint:#6C86A5;--pg-line:#D3DEED;
+      --pg-wine:#AE7E22;--pg-tint:#E7EFF9;--pg-surface:#FFFFFF;}
+.pg-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 6px 0}
+.pg-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.pg-word{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:30px;letter-spacing:.06em;
+         color:var(--pg-ink);line-height:1}
+.pg-tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+        color:var(--pg-wine);margin-top:4px}
+.pg-inst{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--pg-ink-faint);line-height:1.45;
+         margin-left:auto;text-align:right}
+@media (max-width:640px){.pg-inst{margin-left:0;text-align:left;flex-basis:100%}.pg-word{font-size:26px}}
+.pg-step{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--pg-ink-faint);margin:18px 0 2px}
+.pg-chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
 .pg-g{background:#E1F0E6;color:#1F6E4A}.pg-y{background:#FBF0D6;color:#8A5A0E}.pg-o{background:#FBE5D3;color:#9A4A12}
 .pg-r{background:#F7DCD8;color:#B23A2E}.pg-b{background:#E3ECF8;color:#1C4F8F}
+/* schede numeriche: vanno a capo invece di troncare */
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:6px 0 12px}
+.pg-card{border:1px solid var(--pg-line);border-radius:12px;padding:10px 12px;background:var(--pg-surface);min-width:0}
+.pg-card.pg-sel{border-color:var(--pg-ink);box-shadow:inset 0 0 0 1px var(--pg-ink)}
+.pg-k{font-size:12.5px;color:var(--pg-ink-soft);line-height:1.3;overflow-wrap:anywhere}
+.pg-v{font-size:22px;font-weight:600;color:var(--pg-ink);line-height:1.2;margin-top:3px;
+      font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pg-u{font-size:13px;font-weight:500;color:var(--pg-ink-soft);margin-left:3px}
+.pg-s{font-size:12px;color:var(--pg-ink-faint);margin-top:3px;line-height:1.3;overflow-wrap:anywhere}
+.pg-s.ok{color:#1F6E4A}.pg-s.ko{color:#B23A2E}
+/* blocchi di codice del referto: mai oltre il riquadro */
+[data-testid="stCode"] pre, [data-testid="stCode"] code{white-space:pre-wrap !important;overflow-wrap:anywhere}
 </style>
 """
 
@@ -44,10 +59,42 @@ def applica_stile():
 
 def intestazione(sottotitolo):
     st.markdown(
-        f"""<div class="pg-head">{EMBLEMA_SVG}
-        <div><div class="pg-word">PIGATO</div><div class="pg-tag">{sottotitolo}</div></div>
+        f"""<div class="pg-head"><div class="pg-brand">{EMBLEMA_SVG}
+        <div><div class="pg-word">PIGATO</div><div class="pg-tag">{sottotitolo}</div></div></div>
         <div class="pg-inst">IRCCS Istituto Giannina Gaslini – Genova<br>UOC Malattie Infettive</div></div>""",
         unsafe_allow_html=True)
+
+
+def schede(voci):
+    """
+    Griglia di valori che va a capo sullo schermo stretto (al posto di st.metric,
+    che tronca con "…"). voci: lista di dict {k, v, u?, s?, stato?: 'ok'|'ko', sel?: bool}.
+    """
+    from html import escape
+    parti = []
+    for x in voci:
+        if x is None:
+            continue
+        sub = ""
+        if x.get('s'):
+            cls = {'ok': ' ok', 'ko': ' ko'}.get(x.get('stato'), '')
+            sub = f'<div class="pg-s{cls}">{escape(str(x["s"]))}</div>'
+        u = f'<span class="pg-u">{escape(x["u"])}</span>' if x.get('u') else ''
+        parti.append(f'<div class="pg-card{" pg-sel" if x.get("sel") else ""}"><div class="pg-k">{escape(x["k"])}</div>'
+                     f'<div class="pg-v">{escape(str(x["v"]))}{u}</div>{sub}</div>')
+    st.markdown(f'<div class="pg-grid">{"".join(parti)}</div>', unsafe_allow_html=True)
+
+
+def schede_egfr(eg):
+    from .renal import ETICHETTE
+    voci = []
+    for kf, v in eg['tutte'].items():
+        voci.append({'k': ETICHETTE[kf], 'v': n(v, 0), 'u': "mL/min" if kf == 'cg' else "mL/min/1,73 m²",
+                     'sel': kf == eg['chiave'], 's': "formula raccomandata" if kf == eg['chiave'] else None})
+    if eg.get('assoluta'):
+        voci.append({'k': "Clearance assoluta", 'v': n(eg['assoluta'], 0), 'u': "mL/min",
+                     's': "eGFR × BSA/1,73 (Mosteller)"})
+    return voci
 
 
 def passo(testo):

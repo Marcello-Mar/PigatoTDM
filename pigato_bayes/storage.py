@@ -36,7 +36,7 @@ def reset(modulo, farmaco=None):
 def carica(modulo, farmaco, file_up):
     """
     Valida e carica un JSON. Restituisce (ok, messaggio, dati).
-    Accetta anche i file v6.0 di TDM Buddy (senza 'modulo': trattati come 'bayes').
+    Accetta anche i file della versione 6 (senza 'modulo': trattati come 'bayes').
     """
     try:
         dati = json.load(file_up)

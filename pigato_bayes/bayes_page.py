@@ -83,6 +83,18 @@ def _parse_dt(d, o):
     return datetime.combine(dd, tt)
 
 
+def _tabella(righe, numeriche):
+    """DataFrame per st.data_editor: colonne numeriche come float (celle vuote = NaN,
+    non la scritta 'None'), testo come stringa."""
+    df = pd.DataFrame(righe)
+    for c in df.columns:
+        if c in numeriche:
+            df[c] = pd.to_numeric(df[c], errors='coerce').astype(float)
+        else:
+            df[c] = df[c].fillna("").astype(str)
+    return df
+
+
 def _num(v):
     try:
         f = float(v)
@@ -99,7 +111,7 @@ def _scelta_molecola():
     st.caption("La scelta vale per la sessione: cambiando molecola i dati non scaricati si perdono.")
     nomi = list(FARMACI)
     for riga in (nomi[:3], nomi[3:]):
-        cols = st.columns(3)
+        cols = st.columns(3, vertical_alignment="bottom")
         for col, f in zip(cols, riga):
             with col, st.container(border=True):
                 st.markdown(f"**{f}**")
@@ -121,9 +133,8 @@ def render():
         _scelta_molecola()
         return
 
-    c1, c2 = st.columns([5, 1])
-    c1.info(f"Molecola in corso: **{farmaco}**")
-    if c2.button("Cambia molecola", width="stretch", key=f"{P}_cambia"):
+    st.info(f"Molecola in corso: **{farmaco}**")
+    if st.sidebar.button("Cambia molecola", width="stretch", key=f"{P}_cambia"):
         _pulisci_widget()
         st.session_state.pop(_k('farmaco'), None)
         st.session_state.pop(_k('risultati'), None)
@@ -148,44 +159,47 @@ def render():
     ui.passo("Passo 2")
     st.markdown("### Dati biometrici e clinici")
     with st.container(border=True):
-        a, b, c, d, e = st.columns(5)
+        a, b, c = st.columns(3, vertical_alignment="bottom")
         unita = a.selectbox("Unità età", ["Anni", "Mesi", "Giorni"], key=_k('eta_unita'))
         maxu = {"Anni": 100.0, "Mesi": 1200.0, "Giorni": 36500.0}[unita]
         eta_val = b.number_input(f"Età ({unita.lower()})", 0.0, maxu, value=None, key=_k('eta_val'))
-        peso = c.number_input("Peso (kg)", 0.3, 300.0, value=None, key=_k('peso'))
-        altezza = d.number_input("Altezza/lunghezza (cm)", 25.0, 250.0, value=None, key=_k('altezza'))
-        crea = e.number_input("Creatinina (mg/dL)", 0.05, 25.0, value=None, step=0.01, format="%.2f",
-                              key=_k('crea'))
+        peso = c.number_input("Peso (kg)", 0.3, 300.0, value=None, format="%.1f", key=_k('peso'))
         gg = None
         if eta_val is not None:
             gg = int(round(eta_val * {"Anni": 365.25, "Mesi": 30.44, "Giorni": 1}[unita]))
         eta = gg / 365.25 if gg is not None else None
+        a, b, c = st.columns(3, vertical_alignment="bottom")
+        altezza = a.number_input("Altezza (cm)", 25.0, 250.0, value=None, format="%.0f", key=_k('altezza'),
+                                 help="Lunghezza nel lattante.")
+        crea = b.number_input("Creatinina (mg/dL)", 0.05, 25.0, value=None, step=0.01, format="%.2f",
+                              key=_k('crea'))
+        if farmaco == 'Dalbavancina':
+            mic = c.number_input("MIC di riferimento (mg/L)", 0.001, 4.0, value=None, step=0.001,
+                                 format="%.4f", key=_k('mic'))
+        else:
+            mic = c.number_input("MIC (mg/L)", 0.001, 64.0, value=None, step=0.001,
+                                 format="%.4f", key=_k('mic'))
 
-        a, b, c, d = st.columns(4)
+        a, b, c = st.columns(3, vertical_alignment="bottom")
         eg_sett = None
         if eta is not None and eta < 2:
             eg_sett = a.number_input("EG alla nascita (sett.)", 22.0, 42.0, value=None, key=_k('eg'),
                                      help="Per età postmestruale (aminoglicosidi) e formula del pretermine. "
                                           "Vuoto = 40 settimane.")
-        if farmaco == 'Dalbavancina':
-            mic = b.number_input("MIC di riferimento (mg/L)", 0.001, 4.0, value=None, step=0.001,
-                                 format="%.4f", key=_k('mic'))
-        else:
-            mic = b.number_input(f"MIC {farmaco.lower()} (mg/L)", 0.001, 64.0, value=None, step=0.001,
-                                 format="%.4f", key=_k('mic'))
-        crrt = c.checkbox("CRRT in corso", key=_k('crrt'))
-        Sc, Qef = 0.2, 2.0
-        if crrt:
-            Sc = c.number_input("Sieving coefficient", 0.01, 1.0, 0.2 if farmaco not in AMINO else 0.85, 0.01,
-                                key=_k('sc'))
-            Qef = c.number_input("Flusso effluente (L/h)", 0.1, 6.0, 2.0, 0.1, key=_k('qef'))
         dialisi = "Nessuna"
         if farmaco == 'Daptomicina' and gg is not None and gg < 6570:
             opz = list(models.IRC_OPZIONI)
             if 4380 <= gg < 6570:
                 opz += ["Emodialisi (HD)", "Dialisi Peritoneale (CCPD)"]
-            dialisi = d.selectbox("Funzione renale / dialisi", opz, key=_k('dialisi'),
+            dialisi = b.selectbox("Funzione renale / dialisi", opz, key=_k('dialisi'),
                                   help="Correzione Ye 2022 per fascia di IRC.")
+        crrt = c.checkbox("CRRT", key=_k('crrt'), help="Terapia sostitutiva renale continua in corso")
+        Sc, Qef = 0.2, 2.0
+        if crrt:
+            a, b = st.columns(2, vertical_alignment="bottom")
+            Sc = a.number_input("Sieving coefficient", 0.01, 1.0, 0.2 if farmaco not in AMINO else 0.85, 0.01,
+                                key=_k('sc'))
+            Qef = b.number_input("Flusso effluente (L/h)", 0.1, 6.0, 2.0, 0.1, key=_k('qef'))
         modello = None
         if farmaco == 'Dalbavancina':
             modello = st.selectbox("Modello PK", list(models.DALBA_MODELLI), key=_k('modello'))
@@ -203,13 +217,7 @@ def render():
         with st.container(border=True):
             st.markdown("**Funzione renale stimata**")
             st.caption(eg['nota'])
-            cols = st.columns(max(len(eg['tutte']), 1) + 1)
-            for col, (kf, v) in zip(cols, eg['tutte'].items()):
-                um = "mL/min" if kf == 'cg' else "mL/min/1,73 m²"
-                col.metric(renal.ETICHETTE[kf] + (" ✓" if kf == eg['chiave'] else ""), f"{ui.n(v, 0)} {um}")
-            if eg.get('assoluta'):
-                cols[-1].metric("Clearance assoluta", f"{ui.n(eg['assoluta'], 0)} mL/min",
-                                help="eGFR × BSA/1,73 (Mosteller)")
+            ui.schede(ui.schede_egfr(eg))
 
     mancano = [n for n, v in (("età", gg), ("peso", peso), ("MIC", mic)) if v is None]
     if farmaco != 'Dalbavancina' and crea is None:
@@ -237,29 +245,29 @@ def render():
         for s in ult['storia_dosi']:
             dt = t0 + timedelta(hours=s['ore'])
             dosi_rows.append({"Data": dt.strftime("%d/%m/%Y"), "Ora": dt.strftime("%H:%M"),
-                              "Dose (mg)": s['dose'], "Infusione (h)": s.get('tinf', t_inf_def)})
+                              "Dose (mg)": s['dose'], "Inf. (h)": s.get('tinf', t_inf_def)})
         t_ult_storico = ult['storia_dosi'][-1]['ore']
         for l in ult.get('livelli', []):
             dt = t0 + timedelta(hours=l['ore'])
             liv_rows.append({"Data": dt.strftime("%d/%m/%Y"), "Ora": dt.strftime("%H:%M"),
-                             "Conc. (mg/L)": l['conc'], "Nota": l.get('nota', '')})
+                             "mg/L": l['conc'], "Nota": l.get('nota', '')})
     else:
-        dosi_rows.append({"Data": "", "Ora": "", "Dose (mg)": None, "Infusione (h)": t_inf_def})
-    liv_rows.append({"Data": "", "Ora": "", "Conc. (mg/L)": None, "Nota": ""})
+        dosi_rows.append({"Data": "", "Ora": "", "Dose (mg)": None, "Inf. (h)": t_inf_def})
+    liv_rows.append({"Data": "", "Ora": "", "mg/L": None, "Nota": ""})
 
-    ca, cb = st.columns(2)
+    ca, cb = st.columns(2, vertical_alignment="bottom")
     with ca:
         st.markdown("**Somministrazioni**")
-        df_d = st.data_editor(pd.DataFrame(dosi_rows), num_rows="dynamic", width="stretch",
+        df_d = st.data_editor(_tabella(dosi_rows, ["Dose (mg)", "Inf. (h)"]), num_rows="dynamic", width="stretch",
                               height=280, key=_k('editor_dosi'),
                               column_config={"Dose (mg)": st.column_config.NumberColumn(format="%.1f", min_value=0.1),
-                                             "Infusione (h)": st.column_config.NumberColumn(format="%.2f", min_value=0.05,
+                                             "Inf. (h)": st.column_config.NumberColumn(format="%.2f", min_value=0.05,
                                                                                             max_value=24.0)})
     with cb:
         st.markdown("**Livelli plasmatici**")
-        df_l = st.data_editor(pd.DataFrame(liv_rows), num_rows="dynamic", width="stretch",
+        df_l = st.data_editor(_tabella(liv_rows, ["mg/L"]), num_rows="dynamic", width="stretch",
                               height=280, key=_k('editor_livelli'),
-                              column_config={"Conc. (mg/L)": st.column_config.NumberColumn(format="%.3f", min_value=0.0)})
+                              column_config={"mg/L": st.column_config.NumberColumn(format="%.3f", min_value=0.0)})
     st.caption("Date nel formato GG/MM/AAAA, ore HH:MM. Le righe già registrate restano modificabili: "
                "correggile solo per errori di trascrizione.")
 
@@ -267,12 +275,12 @@ def render():
     for _, r in df_d.iterrows():
         dt = _parse_dt(r.get("Data"), r.get("Ora"))
         dose = _num(r.get("Dose (mg)"))
-        tinf = _num(r.get("Infusione (h)")) or t_inf_def
+        tinf = _num(r.get("Inf. (h)")) or t_inf_def
         if dt and dose:
             storia.append({'dt': dt, 'dose': dose, 'tinf': tinf})
     for _, r in df_l.iterrows():
         dt = _parse_dt(r.get("Data"), r.get("Ora"))
-        cc = _num(r.get("Conc. (mg/L)"))
+        cc = _num(r.get("mg/L"))
         if dt and cc is not None:
             livelli.append({'dt': dt, 'conc': cc, 'nota': str(r.get("Nota") or "")})
 
@@ -307,7 +315,7 @@ def render():
                 st.rerun()
 
     with st.expander("Modelli e verifica delle fonti"):
-        st.code(models.VERIFICA.strip(), language='text')
+        st.code(models.VERIFICA.strip(), language='text', wrap_lines=True)
 
 
 def _prior(farmaco, sesso, gg, peso, altezza, crea, eg_sett, eg, crrt, Sc, Qef, dialisi, modello):
@@ -396,13 +404,13 @@ def _mostra_risultati(R, sto):
     if pr['fuori_range']:
         st.warning("Paziente fuori dalla popolazione del modello: la stima va letta con cautela.")
 
-    c = st.columns(4)
-    c[0].metric("Clearance", f"{ui.n(par['CL'], 3)} L/h", delta=f"prior {ui.n(pr['par']['CL'], 3)}",
-                delta_color="off")
-    c[1].metric("Volume (Vss)", f"{ui.n(R['vss'], 2)} L",
-                delta=f"prior {ui.n(pr['par']['V1'] + pr['par'].get('V2', 0), 2)}", delta_color="off")
-    c[2].metric("Emivita terminale", f"{ui.n(R['thalf'], 1)} h")
-    c[3].metric("AUC 24 h dopo l'ultima dose", f"{ui.n(R['auc24'], 0)} mg·h/L")
+    ui.schede([
+        {'k': "Clearance", 'v': ui.n(par['CL'], 3), 'u': "L/h", 's': f"prior {ui.n(pr['par']['CL'], 3)} L/h"},
+        {'k': "Volume (Vss)", 'v': ui.n(R['vss'], 2), 'u': "L",
+         's': f"prior {ui.n(pr['par']['V1'] + pr['par'].get('V2', 0), 2)} L"},
+        {'k': "Emivita terminale", 'v': ui.n(R['thalf'], 1), 'u': "h"},
+        {'k': "AUC 24 h dopo l'ultima dose", 'v': ui.n(R['auc24'], 0), 'u': "mg·h/L"},
+    ])
 
     soglie = []
     if farmaco == 'Daptomicina':
@@ -437,7 +445,7 @@ def _mostra_risultati(R, sto):
         f"{blocco}"
     )
     st.markdown("### Referto")
-    st.code(referto, language='text')
+    st.code(referto, language='text', wrap_lines=True)
 
     st.markdown("---")
     if R.get('registrato'):
@@ -467,14 +475,17 @@ def _pannello_dapto(R):
     mic, auc = R['mic'], R['auc24']
     ratio = auc / mic
     pd_ = models.PD_DAPTO
-    c = st.columns(3)
-    c[0].metric("AUC24/MIC (S. aureus ≥ 666)", ui.n(ratio, 0),
-                delta="target raggiunto" if ratio >= pd_['AUC_MIC_staph'] else "sotto target",
-                delta_color="normal" if ratio >= pd_['AUC_MIC_staph'] else "inverse")
-    c[1].metric("AUC24/MIC (E. faecium ≥ 143)", ui.n(ratio, 0))
     tox = R['cmin24'] >= pd_['Cmin_tox']
-    c[2].metric("Cmin prevista (soglia 24,3)", f"{ui.n(R['cmin24'], 1)} mg/L",
-                delta="rischio CPK" if tox else "sotto soglia", delta_color="inverse" if tox else "normal")
+    ok_s = ratio >= pd_['AUC_MIC_staph']
+    ok_e = ratio >= pd_['AUC_MIC_entero']
+    ui.schede([
+        {'k': "AUC24/MIC · S. aureus (≥ 666)", 'v': ui.n(ratio, 0),
+         's': "target raggiunto" if ok_s else "sotto target", 'stato': 'ok' if ok_s else 'ko'},
+        {'k': "AUC24/MIC · E. faecium (≥ 143)", 'v': ui.n(ratio, 0),
+         's': "target raggiunto" if ok_e else "sotto target", 'stato': 'ok' if ok_e else 'ko'},
+        {'k': "Cmin prevista (soglia CPK 24,3)", 'v': ui.n(R['cmin24'], 1), 'u': "mg/L",
+         's': "rischio CPK" if tox else "sotto soglia", 'stato': 'ko' if tox else 'ok'},
+    ])
     dose = R['storia'][-1]['dose']
     tau = R['tau_med'] or 24
     # Finestra tdm_data.json: AUC24/MIC ≥ 666 (S. aureus); AUC24 > 939 mg·h/L e
@@ -505,11 +516,13 @@ def _pannello_cipro(R):
     mic, auc = R['mic'], R['auc24']
     ratio = auc / mic
     ok = ratio >= models.PD_CIPRO['AUC_MIC_target']
-    c = st.columns(3)
-    c[0].metric("AUC24/MIC (≥ 125)", ui.n(ratio, 0), delta="target raggiunto" if ok else "sotto target",
-                delta_color="normal" if ok else "inverse")
-    c[1].metric("Cmax/MIC (≥ 10)", ui.n(R['cmax24'] / mic, 1), help=f"Cmax {ui.n(R['cmax24'], 2)} mg/L")
-    c[2].metric("Cmin (tenere < 2)", f"{ui.n(R['cmin24'], 2)} mg/L")
+    ui.schede([
+        {'k': "AUC24/MIC (≥ 125)", 'v': ui.n(ratio, 0), 's': "target raggiunto" if ok else "sotto target",
+         'stato': 'ok' if ok else 'ko'},
+        {'k': "Cmax/MIC (≥ 10)", 'v': ui.n(R['cmax24'] / mic, 1), 's': f"Cmax {ui.n(R['cmax24'], 2)} mg/L"},
+        {'k': "Cmin (tenere < 2)", 'v': ui.n(R['cmin24'], 2), 'u': "mg/L",
+         'stato': 'ko' if R['cmin24'] >= 2 else 'ok', 's': "oltre 2 mg/L" if R['cmin24'] >= 2 else "sotto 2 mg/L"},
+    ])
     dose = R['storia'][-1]['dose']
     tau = R['tau_med'] or 24
     if not ok:
@@ -531,7 +544,7 @@ def _pannello_dalba(R, t0):
     pr, par, storia, livelli = R['prior'], R['par'], R['storia'], R['livelli']
     with st.container(border=True):
         st.markdown("#### Forecast — prossima dose")
-        a, b, c = st.columns(3)
+        a, b, c = st.columns(3, vertical_alignment="bottom")
         target = a.selectbox("Target", ["fAUC24/MIC ≥ 111,1 (Cojutti 2021)", "100% fT > 4×MIC (Baiardi 2025)"],
                              key=f"{P}_fc_target")
         mic_lab = b.selectbox("MIC", list(models.DALBA_MIC_OPZIONI) + ["MIC del paziente"], key=f"{P}_fc_mic")
@@ -557,7 +570,7 @@ def _pannello_dalba(R, t0):
             st.success(f"La concentrazione scende {esito}.")
         sim = st.checkbox("Simula una dose aggiuntiva", key=f"{P}_fc_sim")
         if sim:
-            a, b, c = st.columns(3)
+            a, b, c = st.columns(3, vertical_alignment="bottom")
             dnew = a.date_input("Data", value=(t0 + timedelta(hours=t_val + 24)).date(), format="DD/MM/YYYY",
                                 key=f"{P}_fc_data")
             onew = b.time_input("Ora", value=datetime.strptime("10:00", "%H:%M").time(), key=f"{P}_fc_ora")
@@ -596,12 +609,13 @@ def _pannello_amino(R, t0):
     tinf = storia[-1].get('tinf', 0.5)
     with st.container(border=True):
         st.markdown("#### Previsioni e proposta di regime")
-        a, b, c, d, e = st.columns(5)
+        a, b, c = st.columns(3, vertical_alignment="bottom")
         obiettivo = a.number_input("Obiettivo picco/MIC", 4.0, 20.0, float(soglie['cmax_mic'][1]), 1.0,
                                    key=f"{P}_am_obj")
         p_lo = b.number_input("Picco minimo (mg/L)", 1.0, 120.0, float(soglie['picco'][0]), 1.0, key=f"{P}_am_plo")
         p_hi = c.number_input("Picco massimo (mg/L)", 1.0, 150.0, float(soglie['picco'][1]), 1.0, key=f"{P}_am_phi",
                               help="Intervallo pratico pediatrico (tdm_data.json); FC tobramicina 30–40 mg/L.")
+        d, e = st.columns(2, vertical_alignment="bottom")
         valle_max = d.number_input("Valle massima (mg/L)", 0.1, 10.0, float(soglie['valle']), 0.1,
                                    key=f"{P}_am_valle",
                                    help="Default PIGATO: finestra libera 1 mg/L (genta/tobra), 5 mg/L amikacina. "
@@ -617,14 +631,15 @@ def _pannello_amino(R, t0):
         dose_att = storia[-1]['dose']
         pk_att = _simula_regime(par, storia, dose_att, tau_att, tinf, t_last + tau_att)
         cmax_ult = float(conc(par, storia, t_last + tinf + 0.5, tinf)[0])
-        c = st.columns(4)
-        c[0].metric("Picco dopo l'ultima dose", f"{ui.n(cmax_ult, 1)} mg/L",
-                    help="30 min dopo la fine dell'infusione")
-        c[1].metric("Picco/MIC", ui.n(cmax_ult / mic, 1))
-        c[2].metric(f"Sotto {ui.n(valle_max, 1)} mg/L dopo", f"{ui.n(t_lib - t_last, 1)} h" if t_lib else "> 240 h")
-        c[3].metric("AUC24 (regime attuale, stato stazionario)", f"{ui.n(pk_att[2], 0)} mg·h/L")
-        if t_lib:
-            st.caption(f"Data/ora prevista sotto soglia: {(t0 + timedelta(hours=t_lib)).strftime('%d/%m/%Y %H:%M')}.")
+        ui.schede([
+            {'k': "Picco dopo l'ultima dose", 'v': ui.n(cmax_ult, 1), 'u': "mg/L",
+             's': "30 min dopo la fine dell'infusione"},
+            {'k': "Picco/MIC", 'v': ui.n(cmax_ult / mic, 1), 'stato': 'ok' if cmax_ult / mic >= obiettivo else 'ko',
+             's': f"obiettivo ≥ {ui.n(obiettivo, 0)}"},
+            {'k': f"Sotto {ui.n(valle_max, 1)} mg/L dopo", 'v': ui.n(t_lib - t_last, 1) if t_lib else "> 240", 'u': "h",
+             's': (t0 + timedelta(hours=t_lib)).strftime('%d/%m/%Y %H:%M') if t_lib else None},
+            {'k': "AUC24 allo stato stazionario", 'v': ui.n(pk_att[2], 0), 'u': "mg·h/L", 's': "regime attuale"},
+        ])
 
         if lo_eff <= pk_att[0] <= hi_eff:
             dose_obj = dose_att
@@ -636,19 +651,20 @@ def _pannello_amino(R, t0):
             for dose in sorted({dose_att, dose_obj}, key=lambda x: (x != dose_obj, x)):
                 pk = _simula_regime(par, storia, dose, tau, tinf, t_last + max(tau_att, (t_lib - t_last) if t_lib else tau_att))
                 ok = pk[1] < valle_max and lo_eff * 0.95 <= pk[0] <= hi_eff * 1.05
-                righe.append({"Dose (mg)": dose, "mg/kg": round(dose / R['peso'], 1), "Intervallo (h)": tau,
-                              "Picco (mg/L)": round(pk[0], 1), "Picco/MIC": round(pk[0] / mic, 1),
-                              "Valle (mg/L)": round(pk[1], 2), "AUC24": round(pk[2]), "Criteri": "sì" if ok else "no"})
+                righe.append({"Dose (mg)": dose, "mg/kg": round(dose / R['peso'], 1), "Ogni (h)": tau,
+                              "Picco": round(pk[0], 1), "Picco/MIC": round(pk[0] / mic, 1),
+                              "Valle": round(pk[1], 2), "AUC24": round(pk[2]), "OK": "sì" if ok else "no"})
                 if ok and scelta is None:
                     scelta = righe[-1]
         st.dataframe(pd.DataFrame(righe), width="stretch", hide_index=True)
+        st.caption("Picco e valle in mg/L, AUC24 in mg·h/L, allo stato stazionario del regime indicato.")
         if scelta:
             st.success(f"Proposta: {ui.n(scelta['Dose (mg)'], 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni "
-                       f"{scelta['Intervallo (h)']} h, dalla prossima dose quando il livello è sotto "
+                       f"{scelta['Ogni (h)']} h, dalla prossima dose quando il livello è sotto "
                        f"{ui.n(valle_max, 1)} mg/L.")
             prop = (f"Proposta: {ui.n(scelta['Dose (mg)'], 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni "
-                    f"{scelta['Intervallo (h)']} h (picco previsto {ui.n(scelta['Picco (mg/L)'], 1)} mg/L, "
-                    f"picco/MIC {ui.n(scelta['Picco/MIC'], 1)}, valle {ui.n(scelta['Valle (mg/L)'], 2)} mg/L)")
+                    f"{scelta['Ogni (h)']} h (picco previsto {ui.n(scelta['Picco'], 1)} mg/L, "
+                    f"picco/MIC {ui.n(scelta['Picco/MIC'], 1)}, valle {ui.n(scelta['Valle'], 2)} mg/L)")
         else:
             st.warning("Nessuna combinazione soddisfa insieme picco/MIC e valle: valutare intervallo più lungo, "
                        "obiettivo diverso o alternativa terapeutica.")

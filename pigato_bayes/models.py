@@ -252,8 +252,8 @@ DALBA_MODELLI = {
 }
 DALBA_FU = 0.07
 DALBA_MIC_OPZIONI = {
-    'EUCAST v16.1, Staphylococcus spp. (0,25 mg/L)': 0.25,
-    'Breakpoint usato da Cojutti 2021 (0,125 mg/L)': 0.125,
+    'EUCAST v16.1 · 0,25 mg/L': 0.25,
+    'Cojutti 2021 · 0,125 mg/L': 0.125,
 }
 
 
