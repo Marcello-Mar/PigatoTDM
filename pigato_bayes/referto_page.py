@@ -249,14 +249,23 @@ def render():
         st.info(val['errore'])
         return
     rene_txt = rules.descrivi_rene(eg['valore'] if eg else None)
-    nuova_dose = rules.arrotonda_dose(dose_die * (1 + val['pct'] / 100)) if (dose_die and val['pct'] not in (None, -100)) else None
-    _mostra_valutazione(val, regola, _regime_default(nuova_dose, modalita, tau, unita_dose, val['azione'])
+    tau_n = regola.get('tau_accorcia')
+    if val['azione'] == 'ACCORCIA INTERVALLO' and not (modalita == "Intermittente" and tau and tau > tau_n):
+        # intervallo già breve (o infusione continua): si aumenta la dose come da fascia inferiore
+        val['azione'], val['pct'] = 'AUMENTA', 25
+        val['nota_interv'] = f"intervallo già ≤ {tau_n} h: si propone +25%"
+    if val['azione'] == 'ACCORCIA INTERVALLO':
+        nuova_dose = dose_die * tau / tau_n if dose_die else None   # stessa dose, più frequente
+    else:
+        nuova_dose = rules.arrotonda_dose(dose_die * (1 + val['pct'] / 100)) if (dose_die and val['pct'] not in (None, -100)) else None
+    _mostra_valutazione(val, regola, _regime_default(nuova_dose, modalita, tau, unita_dose, val['azione'], tau_n)
                         if val['azione'] not in ('MANTIENI', 'DOSE AGGIUNTIVA') else "")
     firma = hashlib.md5(json.dumps([val['azione'], val['pct'], nuova_dose, mic, kp, sede, lv.get('conc'),
                                     dose_die, modalita], default=str).encode()).hexdigest()[:8]
     with st.container(border=True):
         a, b = st.columns(2, vertical_alignment="bottom")
-        azioni = ["RIDUCI", "MANTIENI", "AUMENTA", "SOSPENDI", "ALLUNGA INTERVALLO", "DOSE AGGIUNTIVA"]
+        azioni = ["RIDUCI", "MANTIENI", "AUMENTA", "SOSPENDI", "ALLUNGA INTERVALLO", "ACCORCIA INTERVALLO",
+                  "DOSE AGGIUNTIVA"]
         azione = a.selectbox("Azione (confermare o modificare)", azioni,
                              index=azioni.index(val['azione']) if val['azione'] in azioni else 1, key=_k(f'azione_{firma}'))
         # la dose proposta segue l'azione scelta: se l'operatore cambia azione,
@@ -267,6 +276,8 @@ def render():
             nd_def = rules.arrotonda_dose(dose_die * (1.25 if azione == 'AUMENTA' else 0.75))
         elif azione == 'SOSPENDI':
             nd_def = None
+        elif azione == 'ACCORCIA INTERVALLO' and dose_die and tau and tau_n and tau > tau_n:
+            nd_def = dose_die * tau / tau_n
         else:
             nd_def = dose_die
         nd = b.number_input(f"Nuova dose giornaliera ({unita_dose}/die)", 0.0, 100000.0,
@@ -275,7 +286,7 @@ def render():
         tim_def = _ricontrollo_default(ag, eta)
         ricontrollo = st.text_input("Ricontrollo", value=tim_def, key=_k(f'ricontrollo_{tim_def}'))
         regime_txt = st.text_input("Nuovo regime (testo libero, facoltativo)",
-                                   value=_regime_default(nd, modalita, tau, unita_dose, azione),
+                                   value=_regime_default(nd, modalita, tau, unita_dose, azione, tau_n),
                                    key=_k(f'regime_{firma}_{azione}_{nd}'))
         commento = st.text_area("Commento (modificabile)", height=120,
                                 value=_commento(val, azione, nome, regime_txt, rene_txt, regola, sede, etich),
@@ -599,6 +610,10 @@ def _mostra_valutazione(v, regola, regime=""):
     motivi = []
     if v.get('r_decisione') is not None and v.get('r_sito') is not None:
         motivi.append(f"Decisione sul rapporto più basso ({v['base']}): ×{_fmt_ratio(v['r_decisione'])} la MIC")
+    if v.get('nota_interv'):
+        motivi.append(v['nota_interv'].capitalize())
+    if regola.get('nota', '').startswith('Gatti 2022'):
+        motivi.append(regola['nota'])
     ui.proposta(v['azione'] + pct, regime, motivi=motivi,
                 allerte=["Tossicità: " + v['tox']] if v.get('tox') else [])
     voci = []
@@ -630,9 +645,11 @@ def _ricontrollo_default(ag, eta):
     return "alla prossima occasione utile con nuova consulenza TDM"
 
 
-def _regime_default(nd, modalita, tau, unita, azione):
+def _regime_default(nd, modalita, tau, unita, azione, tau_nuovo=None):
     if azione in ('SOSPENDI',) or not nd:
         return ""
+    if azione == 'ACCORCIA INTERVALLO' and tau_nuovo:
+        tau = tau_nuovo
     if modalita == "Infusione continua":
         return f"{ui.n_semplice(nd, 0 if nd >= 10 else 1)} {unita}/die in infusione continua"
     if azione == 'ALLUNGA INTERVALLO' and tau:
@@ -678,6 +695,9 @@ def _commento(v, azione, nome, regime, rene, regola, sede, etich):
         t = f"{base}: si consiglia di sospendere {farm} e ricontrollare il livello prima di riprendere a dose ridotta."
     elif azione == 'ALLUNGA INTERVALLO':
         t = f"{base}: si consiglia di allungare l'intervallo tra le dosi" + (f" ({regime})." if regime else ".")
+    elif azione == 'ACCORCIA INTERVALLO':
+        t = (f"{base} per cui{rene_frase} si consiglia di accorciare l'intervallo tra le dosi di {farm}, "
+             f"mantenendo la stessa dose per somministrazione" + (f" ({regime})." if regime else "."))
     elif azione == 'DOSE AGGIUNTIVA':
         t = f"{base}: si consiglia una dose aggiuntiva di {farm}" + (f" ({regime})." if regime else ".")
     else:
