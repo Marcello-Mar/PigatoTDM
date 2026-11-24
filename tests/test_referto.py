@@ -348,3 +348,23 @@ def test_voriconazolo_cmin_bassa(tau, azione, regime):
     assert az == azione
     testo = at.code[0].value
     assert regime in testo
+
+
+def test_referto_massa_muscolare_ridotta():
+    from streamlit.testing.v1 import AppTest
+    at = AppTest.from_function(_harness, args=('meropenem', [('23/11/2026', 30.0)], str(RADICE)), default_timeout=60)
+    at.run()
+    at.sidebar.text_input[0].input("SMA1")
+    [x for x in at.sidebar.selectbox if x.label == "Sesso biologico"][0].set_value("Maschio")
+    at.run()
+    for k, v in {"Età (anni)": 12.0, "Peso (kg)": 25.0, "Altezza (cm)": 140.0, "Creatinina (mg/dL)": 0.2,
+                 "Cistatina C (mg/L, facoltativa)": 0.9, "Dose giornaliera (mg/die)": 3000.0, "MIC (mg/L)": 2.0}.items():
+        assert _imposta(at, k, v), k
+    [c for c in at.checkbox if c.label == "Massa muscolare ridotta"][0].check()
+    [c for c in at.checkbox if c.label == "Glucocorticoidi sistemici"][0].check()
+    at.run()
+    assert not at.exception
+    testo = at.code[0].value
+    assert "CKiD U25 cistatina C, cistatina C 0,9 mg/L" in testo and "massa muscolare ridotta" in testo
+    assert "eGFR stimata: 94 " in testo and "glucocorticoidi" in testo
+    assert any("Glucocorticoidi" in w.value for w in at.warning)

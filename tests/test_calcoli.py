@@ -236,3 +236,49 @@ def test_regole_coerenti_con_tdm_data():
     assert rules.classifica_fasce(10, lzd) == ('RIDUCI', -25)
     assert rules.classifica_fasce(16, lzd) == ('RIDUCI', -50)
     assert rules.REGOLE['levofloxacin']['valle_max'] == 2          # "Space to q36–48h if Cmin > 2"
+
+
+# ------------------------------------------------------------------ cistatina C
+def test_ckid_u25_cistatina_pierce_tabella2():
+    c = renal.ckid_u25_cys
+    assert c(1.0, 15, "Maschio") == approx(87.2)
+    assert c(1.0, 1, "Maschio") == approx(87.2 * 1.011 ** -14)          # ≈ 74,8 nel testo
+    assert c(1.0, 1, "Maschio") == approx(74.8, abs=0.1)
+    assert c(1.0, 18, "Maschio") == approx(77.1, abs=0.1)              # 87,2 × 0,960³
+    assert c(1.0, 20, "Maschio") == approx(77.1)
+    assert c(1.0, 12, "Femmina") == approx(79.9)
+    assert c(1.0, 1, "Femmina") == approx(76.5, abs=0.1)
+    assert c(1.0, 18, "Femmina") == approx(68.3, abs=0.1)
+    assert c(2.0, 15, "Maschio") == approx(87.2 / 2)
+    assert c(1.0, 0.5, "Maschio") is None
+
+
+def test_ckd_epi_cistatina_2012():
+    assert renal.ckd_epi_cys_2012(0.8, 40, "Maschio") == approx(133 * 0.996 ** 40)
+    assert renal.ckd_epi_cys_2012(1.6, 40, "Femmina") == approx(133 * 2 ** -1.328 * 0.996 ** 40 * 0.932)
+    assert renal.ckd_epi_cys_2012(0.6, 60, "Maschio") == approx(133 * 0.75 ** -0.499 * 0.996 ** 60)
+
+
+def test_massa_muscolare_ridotta_usa_la_cistatina():
+    # 12 anni, creatinina 0,20 (muscolo scarso): la creatinina dà ~270, la cistatina ~94
+    eg = renal.egfr_scelta(12, "Maschio", 25, 140, 0.20, cys_mgl=0.9, muscolo_ridotto=True)
+    assert eg['chiave'] == 'ckid_cys' and eg['valore'] == approx(renal.ckid_u25_cys(0.9, 12, "Maschio"))
+    assert eg['tutte']['ckid'] > 2.5 * eg['valore']
+    # la creatinina equivalente ridà, con CKiD U25 a creatinina, lo stesso eGFR
+    assert renal.ckid_u25(140, eg['crea_modelli'], 12, "Maschio") == approx(eg['valore'], rel=1e-6)
+    # senza la casella si resta sulla creatinina, anche se la cistatina c'è
+    eg2 = renal.egfr_scelta(12, "Maschio", 25, 140, 0.20, cys_mgl=0.9)
+    assert eg2['chiave'] == 'ckid' and eg2['crea_modelli'] == 0.20 and 'ckid_cys' in eg2['tutte']
+    # massa ridotta senza cistatina: avviso, nessuna correzione
+    eg3 = renal.egfr_scelta(12, "Maschio", 25, 140, 0.20, muscolo_ridotto=True)
+    assert eg3['chiave'] == 'ckid' and any('cistatina' in a for a in eg3['avvisi'])
+    # glucocorticoidi: avviso di sottostima solo se la stima è da cistatina
+    eg4 = renal.egfr_scelta(12, "Maschio", 25, 140, 0.20, None, 0.9, True, True)
+    assert any('Glucocorticoidi' in a for a in eg4['avvisi'])
+    # adulto > 25 anni: CKD-EPI 2012 a cistatina, creatinina equivalente su CKD-EPI 2021
+    eg5 = renal.egfr_scelta(40, "Femmina", 45, 160, 0.3, cys_mgl=1.1, muscolo_ridotto=True)
+    assert eg5['chiave'] == 'ckdepi_cys'
+    assert renal.ckd_epi_2021(40, eg5['crea_modelli'], "Femmina") == approx(eg5['valore'], rel=1e-6)
+    # sotto 1 anno: nessuna formula a cistatina
+    eg6 = renal.egfr_scelta(0.5, "Maschio", 7, 65, 0.15, cys_mgl=1.2, muscolo_ridotto=True)
+    assert eg6['chiave'] == 'neonatale' and any('1 anno' in a for a in eg6['avvisi'])

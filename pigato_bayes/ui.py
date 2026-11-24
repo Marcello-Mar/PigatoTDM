@@ -115,6 +115,23 @@ def schede_egfr(eg):
     return voci
 
 
+def campi_cistatina(k, colonne=None):
+    """Cistatina C e condizioni che rendono inattendibile la creatinina. Restituisce (cys, muscolo, steroidi)."""
+    a, b, c = colonne or st.columns(3, vertical_alignment="bottom")
+    cys = a.number_input("Cistatina C (mg/L, facoltativa)", 0.1, 10.0, value=None, step=0.01, format="%.2f",
+                         key=k('cys'), help="Dosaggio standardizzato IFCC. Necessaria se la massa muscolare è ridotta.")
+    musc = b.checkbox("Massa muscolare ridotta", key=k('muscolo'),
+                      help="Cerebropatia, SMA, miopatie/distrofie, cachessia: la creatinina sovrastima il filtrato.")
+    ster = c.checkbox("Glucocorticoidi sistemici", key=k('steroidi'),
+                      help="Aumentano la cistatina C indipendentemente dal filtrato.")
+    return cys, musc, ster
+
+
+def avvisi_renali(eg):
+    for a in (eg or {}).get('avvisi', []):
+        st.warning(a)
+
+
 def passo(testo):
     st.markdown(f'<div class="pg-step">{testo}</div>', unsafe_allow_html=True)
 
