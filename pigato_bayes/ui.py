@@ -136,3 +136,40 @@ AVVISO = ("Strumento a scopo educational, non validato né certificato come disp
           "ogni proposta va verificata dal medico, che resta l'unico responsabile della terapia. "
           "Nessun dato viene conservato sul server; lo storico esiste solo nel file JSON che scarichi. "
           "Non inserire nomi, cognomi o date di nascita: usa un codice paziente non identificativo.")
+
+
+def conferma(chiave, titolo, messaggio, esegui, cliccato):
+    """
+    Finestra di conferma per le azioni che cancellano i dati della sessione.
+    Lo stato "aperta" vive in session_state, così la finestra resta visibile
+    fra un rerun e l'altro e si chiude solo con Annulla o Conferma.
+    """
+    flag = f'_conferma_{chiave}'
+    if cliccato:
+        st.session_state[flag] = True
+    if not st.session_state.get(flag):
+        return
+
+    def _finestra():
+        st.markdown(messaggio)
+        a, b = st.columns(2)
+        if a.button("Annulla", width="stretch", key=f"{flag}_no"):
+            st.session_state.pop(flag, None)
+            st.rerun()
+        if b.button("Conferma", type="primary", width="stretch", key=f"{flag}_si"):
+            st.session_state.pop(flag, None)
+            esegui()
+            st.rerun()
+
+    try:
+        st.dialog(titolo, dismissible=False)(_finestra)()
+    except TypeError:            # Streamlit senza il parametro dismissible
+        st.dialog(titolo)(_finestra)()
+
+
+def messaggio_perdita(sto, cosa):
+    n = len(sto.get('monitoraggi', []))
+    perdita = (f"Le **{n} valutazioni registrate** in questa sessione andranno perse se non hai già scaricato "
+               "lo storico JSON." if n else "I dati inseriti e non registrati andranno persi.")
+    return f"{cosa}\n\n{perdita}"
+

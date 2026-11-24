@@ -263,3 +263,33 @@ def test_json_farmaco_sbagliato_rifiutato():
     ok, msg, _ = storage.carica('referto', 'Linezolid', io.BytesIO(json.dumps(dati).encode()))
     assert not ok
     del st
+
+
+def _harness_una_volta(radice):
+    import sys
+    sys.path.insert(0, radice)
+    import streamlit as st
+    from pigato_bayes import referto_page as rp
+    if 'init' not in st.session_state:
+        st.session_state['init'] = True
+        st.session_state['r_farmaco'] = 'linezolid'
+    rp.render()
+
+
+def test_cambio_farmaco_chiede_conferma():
+    from streamlit.testing.v1 import AppTest
+    at = AppTest.from_function(_harness_una_volta, args=(str(RADICE),), default_timeout=60)
+    at.run()
+    [b for b in at.sidebar.button if b.label == "Cambia farmaco"][0].click()
+    at.run()
+    assert not at.exception
+    assert at.session_state['r_farmaco'] == 'linezolid'        # niente è cancellato prima della conferma
+    [b for b in at.button if b.label == "Annulla"][0].click()
+    at.run()
+    assert at.session_state['r_farmaco'] == 'linezolid'
+    [b for b in at.sidebar.button if b.label == "Cambia farmaco"][0].click()
+    at.run()
+    [b for b in at.button if b.label == "Conferma"][0].click()
+    at.run()
+    assert not at.exception
+    assert 'r_farmaco' not in at.session_state

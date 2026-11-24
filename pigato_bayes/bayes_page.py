@@ -136,21 +136,27 @@ def render():
         return
 
     st.info(f"Molecola in corso: **{farmaco}**")
-    if st.sidebar.button("Cambia molecola", width="stretch", key=f"{P}_cambia"):
+    def _cambia():
         _pulisci_widget()
         st.session_state.pop(_k('farmaco'), None)
         st.session_state.pop(_k('risultati'), None)
         storage.reset(MODULO)
-        st.rerun()
+
+    ui.conferma("cambia", "Cambiare molecola?", ui.messaggio_perdita(
+            storage.get(MODULO), f"Si torna alla scelta della molecola e si azzera il paziente in corso ({farmaco})."),
+               _cambia, st.sidebar.button("Cambia molecola", width="stretch", key=f"{P}_cambia"))
 
     sto, codice, sesso = storage.sidebar_storico(MODULO, farmaco, P, _widget_da_json)
-    if st.sidebar.button("Nuovo paziente (stessa molecola)", width="stretch", key=f"{P}_nuovo"):
+    def _nuovo():
         _pulisci_widget()
         storage.reset(MODULO, farmaco)
         st.session_state.pop(_k('risultati'), None)
         st.session_state.pop(f'{P}_ultimo_file', None)
         st.session_state.pop(f'{P}_msg', None)
-        st.rerun()
+
+    ui.conferma("nuovo", "Iniziare un nuovo paziente?", ui.messaggio_perdita(
+            sto, f"Si azzerano i dati del paziente '{codice or 'senza codice'}'; la molecola resta {farmaco}."),
+               _nuovo, st.sidebar.button("Nuovo paziente (stessa molecola)", width="stretch", key=f"{P}_nuovo"))
     if not codice or not sesso:
         st.warning("Per procedere inserisci codice paziente e sesso biologico nella barra laterale "
                    "(su telefono si apre con » in alto a sinistra).")
