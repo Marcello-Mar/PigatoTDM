@@ -316,6 +316,10 @@ def render():
             st.error("Nessuna somministrazione valida in tabella.")
         elif not livelli:
             st.error("Inserisci almeno un livello plasmatico.")
+        elif any(l['conc'] <= 0 for l in livelli):
+            st.error("Uno o più livelli valgono 0 mg/L. La stima bayesiana richiede concentrazioni maggiori "
+                     "di zero: un valore sotto il limite di quantificazione non è gestito dal modello. "
+                     "Togli la riga oppure riporta il valore misurato.")
         else:
             _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea_mod, eg_sett, eg, mic, crrt, Sc, Qef,
                      dialisi, modello, storia, livelli, t_ult_storico)
@@ -387,7 +391,12 @@ def _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, 
         if om.get(k, 0) > 0:
             om[k] = 0.10 + (om[k] - 0.10) * min(1.0, n / 6.0)
     with st.spinner("Stima MAP in corso…"):
-        par, descr = mappa_bayesiana(pr['par'], om, storia, livelli, pr['sigma_prop'], pr['sigma_add'], pr['t_inf'])
+        try:
+            par, descr, avvisi_map = mappa_bayesiana(pr['par'], om, storia, livelli, pr['sigma_prop'],
+                                                     pr['sigma_add'], pr['t_inf'], con_avvisi=True)
+        except ValueError as exc:
+            st.error(str(exc))
+            return
     t_last = storia[-1]['ore']
     taus = np.diff([s['ore'] for s in storia])
     tau_med = float(np.median(taus)) if len(taus) else None
@@ -407,6 +416,9 @@ def _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, 
         auc24 = auc_tau * 24.0 / tau_med
     else:
         auc24, cmax24, cmin24 = metriche_finestra(par, proiez, t_last, 24.0, pr['t_inf'])
+        if len(proiez) == 1:
+            # dose singola: la finestra parte prima dell'infusione (C = 0); la Cmin utile è a fine finestra
+            cmin24 = float(conc(par, proiez, t_last + 24.0, pr['t_inf'])[0])
     vss = par['V1'] + par.get('V2', 0)
     # emivita terminale
     if par.get('Q') and par.get('V2'):
@@ -429,7 +441,7 @@ def _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, 
         eg_sett=eg_sett, egfr_valore=eg['valore'] if eg else None, egfr_formula=eg.get('etichetta') if eg else None,
         egfr_tutte=eg['tutte'] if eg else {}, mic=mic, crrt=crrt, Sc=Sc, Qef=Qef, dialisi=dialisi, modello=modello,
         storia=storia, livelli=livelli, t0=t0.strftime('%Y-%m-%d %H:%M'), dt_val=dt_val,
-        t_ult_storico=t_ult_storico, prior=pr, par=par, descr=descr, auc24=auc24, cmax24=cmax24, cmin24=cmin24,
+        t_ult_storico=t_ult_storico, prior=pr, par=par, descr=descr, avvisi_map=avvisi_map, auc24=auc24, cmax24=cmax24, cmin24=cmin24,
         vss=vss, thalf=thalf, tau_med=tau_med, auc24_ss=auc24_ss, cmax_ss=cmax_ss, cmin_ss=cmin_ss,
         crea_misurata=(eg or {}).get('creatinina', crea), cistatina=(eg or {}).get('cistatina'),
         muscolo_ridotto=(eg or {}).get('muscolo_ridotto', False), glucocorticoidi=(eg or {}).get('glucocorticoidi', False),
@@ -448,6 +460,8 @@ def _mostra_risultati(R, sto):
     st.markdown("### Parametri individuali")
     st.caption(f"Modello: {pr['nome']}")
     st.caption(R['descr'])
+    for avviso in R.get('avvisi_map', []):
+        st.error(avviso)
     for nota in pr['note']:
         st.info(nota)
     if pr['fuori_range']:
@@ -486,7 +500,8 @@ def _mostra_risultati(R, sto):
         f"Data: {datetime.strptime(R['dt_val'], '%Y-%m-%d %H:%M'):%d/%m/%Y %H:%M} | Codice: {R['codice']} | Sesso: {R['sesso']} | Età: {ui.n(R['eta'], 1)} anni | "
         f"Peso: {ui.n(R['peso'], 1)} kg | Altezza: {ui.n(R['altezza'], 0)} cm\n\n"
         f"Modello: {pr['nome']}\n"
-        f"Creatinina: {ui.n(R.get('crea_misurata', R['crea']), 2)} mg/dL"
+        + "".join(f"ATTENZIONE: {a}\n" for a in R.get('avvisi_map', []))
+        + f"Creatinina: {ui.n(R.get('crea_misurata', R['crea']), 2)} mg/dL"
         + (f" | Cistatina C: {ui.n(R['cistatina'], 2)} mg/L" if R.get('cistatina') else "")
         + (" | massa muscolare ridotta" if R.get('muscolo_ridotto') else "")
         + (" | glucocorticoidi" if R.get('glucocorticoidi') else "")

@@ -1,0 +1,6316 @@
+{
+ "descrizione": "Valori di riferimento calcolati con R 4.3.3, mrgsolve 2.1.0.9000 (c529f2d), mapbayr 0.10.2.9002 (0412b46) il 24/11/2026; modelli scritti come ODE, AUC per integrazione. Script in verifica/ del rapporto.",
+ "casi": [
+  {
+   "id": "D01",
+   "descr": "Wei 3-6m, 4 mesi 6 kg, 12 mg/kg/24h, 1 valle",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 120,
+     "peso": 6.0,
+     "crea": 0.25,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.11819999999999999,
+    "V1": 1.02,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.27396574154059516,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 72,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 72,
+     "tinf": 1.0
+    },
+    {
+     "ore": 48.0,
+     "dose": 72,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 71.9,
+     "conc": 4.2
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 72,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 72,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 72,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.123287111499523,
+     "V1": 0.996211099675196
+    },
+    "AUC24": 583.91874146484,
+    "Cmin": 4.14895972289723,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D02",
+   "descr": "Wei 7-12m, 9 mesi 8,5 kg, picco + valle",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 275,
+     "peso": 8.5,
+     "crea": 0.28,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.16660000000000003,
+    "V1": 1.445,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.28973042064913096,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 102,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 102,
+     "tinf": 1.0
+    },
+    {
+     "ore": 48.0,
+     "dose": 102,
+     "tinf": 1.0
+    },
+    {
+     "ore": 72.0,
+     "dose": 102,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 73.5,
+     "conc": 68.0
+    },
+    {
+     "ore": 95.8,
+     "conc": 5.1
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 72.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 102,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 102,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 102,
+      "tinf": 1.0
+     },
+     {
+      "ore": 72.0,
+      "dose": 102,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.165800874330858,
+     "V1": 1.42932118678589
+    },
+    "AUC24": 615.186281391341,
+    "Cmin": 4.98227655686473,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D03",
+   "descr": "Wei 13-24m, 18 mesi 11 kg, 2 livelli",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 548,
+     "peso": 11.0,
+     "crea": 0.3,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.2398,
+    "V1": 1.21,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.13696974846054577,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 132,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 132,
+     "tinf": 1.0
+    },
+    {
+     "ore": 48.0,
+     "dose": 132,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 50.0,
+     "conc": 75.0
+    },
+    {
+     "ore": 60.0,
+     "conc": 22.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 132,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 132,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 132,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.198843968632342,
+     "V1": 1.52002731871118
+    },
+    "AUC24": 663.779503478568,
+    "Cmin": 4.19124942287678,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D04",
+   "descr": "Wei 2-6y, 4 anni 16 kg, 1 picco (default t_inf da modello)",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 1461,
+     "peso": 16.0,
+     "crea": 0.35,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.32,
+    "V1": 1.76,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.29824332642978574,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 192,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 192,
+     "tinf": 1.0
+    },
+    {
+     "ore": 48.0,
+     "dose": 192,
+     "tinf": 1.0
+    },
+    {
+     "ore": 72.0,
+     "dose": 192,
+     "tinf": 1.0
+    },
+    {
+     "ore": 96.0,
+     "dose": 192,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 97.5,
+     "conc": 95.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 96.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 192,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 192,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 192,
+      "tinf": 1.0
+     },
+     {
+      "ore": 72.0,
+      "dose": 192,
+      "tinf": 1.0
+     },
+     {
+      "ore": 96.0,
+      "dose": 192,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.316506506933322,
+     "V1": 1.71639983885574
+    },
+    "AUC24": 606.622599353725,
+    "Cmin": 1.48778593543377,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D05",
+   "descr": "Wei 7-11y, 9 anni 28 kg, 9 mg/kg, 2 livelli",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 3287,
+     "peso": 28.0,
+     "crea": 0.45,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.476,
+    "V1": 3.08,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.32640427522082094,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 252,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 252,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 252,
+     "tinf": 0.5
+    },
+    {
+     "ore": 72.0,
+     "dose": 252,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 73.0,
+     "conc": 85.0
+    },
+    {
+     "ore": 95.5,
+     "conc": 9.5
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 72.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 252,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 252,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 252,
+      "tinf": 0.5
+     },
+     {
+      "ore": 72.0,
+      "dose": 252,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.306015723431282,
+     "V1": 3.16320296332781
+    },
+    "AUC24": 823.408972160037,
+    "Cmin": 8.86944595576963,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D06",
+   "descr": "Wei 12-17y, 15 anni 55 kg, 7 mg/kg, 2 livelli",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 5479,
+     "peso": 55.0,
+     "crea": 0.7,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.605,
+    "V1": 6.05,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.18920312957035726,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 385,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 385,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 385,
+     "tinf": 0.5
+    },
+    {
+     "ore": 72.0,
+     "dose": 385,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 72.75,
+     "conc": 92.0
+    },
+    {
+     "ore": 95.9,
+     "conc": 11.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 72.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 385,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 385,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 385,
+      "tinf": 0.5
+     },
+     {
+      "ore": 72.0,
+      "dose": 385,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.452387663480022,
+     "V1": 5.14824834978553
+    },
+    "AUC24": 850.851235042775,
+    "Cmin": 10.5413212016116,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D07",
+   "descr": "Età < 91 gg (2 mesi, 4,5 kg): estrapolazione 3-6m, fuori range",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 60,
+     "peso": 4.5,
+     "crea": 0.3,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.08864999999999999,
+    "V1": 0.765,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.27396574154059516,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 54,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 54,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 47.5,
+     "conc": 3.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 54,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 54,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.100637942088277,
+     "V1": 0.710258835985881
+    },
+    "AUC24": 535.93568968067,
+    "Cmin": 2.72423049037396,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D08",
+   "descr": "Bordo di banda: 2190 gg esatti (t_inf passa a 0,5 h)",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 2190,
+     "peso": 19.0,
+     "crea": 0.4,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.323,
+    "V1": 2.09,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.32640427522082094,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 228,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 228,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 228,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 49.0,
+     "conc": 80.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 228,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 228,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 228,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.353747922110509,
+     "V1": 2.51393290222368
+    },
+    "AUC24": 644.500173501209,
+    "Cmin": 3.31778683134965,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D09",
+   "descr": "Ye moderata, 5 anni 18 kg",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 1826,
+     "peso": 18.0,
+     "crea": 0.9,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Moderata (GFR 30-60)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.28125,
+    "V1": 1.98,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.29824332642978574,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 216,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 216,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 216,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 71.5,
+     "conc": 14.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 216,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 216,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 216,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.20131452990816,
+     "V1": 2.26534687722505
+    },
+    "AUC24": 1071.12204653231,
+    "Cmin": 12.9233306637896,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D10",
+   "descr": "Ye ESRD, 10 anni 30 kg, q48h, 2 livelli",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 3652,
+     "peso": 30.0,
+     "crea": 5.0,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "ESRD (GFR <15)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.2947976878612717,
+    "V1": 3.3,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.32640427522082094,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 210,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 210,
+     "tinf": 0.5
+    },
+    {
+     "ore": 96.0,
+     "dose": 210,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 97.0,
+     "conc": 75.0
+    },
+    {
+     "ore": 143.5,
+     "conc": 16.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 96.0,
+    "len": 48.0,
+    "fattore": 0.5,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 210,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 210,
+      "tinf": 0.5
+     },
+     {
+      "ore": 96.0,
+      "dose": 210,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.118911550274646,
+     "V1": 3.57502214914747
+    },
+    "AUC24": 875.605645251859,
+    "Cmin": 14.4309755654741,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D11",
+   "descr": "Ye grave sotto l'anno (8 mesi 8 kg, fascia 1-2y estrapolata)",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 243,
+     "peso": 8.0,
+     "crea": 0.8,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Grave (GFR 15-30)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.09116279069767444,
+    "V1": 1.36,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.28973042064913096,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 96,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 96,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 47.0,
+     "conc": 9.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 96,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 96,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.120332746845076,
+     "V1": 1.20346387471594
+    },
+    "AUC24": 790.879010512736,
+    "Cmin": 7.61277020997797,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D12",
+   "descr": "Ye lieve, 14 anni 50 kg",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 5113,
+     "peso": 50.0,
+     "crea": 0.9,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Lieve (GFR 60-90)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.5612244897959184,
+    "V1": 5.5,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.18920312957035726,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 350,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 350,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 350,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 50.0,
+     "conc": 60.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 350,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 350,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 350,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.555561405577641,
+     "V1": 5.35717559444385
+    },
+    "AUC24": 629.623625066689,
+    "Cmin": 6.02773029449477,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D13",
+   "descr": "Lim HD, 14 anni 45 kg, q48h, 2 livelli",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 5113,
+     "peso": 45.0,
+     "crea": 6.0,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Emodialisi (HD)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.20317500000000002,
+    "V1": 6.6375,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.0878,
+    "V1": 0.112
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 315,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 315,
+     "tinf": 0.5
+    },
+    {
+     "ore": 96.0,
+     "dose": 315,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 96.75,
+     "conc": 95.0
+    },
+    {
+     "ore": 143.0,
+     "conc": 30.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 96.0,
+    "len": 48.0,
+    "fattore": 0.5,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 315,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 315,
+      "tinf": 0.5
+     },
+     {
+      "ore": 96.0,
+      "dose": 315,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.13943440834562,
+     "V1": 6.01992642317205
+    },
+    "AUC24": 1089.1147015812,
+    "Cmin": 23.0097123111699,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D14",
+   "descr": "Lim CCPD, 16 anni 60 kg, 1 livello",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 5844,
+     "peso": 60.0,
+     "crea": 7.0,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Dialisi Peritoneale (CCPD)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.27090000000000003,
+    "V1": 8.850000000000001,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.0878,
+    "V1": 0.112
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 360,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 360,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 95.0,
+     "conc": 25.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 48.0,
+    "fattore": 0.5,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 360,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 360,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.198029670513964,
+     "V1": 9.70620484673679
+    },
+    "AUC24": 780.088869332513,
+    "Cmin": 14.0010091821909,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D15",
+   "descr": "Soraluce, 19 anni M 70 kg, crea 0,8, 8 mg/kg, 2 livelli",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 6940,
+     "peso": 70.0,
+     "crea": 0.8,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 1.2613578571971795,
+    "V1": 12.3,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.3554695550613585,
+    "V1": 0.27284255324828305
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 560,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 560,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 560,
+     "tinf": 0.5
+    },
+    {
+     "ore": 72.0,
+     "dose": 560,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 72.5,
+     "conc": 85.0
+    },
+    {
+     "ore": 95.8,
+     "conc": 12.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 72.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 560,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 560,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 560,
+      "tinf": 0.5
+     },
+     {
+      "ore": 72.0,
+      "dose": 560,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.684221022651045,
+     "V1": 8.67343544562769
+    },
+    "AUC24": 818.019833876479,
+    "Cmin": 11.634189329925,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D16",
+   "descr": "Soraluce, 25 anni F 60 kg, crea 2,0, q48h",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 9131,
+     "peso": 60.0,
+     "crea": 2.0,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.4650549618889308,
+    "V1": 12.3,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.3554695550613585,
+    "V1": 0.27284255324828305
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 480,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 480,
+     "tinf": 0.5
+    },
+    {
+     "ore": 96.0,
+     "dose": 480,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 143.0,
+     "conc": 22.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 96.0,
+    "len": 48.0,
+    "fattore": 0.5,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 480,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 480,
+      "tinf": 0.5
+     },
+     {
+      "ore": 96.0,
+      "dose": 480,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.272736550791914,
+     "V1": 13.4032581784162
+    },
+    "AUC24": 832.75129044494,
+    "Cmin": 18.6570491125104,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D17",
+   "descr": "Soraluce, creatinina mancante (ClCr 60 di default)",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 7300,
+     "peso": 80.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.6093877551020408,
+    "V1": 12.3,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.3554695550613585,
+    "V1": 0.27284255324828305
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 640,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 640,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 640,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 71.0,
+     "conc": 10.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 640,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 640,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 640,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.90383773156136,
+     "V1": 10.8392663541095
+    },
+    "AUC24": 706.306137878596,
+    "Cmin": 9.25106150521009,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D18",
+   "descr": "CRRT, 6 anni 20 kg (Wei + Sc·Qef 0,2×1,0)",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 2191,
+     "peso": 20.0,
+     "crea": 1.5,
+     "crrt": true,
+     "Sc": 0.2,
+     "Qef": 1.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.54,
+    "V1": 2.2,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.32640427522082094,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 240,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 240,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 240,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 72.5,
+     "conc": 70.0
+    },
+    {
+     "ore": 84.0,
+     "conc": 20.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 240,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 240,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 240,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.110649173162174,
+     "V1": 2.20929378932918
+    },
+    "AUC24": 2109.36337530625,
+    "Cmin": 43.0054934119339,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D19",
+   "descr": "CRRT adulto, 30 anni 75 kg crea 3,5 (Soraluce + 0,15×2,5)",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 10958,
+     "peso": 75.0,
+     "crea": 3.5,
+     "crrt": true,
+     "Sc": 0.15,
+     "Qef": 2.5,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.7434188105182427,
+    "V1": 12.3,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.3554695550613585,
+    "V1": 0.27284255324828305
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 600,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 600,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 600,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 49.0,
+     "conc": 60.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 600,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 600,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 600,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.744631669538168,
+     "V1": 12.3154431906548
+    },
+    "AUC24": 795.244163894243,
+    "Cmin": 14.3051882506393,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D20",
+   "descr": "Regime irregolare, infusioni 0,5/2/1 h, 3 livelli, 7 anni 22 kg",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 2557,
+     "peso": 22.0,
+     "crea": 0.4,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.374,
+    "V1": 2.42,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.32640427522082094,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 220,
+     "tinf": 0.5
+    },
+    {
+     "ore": 20.0,
+     "dose": 260,
+     "tinf": 2.0
+    },
+    {
+     "ore": 47.5,
+     "dose": 200,
+     "tinf": 1.0
+    },
+    {
+     "ore": 70.0,
+     "dose": 264,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 21.0,
+     "conc": 40.0
+    },
+    {
+     "ore": 48.0,
+     "conc": 30.0
+    },
+    {
+     "ore": 93.0,
+     "conc": 8.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 70.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 220,
+      "tinf": 0.5
+     },
+     {
+      "ore": 20.0,
+      "dose": 260,
+      "tinf": 2.0
+     },
+     {
+      "ore": 47.5,
+      "dose": 200,
+      "tinf": 1.0
+     },
+     {
+      "ore": 70.0,
+      "dose": 264,
+      "tinf": 0.5
+     },
+     {
+      "ore": 92.5,
+      "dose": 264,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.367113948827732,
+     "V1": 3.60244497326267
+    },
+    "AUC24": 798.864184805264,
+    "Cmin": 6.44171864870812,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D21",
+   "descr": "Molti livelli (5), adulto Soraluce",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 18262,
+     "peso": 85.0,
+     "crea": 1.1,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.8834572004812544,
+    "V1": 12.3,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.3554695550613585,
+    "V1": 0.27284255324828305
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 680,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 680,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 680,
+     "tinf": 0.5
+    },
+    {
+     "ore": 72.0,
+     "dose": 680,
+     "tinf": 0.5
+    },
+    {
+     "ore": 96.0,
+     "dose": 680,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 0.75,
+     "conc": 70.0
+    },
+    {
+     "ore": 6.0,
+     "conc": 45.0
+    },
+    {
+     "ore": 23.5,
+     "conc": 15.0
+    },
+    {
+     "ore": 72.6,
+     "conc": 95.0
+    },
+    {
+     "ore": 95.9,
+     "conc": 18.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 96.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 680,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 680,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 680,
+      "tinf": 0.5
+     },
+     {
+      "ore": 72.0,
+      "dose": 680,
+      "tinf": 0.5
+     },
+     {
+      "ore": 96.0,
+      "dose": 680,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.648122380817669,
+     "V1": 9.6907851374312
+    },
+    "AUC24": 1048.83571243518,
+    "Cmin": 17.9062985616789,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D22",
+   "descr": "Valle molto alta (40 mg/L), 9 anni 30 kg",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 3300,
+     "peso": 30.0,
+     "crea": 0.5,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.51,
+    "V1": 3.3,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.32640427522082094,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 270,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 270,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 270,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 71.8,
+     "conc": 40.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 270,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 270,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 270,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.172852829185244,
+     "V1": 4.00678825479875
+    },
+    "AUC24": 1491.32133406486,
+    "Cmin": 32.7777732692501,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D23",
+   "descr": "Picco molto basso (5 mg/L), 12 anni 40 kg",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 4400,
+     "peso": 40.0,
+     "crea": 0.6,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Nessuna"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.44,
+    "V1": 4.4,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.18920312957035726,
+    "V1": 0.25
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 280,
+     "tinf": 0.5
+    },
+    {
+     "ore": 24.0,
+     "dose": 280,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 280,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 49.0,
+     "conc": 5.0
+    }
+   ],
+   "limiti_attivi_pigato": [
+    "V1"
+   ],
+   "finestra": {
+    "start": 48.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 280,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 280,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 280,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.717920291276739,
+     "V1": 57.7210188289663
+    },
+    "AUC24": 230.238532951533,
+    "Cmin": 6.28876156355632,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "D24",
+   "descr": "Lim, valle molto alta (bassa omega: limiti attivi?)",
+   "chiamata": {
+    "funzione": "prior_dapto",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 5000,
+     "peso": 40.0,
+     "crea": 8.0,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "dialisi": "Emodialisi (HD)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.1806,
+    "V1": 5.9,
+    "Q": 0,
+    "V2": 0
+   },
+   "omega": {
+    "CL": 0.0878,
+    "V1": 0.112
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 280,
+     "tinf": 0.5
+    },
+    {
+     "ore": 48.0,
+     "dose": 280,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 95.5,
+     "conc": 60.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 48.0,
+    "len": 48.0,
+    "fattore": 0.5,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 280,
+      "tinf": 0.5
+     },
+     {
+      "ore": 48.0,
+      "dose": 280,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.094350860625076,
+     "V1": 5.89652543788502
+    },
+    "AUC24": 1163.19729305213,
+    "Cmin": 22.1176678699443,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C01",
+   "descr": "Hirt, 3 mesi 5,5 kg, eGFR 80, 10 mg/kg/8h, 1 valle",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 91,
+     "peso": 5.5,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 80,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 1.9154802134755191,
+    "V1": 7.2875000000000005,
+    "Q": 1.481030926362394,
+    "V2": 4.785
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 55,
+     "tinf": 1.0
+    },
+    {
+     "ore": 8.0,
+     "dose": 55,
+     "tinf": 1.0
+    },
+    {
+     "ore": 16.0,
+     "dose": 55,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 55,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 31.9,
+     "conc": 0.35
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 55,
+      "tinf": 1.0
+     },
+     {
+      "ore": 8.0,
+      "dose": 55,
+      "tinf": 1.0
+     },
+     {
+      "ore": 16.0,
+      "dose": 55,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 55,
+      "tinf": 1.0
+     },
+     {
+      "ore": 32.0,
+      "dose": 55,
+      "tinf": 1.0
+     },
+     {
+      "ore": 40.0,
+      "dose": 55,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 3.48211293186402,
+     "V1": 7.2875,
+     "Q": 1.48103092636239,
+     "V2": 4.785
+    },
+    "AUC24": 47.3515602465366,
+    "Cmin": 0.511861320152869,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C02",
+   "descr": "Hirt, 2 anni 12 kg, eGFR 150, picco + valle",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 730,
+     "peso": 12.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 150,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 5.049722605064701,
+    "V1": 15.899999999999999,
+    "Q": 2.6587533175339484,
+    "V2": 10.44
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 120,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 120,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 120,
+     "tinf": 1.0
+    },
+    {
+     "ore": 36.0,
+     "dose": 120,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 37.0,
+     "conc": 3.1
+    },
+    {
+     "ore": 47.8,
+     "conc": 0.25
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 36.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 120,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 120,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 120,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 120,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 120,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 6.77542652849061,
+     "V1": 15.9,
+     "Q": 2.65875331753395,
+     "V2": 10.44
+    },
+    "AUC24": 35.4162952158843,
+    "Cmin": 0.268825807634366,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C03",
+   "descr": "Hirt, 8 anni 25 kg, eGFR mancante (199), 15 mg/kg/12h",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 2922,
+     "peso": 25.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": null,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 10.803948738450272,
+    "V1": 33.125,
+    "Q": 4.610490343890482,
+    "V2": 21.75
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 375,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 375,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 375,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 25.5,
+     "conc": 4.0
+    },
+    {
+     "ore": 35.5,
+     "conc": 0.6
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 375,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 375,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 375,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 375,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 12.2646521482083,
+     "V1": 33.125,
+     "Q": 4.61049034389048,
+     "V2": 21.75
+    },
+    "AUC24": 60.9973283793761,
+    "Cmin": 0.517405151822095,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C04",
+   "descr": "Hirt, 15 anni 55 kg, eGFR 60, 3 livelli",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 5479,
+     "peso": 55.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 60,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 13.725531041489074,
+    "V1": 72.875,
+    "Q": 8.32844893778519,
+    "V2": 47.849999999999994
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 36.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 37.0,
+     "conc": 4.2
+    },
+    {
+     "ore": 40.0,
+     "conc": 2.4
+    },
+    {
+     "ore": 47.9,
+     "conc": 0.9
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 36.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 14.8918025062376,
+     "V1": 72.875,
+     "Q": 8.32844893778519,
+     "V2": 47.85
+    },
+    "AUC24": 53.3678818752981,
+    "Cmin": 0.837588248372582,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C05",
+   "descr": "Hirt, neonato 10 gg 3,2 kg, eGFR 30, q12h",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 10,
+     "peso": 3.2,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 30,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.7636740735674837,
+    "V1": 4.24,
+    "Q": 0.9866306299725343,
+    "V2": 2.784
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 32,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 32,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 32,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 35.0,
+     "conc": 1.2
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 32,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 32,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 32,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 32,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.89511048668132,
+     "V1": 4.24,
+     "Q": 0.986630629972534,
+     "V2": 2.784
+    },
+    "AUC24": 70.7029246819868,
+    "Cmin": 1.16890783473866,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C06",
+   "descr": "Hirt + CRRT (Sc 0,5 × Qef 1,0), 6 anni 20 kg, eGFR 20",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 2191,
+     "peso": 20.0,
+     "crea": null,
+     "crrt": true,
+     "Sc": 0.5,
+     "Qef": 1.0,
+     "altezza": null,
+     "egfr": 20,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 4.614153528503323,
+    "V1": 26.5,
+    "Q": 3.9,
+    "V2": 17.4
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 200,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 200,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 200,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 25.2,
+     "conc": 3.0
+    },
+    {
+     "ore": 35.0,
+     "conc": 1.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 200,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 200,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 200,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 200,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 6.15096914446582,
+     "V1": 26.5,
+     "Q": 3.9,
+     "V2": 17.4
+    },
+    "AUC24": 64.3306170925105,
+    "Cmin": 0.906614906516887,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C07",
+   "descr": "Rajagopalan, 6 mesi 7 kg, eGFR 110, 1 livello",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 183,
+     "peso": 7.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 110,
+     "modello": "Rajagopalan 2003 — pediatrico 3 mesi–17 anni"
+    }
+   },
+   "prior_atteso": {
+    "CL": 4.903498758160239,
+    "V1": 5.670000000000001,
+    "Q": 6.668547787645961,
+    "V2": 8.98
+   },
+   "omega": {
+    "CL": 0.4,
+    "V1": 0.4,
+    "Q": 0.13333333333333333,
+    "V2": 0.13333333333333333
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 70,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 70,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 70,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 33.0,
+     "conc": 0.4
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 70,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 70,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 70,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 70,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 4.62749291229408,
+     "V1": 5.73581969328023,
+     "Q": 6.66853075267391,
+     "V2": 9.000286174614
+    },
+    "AUC24": 30.2517606780915,
+    "Cmin": 0.1784201075756,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C08",
+   "descr": "Rajagopalan, 5 anni 18 kg, eGFR 120, 2 livelli",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 1826,
+     "peso": 18.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 120,
+     "modello": "Rajagopalan 2003 — pediatrico 3 mesi–17 anni"
+    }
+   },
+   "prior_atteso": {
+    "CL": 12.171986804453182,
+    "V1": 14.58,
+    "Q": 13.541354776962386,
+    "V2": 23.09142857142857
+   },
+   "omega": {
+    "CL": 0.4,
+    "V1": 0.4,
+    "Q": 0.16666666666666666,
+    "V2": 0.16666666666666666
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 180,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 180,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 180,
+     "tinf": 1.0
+    },
+    {
+     "ore": 36.0,
+     "dose": 180,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 37.0,
+     "conc": 2.9
+    },
+    {
+     "ore": 47.5,
+     "conc": 0.3
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 36.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 180,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 180,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 180,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 180,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 180,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 11.9536302214051,
+     "V1": 22.5421234973781,
+     "Q": 13.793445441968,
+     "V2": 23.4172374764775
+    },
+    "AUC24": 30.1156316838708,
+    "Cmin": 0.24179204628421,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C09",
+   "descr": "Rajagopalan, 12 anni 40 kg, eGFR 50 (correzione renale), 3 livelli",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 4383,
+     "peso": 40.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 50,
+     "modello": "Rajagopalan 2003 — pediatrico 3 mesi–17 anni"
+    }
+   },
+   "prior_atteso": {
+    "CL": 21.82182821615436,
+    "V1": 32.4,
+    "Q": 24.646356790620064,
+    "V2": 51.31428571428571
+   },
+   "omega": {
+    "CL": 0.4,
+    "V1": 0.4,
+    "Q": 0.2,
+    "V2": 0.2
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 36.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 37.0,
+     "conc": 4.0
+    },
+    {
+     "ore": 42.0,
+     "conc": 1.9
+    },
+    {
+     "ore": 47.9,
+     "conc": 1.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 36.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 48.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 15.3759245362673,
+     "V1": 53.6867297463537,
+     "Q": 25.2859265970188,
+     "V2": 52.4898156084539
+    },
+    "AUC24": 51.9544386077124,
+    "Cmin": 0.829465671432088,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C10",
+   "descr": "Rajagopalan, 2 mesi 4,5 kg (fuori range < 100 gg)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 60,
+     "peso": 4.5,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 60,
+     "modello": "Rajagopalan 2003 — pediatrico 3 mesi–17 anni"
+    }
+   },
+   "prior_atteso": {
+    "CL": 2.818242291323747,
+    "V1": 3.645,
+    "Q": 4.787591894621476,
+    "V2": 5.772857142857142
+   },
+   "omega": {
+    "CL": 0.4,
+    "V1": 0.4,
+    "Q": 0.13333333333333333,
+    "V2": 0.13333333333333333
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 45,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 45,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 23.5,
+     "conc": 0.5
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 12.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 45,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 45,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 45,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 2.17465050532395,
+     "V1": 3.85238612081721,
+     "Q": 4.78628245015407,
+     "V2": 5.83251510203806
+    },
+    "AUC24": 41.1671853883242,
+    "Cmin": 0.368993754371709,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C11",
+   "descr": "Rajagopalan, valle 0,08 mg/L (domina l'errore additivo)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 3000,
+     "peso": 26.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 130,
+     "modello": "Rajagopalan 2003 — pediatrico 3 mesi–17 anni"
+    }
+   },
+   "prior_atteso": {
+    "CL": 18.12267661705141,
+    "V1": 21.060000000000002,
+    "Q": 17.84176228305191,
+    "V2": 33.354285714285716
+   },
+   "omega": {
+    "CL": 0.4,
+    "V1": 0.4,
+    "Q": 0.13333333333333333,
+    "V2": 0.13333333333333333
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 260,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 260,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 260,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 35.9,
+     "conc": 0.08
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 260,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 260,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 260,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 260,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 22.7666796028299,
+     "V1": 20.1723761909326,
+     "Q": 17.9051823809768,
+     "V2": 32.8563867531393
+    },
+    "AUC24": 22.8398954664885,
+    "Cmin": 0.0840587514803528,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C12",
+   "descr": "Rajagopalan, 6 livelli (omega Q e V2 non ridotti)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 2500,
+     "peso": 22.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 115,
+     "modello": "Rajagopalan 2003 — pediatrico 3 mesi–17 anni"
+    }
+   },
+   "prior_atteso": {
+    "CL": 15.205078733994187,
+    "V1": 17.82,
+    "Q": 15.740725606623863,
+    "V2": 28.22285714285714
+   },
+   "omega": {
+    "CL": 0.4,
+    "V1": 0.4,
+    "Q": 0.3,
+    "V2": 0.3
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 220,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 220,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 220,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 25.0,
+     "conc": 3.5
+    },
+    {
+     "ore": 25.5,
+     "conc": 2.6
+    },
+    {
+     "ore": 26.5,
+     "conc": 1.8
+    },
+    {
+     "ore": 28.0,
+     "conc": 1.2
+    },
+    {
+     "ore": 31.0,
+     "conc": 0.7
+    },
+    {
+     "ore": 35.8,
+     "conc": 0.35
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 220,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 220,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 220,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 220,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 15.2889729256864,
+     "V1": 29.92457519638,
+     "Q": 17.4590553254331,
+     "V2": 35.0430569056108
+    },
+    "AUC24": 28.7593465918472,
+    "Cmin": 0.266608826663578,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C13",
+   "descr": "Forrest, 30 anni M 75 kg 178 cm, crea 0,9 (CKD-EPI calcolata nel modello)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 10958,
+     "peso": 75.0,
+     "crea": 0.9,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": 178,
+     "egfr": null,
+     "modello": "Forrest 1993 — adulto acutamente malato"
+    }
+   },
+   "prior_atteso": {
+    "CL": 25.338969466787674,
+    "V1": 51.74999999999999,
+    "Q": 42.29868596484307,
+    "V2": 38.25
+   },
+   "omega": {
+    "CL": 0.42068271947794494,
+    "V1": 0.25575992365543143,
+    "Q": 0.1455492729139566,
+    "V2": 0.1738365903999776
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 8.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 16.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 25.0,
+     "conc": 3.6
+    },
+    {
+     "ore": 31.9,
+     "conc": 0.45
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 8.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 16.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 32.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 40.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 32.3465156368326,
+     "V1": 67.348719240431,
+     "Q": 43.0008713406624,
+     "V2": 38.6557336995535
+    },
+    "AUC24": 37.0960089588629,
+    "Cmin": 0.431639569150151,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C14",
+   "descr": "Forrest, 65 anni F 60 kg, crea 1,8, senza altezza (BSA 1,73)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 23741,
+     "peso": 60.0,
+     "crea": 1.8,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": null,
+     "modello": "Forrest 1993 — adulto acutamente malato"
+    }
+   },
+   "prior_atteso": {
+    "CL": 12.706674830528573,
+    "V1": 41.4,
+    "Q": 38.0,
+    "V2": 30.6
+   },
+   "omega": {
+    "CL": 0.42068271947794494,
+    "V1": 0.25575992365543143,
+    "Q": 0.12277463645697831,
+    "V2": 0.1369182951999888
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 35.5,
+     "conc": 1.6
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 9.68966077760594,
+     "V1": 42.4845741469166,
+     "Q": 38.008429092608,
+     "V2": 30.7509412353819
+    },
+    "AUC24": 82.0202860518881,
+    "Cmin": 1.41724150602477,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C15",
+   "descr": "Forrest, eGFR 25 + CRRT (Sc 0,5 × Qef 2,0)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 18262,
+     "peso": 80.0,
+     "crea": null,
+     "crrt": true,
+     "Sc": 0.5,
+     "Qef": 2.0,
+     "altezza": 175,
+     "egfr": 25,
+     "modello": "Forrest 1993 — adulto acutamente malato"
+    }
+   },
+   "prior_atteso": {
+    "CL": 17.26,
+    "V1": 55.199999999999996,
+    "Q": 43.316191090132065,
+    "V2": 40.8
+   },
+   "omega": {
+    "CL": 0.42068271947794494,
+    "V1": 0.25575992365543143,
+    "Q": 0.1455492729139566,
+    "V2": 0.1738365903999776
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 25.0,
+     "conc": 4.5
+    },
+    {
+     "ore": 35.9,
+     "conc": 1.5
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 12.15247535941,
+     "V1": 74.4758099501577,
+     "Q": 43.9574760456406,
+     "V2": 41.538934760343
+    },
+    "AUC24": 64.6887662112345,
+    "Cmin": 1.2989775100345,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C16",
+   "descr": "Forrest, campionamento ricco (7 livelli)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 14610,
+     "peso": 68.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": 165,
+     "egfr": 95,
+     "modello": "Forrest 1993 — adulto acutamente malato"
+    }
+   },
+   "prior_atteso": {
+    "CL": 20.723,
+    "V1": 46.919999999999995,
+    "Q": 38.77775581663843,
+    "V2": 34.68
+   },
+   "omega": {
+    "CL": 0.42068271947794494,
+    "V1": 0.25575992365543143,
+    "Q": 0.23664781874186983,
+    "V2": 0.3215097711999328
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 13.0,
+     "conc": 4.8
+    },
+    {
+     "ore": 13.5,
+     "conc": 3.6
+    },
+    {
+     "ore": 14.0,
+     "conc": 3.0
+    },
+    {
+     "ore": 15.0,
+     "conc": 2.3
+    },
+    {
+     "ore": 17.0,
+     "conc": 1.6
+    },
+    {
+     "ore": 20.0,
+     "conc": 1.0
+    },
+    {
+     "ore": 23.9,
+     "conc": 0.6
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 12.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 19.0414707716813,
+     "V1": 59.3315524449806,
+     "Q": 39.2557474387729,
+     "V2": 46.6955538444039
+    },
+    "AUC24": 41.5413876060226,
+    "Cmin": 0.471693567236949,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C17",
+   "descr": "Forrest applicato a 16 anni (fuori range)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 5844,
+     "peso": 62.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": 172,
+     "egfr": 110,
+     "modello": "Forrest 1993 — adulto acutamente malato"
+    }
+   },
+   "prior_atteso": {
+    "CL": 20.243000000000002,
+    "V1": 42.779999999999994,
+    "Q": 37.804744851651044,
+    "V2": 31.62
+   },
+   "omega": {
+    "CL": 0.42068271947794494,
+    "V1": 0.25575992365543143,
+    "Q": 0.12277463645697831,
+    "V2": 0.1369182951999888
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 25.0,
+     "conc": 3.8
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 30.0306478054325,
+     "V1": 57.6363619538417,
+     "Q": 38.3212042712769,
+     "V2": 31.8280979526207
+    },
+    "AUC24": 26.6391686319854,
+    "Cmin": 0.114473714528689,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C18",
+   "descr": "Hirt, regime irregolare, infusioni 0,5/2/1 h, 3 livelli, 10 anni 32 kg",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 3652,
+     "peso": 32.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 140,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 11.763617088636103,
+    "V1": 42.400000000000006,
+    "Q": 5.548231759321439,
+    "V2": 27.84
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 320,
+     "tinf": 0.5
+    },
+    {
+     "ore": 7.0,
+     "dose": 320,
+     "tinf": 2.0
+    },
+    {
+     "ore": 17.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.5,
+     "dose": 320,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 9.5,
+     "conc": 3.0
+    },
+    {
+     "ore": 18.5,
+     "conc": 4.5
+    },
+    {
+     "ore": 32.0,
+     "conc": 0.7
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.5,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 320,
+      "tinf": 0.5
+     },
+     {
+      "ore": 7.0,
+      "dose": 320,
+      "tinf": 2.0
+     },
+     {
+      "ore": 17.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.5,
+      "dose": 320,
+      "tinf": 1.0
+     },
+     {
+      "ore": 32.0,
+      "dose": 320,
+      "tinf": 1.0
+     },
+     {
+      "ore": 39.5,
+      "dose": 320,
+      "tinf": 1.0
+     },
+     {
+      "ore": 47.0,
+      "dose": 320,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 16.9869006873811,
+     "V1": 42.4,
+     "Q": 5.54823175932144,
+     "V2": 27.84
+    },
+    "AUC24": 63.4946862106923,
+    "Cmin": 0.764783420207919,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C19",
+   "descr": "Hirt, valle molto alta (8 mg/L)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 4000,
+     "peso": 35.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 170,
+     "modello": "Hirt 2021 — pediatrico 0–18 anni (eGFR, età)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 13.533763630800113,
+    "V1": 46.375,
+    "Q": 5.933939902049132,
+    "V2": 30.449999999999996
+   },
+   "omega": {
+    "CL": 0.347
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 350,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 350,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 350,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 35.8,
+     "conc": 8.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 350,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 350,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 350,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 350,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 5.45537057253353,
+     "V1": 46.375,
+     "Q": 5.93393990204913,
+     "V2": 30.45
+    },
+    "AUC24": 119.118688949641,
+    "Cmin": 2.41336437406031,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C20",
+   "descr": "Rajagopalan, picco molto basso (0,5 mg/L)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Femmina",
+     "gg": 3500,
+     "peso": 28.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": null,
+     "egfr": 120,
+     "modello": "Rajagopalan 2003 — pediatrico 3 mesi–17 anni"
+    }
+   },
+   "prior_atteso": {
+    "CL": 20.097286105745905,
+    "V1": 22.680000000000003,
+    "Q": 18.86150144524403,
+    "V2": 35.92
+   },
+   "omega": {
+    "CL": 0.4,
+    "V1": 0.4,
+    "Q": 0.13333333333333333,
+    "V2": 0.13333333333333333
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 280,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 280,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 280,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 25.2,
+     "conc": 0.5
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 280,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 280,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 280,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 280,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 25.8191660712494,
+     "V1": 23.2196393512013,
+     "Q": 19.0602412503261,
+     "V2": 36.0257762860386
+    },
+    "AUC24": 21.6888478318074,
+    "Cmin": 0.0780161240041936,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "C21",
+   "descr": "Forrest, valle molto alta (6 mg/L)",
+   "chiamata": {
+    "funzione": "prior_cipro",
+    "args": {
+     "sesso": "Maschio",
+     "gg": 25567,
+     "peso": 70.0,
+     "crea": null,
+     "crrt": false,
+     "Sc": 0.2,
+     "Qef": 2.0,
+     "altezza": 170,
+     "egfr": 70,
+     "modello": "Forrest 1993 — adulto acutamente malato"
+    }
+   },
+   "prior_atteso": {
+    "CL": 18.795,
+    "V1": 48.3,
+    "Q": 39.93555494760666,
+    "V2": 35.7
+   },
+   "omega": {
+    "CL": 0.42068271947794494,
+    "V1": 0.25575992365543143,
+    "Q": 0.12277463645697831,
+    "V2": 0.1369182951999888
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 12.0,
+     "dose": 400,
+     "tinf": 1.0
+    },
+    {
+     "ore": 24.0,
+     "dose": 400,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 35.9,
+     "conc": 6.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 24.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 12.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 24.0,
+      "dose": 400,
+      "tinf": 1.0
+     },
+     {
+      "ore": 36.0,
+      "dose": 400,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 4.17578768621536,
+     "V1": 47.8657234423608,
+     "Q": 40.0524273907436,
+     "V2": 35.3842863468289
+    },
+    "AUC24": 166.133939446002,
+    "Cmin": 4.07928886795382,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "B01",
+   "descr": "Mariani, 10 anni 30 kg, 18 mg/kg dose singola, livelli g7 e g14",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 30,
+     "modello": "Mariani — pediatrico, allometrico (Gaslini)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.016155382701079125,
+    "V1": 2.061428571428571,
+    "Q": 0.0042904458976636365,
+    "V2": 2.061428571428571
+   },
+   "omega": {
+    "CL": 0.198
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 540,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 35.0
+    },
+    {
+     "ore": 336.0,
+     "conc": 18.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 540,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0168267411856099,
+     "V1": 2.06142857142857,
+     "Q": 0.00429044589766364,
+     "V2": 2.06142857142857
+    },
+    "AUC24": 5524.61223269023,
+    "Cmin": 0.0,
+    "t_sotto_soglia": 336.0
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 336.0
+  },
+  {
+   "id": "B02",
+   "descr": "Mariani, 3 anni 14 kg, 22,5 mg/kg, 1 livello g7",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 14,
+     "modello": "Mariani — pediatrico, allometrico (Gaslini)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.009121627565449446,
+    "V1": 0.962,
+    "Q": 0.0024224650255783775,
+    "V2": 0.962
+   },
+   "omega": {
+    "CL": 0.198
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 315,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 30.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 315,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0105290673683532,
+     "V1": 0.962,
+     "Q": 0.00242246502557838,
+     "V2": 0.962
+    },
+    "AUC24": 6659.89300794181,
+    "Cmin": 0.0,
+    "t_sotto_soglia": 265.149658965073
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 168.0
+  },
+  {
+   "id": "B03",
+   "descr": "Mariani, 15 anni 60 kg, 1500 mg g1+g8, 5 livelli fino a g56",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 60,
+     "modello": "Mariani — pediatrico, allometrico (Gaslini)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.02717000680077862,
+    "V1": 4.122857142857142,
+    "Q": 0.007215641150370716,
+    "V2": 4.122857142857142
+   },
+   "omega": {
+    "CL": 0.198
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 168.0,
+     "dose": 1500,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 45.0
+    },
+    {
+     "ore": 336.0,
+     "conc": 60.0
+    },
+    {
+     "ore": 672.0,
+     "conc": 30.0
+    },
+    {
+     "ore": 1008.0,
+     "conc": 17.0
+    },
+    {
+     "ore": 1344.0,
+     "conc": 9.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 168.0,
+    "len": 168.0,
+    "fattore": 0.14285714285714285,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 168.0,
+      "dose": 1500,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0280492496220967,
+     "V1": 4.12285714285714,
+     "Q": 0.00721564115037072,
+     "V2": 4.12285714285714
+    },
+    "AUC24": 5980.53931822451,
+    "Cmin": 92.362465217377,
+    "t_sotto_soglia": 1344.0
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 1344.0
+  },
+  {
+   "id": "B04",
+   "descr": "Mariani, 6 mesi 7 kg, 22,5 mg/kg",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 7,
+     "modello": "Mariani — pediatrico, allometrico (Gaslini)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.005423752200618715,
+    "V1": 0.481,
+    "Q": 0.0014404063221315276,
+    "V2": 0.481
+   },
+   "omega": {
+    "CL": 0.198
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 158,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 28.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 158,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.005890263904061,
+     "V1": 0.481,
+     "Q": 0.00144040632213153,
+     "V2": 0.481
+    },
+    "AUC24": 6550.90367426191,
+    "Cmin": 0.0,
+    "t_sotto_soglia": 239.40467730764
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 168.0
+  },
+  {
+   "id": "B05",
+   "descr": "Mariani, 17 anni 80 kg, 1000 mg ogni 14 gg ×4, 6 livelli (terapia lunga)",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 80,
+     "modello": "Mariani — pediatrico, allometrico (Gaslini)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.03371272046752223,
+    "V1": 5.497142857142856,
+    "Q": 0.008953214288096067,
+    "V2": 5.497142857142856
+   },
+   "omega": {
+    "CL": 0.198
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1000,
+     "tinf": 0.5
+    },
+    {
+     "ore": 336.0,
+     "dose": 1000,
+     "tinf": 0.5
+    },
+    {
+     "ore": 672.0,
+     "dose": 1000,
+     "tinf": 0.5
+    },
+    {
+     "ore": 1008.0,
+     "dose": 1000,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 30.0
+    },
+    {
+     "ore": 336.0,
+     "conc": 20.0
+    },
+    {
+     "ore": 672.0,
+     "conc": 28.0
+    },
+    {
+     "ore": 1008.0,
+     "conc": 30.0
+    },
+    {
+     "ore": 1344.0,
+     "conc": 25.0
+    },
+    {
+     "ore": 1680.0,
+     "conc": 14.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 1008.0,
+    "len": 336.0,
+    "fattore": 0.07142857142857142,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1000,
+      "tinf": 0.5
+     },
+     {
+      "ore": 336.0,
+      "dose": 1000,
+      "tinf": 0.5
+     },
+     {
+      "ore": 672.0,
+      "dose": 1000,
+      "tinf": 0.5
+     },
+     {
+      "ore": 1008.0,
+      "dose": 1000,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0333310685624107,
+     "V1": 5.49714285714286,
+     "Q": 0.00895321428809607,
+     "V2": 5.49714285714286
+    },
+    "AUC24": 2019.59973422315,
+    "Cmin": 27.1972153323387,
+    "t_sotto_soglia": 1680.0
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 1680.0
+  },
+  {
+   "id": "B06",
+   "descr": "Cojutti, adulto, 1500 mg g1+g8, livelli g14 e g28",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 75,
+     "modello": "Cojutti 2021 — adulti, osteoarticolare"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.106,
+    "V1": 17.4,
+    "Q": 0.103,
+    "V2": 15.1
+   },
+   "omega": {
+    "CL": 0.35100586669031497,
+    "V1": 0.4230469050340994,
+    "V2": 0.25766285408304324
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 168.0,
+     "dose": 1500,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 336.0,
+     "conc": 55.0
+    },
+    {
+     "ore": 672.0,
+     "conc": 25.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 168.0,
+    "len": 168.0,
+    "fattore": 0.14285714285714285,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 168.0,
+      "dose": 1500,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0670159777736235,
+     "V1": 17.4856025792447,
+     "Q": 0.103,
+     "V2": 13.9434174508056
+    },
+    "AUC24": 1732.99997601923,
+    "Cmin": 29.8372921311323,
+    "t_sotto_soglia": 874.699473758014
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 672.0
+  },
+  {
+   "id": "B07",
+   "descr": "Cojutti, 1 livello g7",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 70,
+     "modello": "Cojutti 2021 — adulti, osteoarticolare"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.106,
+    "V1": 17.4,
+    "Q": 0.103,
+    "V2": 15.1
+   },
+   "omega": {
+    "CL": 0.35100586669031497,
+    "V1": 0.4230469050340994,
+    "V2": 0.1788314270415216
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1500,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 40.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1500,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0628486643748621,
+     "V1": 15.675500775062,
+     "Q": 0.103,
+     "V2": 13.9766172273048
+    },
+    "AUC24": 2018.35424088668,
+    "Cmin": 0.0,
+    "t_sotto_soglia": 442.529929500245
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 168.0
+  },
+  {
+   "id": "B08",
+   "descr": "Cojutti, regime irregolare 1500/1000/1500 a g0, g8, g22, 4 livelli",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 82,
+     "modello": "Cojutti 2021 — adulti, osteoarticolare"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.106,
+    "V1": 17.4,
+    "Q": 0.103,
+    "V2": 15.1
+   },
+   "omega": {
+    "CL": 0.35100586669031497,
+    "V1": 0.4230469050340994,
+    "V2": 0.4153257081660864
+   },
+   "storia": [
+    {
+     "ore": 0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 192.0,
+     "dose": 1000,
+     "tinf": 0.5
+    },
+    {
+     "ore": 533.0,
+     "dose": 1500,
+     "tinf": 1.0
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 42.0
+    },
+    {
+     "ore": 360.0,
+     "conc": 50.0
+    },
+    {
+     "ore": 528.0,
+     "conc": 22.0
+    },
+    {
+     "ore": 864.0,
+     "conc": 30.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 533.0,
+    "len": 266.5,
+    "fattore": 0.0900562851782364,
+    "dosi": [
+     {
+      "ore": 0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 192.0,
+      "dose": 1000,
+      "tinf": 0.5
+     },
+     {
+      "ore": 533.0,
+      "dose": 1500,
+      "tinf": 1.0
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0707366224462477,
+     "V1": 13.4523786805068,
+     "Q": 0.103,
+     "V2": 8.75602958304456
+    },
+    "AUC24": 1544.06927790716,
+    "Cmin": 24.9188431593041,
+    "t_sotto_soglia": 1077.96811030622
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 864.0
+  },
+  {
+   "id": "B09",
+   "descr": "Baiardi, 70 kg, 1500 g1+g8 poi ogni 14 gg (6 dosi), 8 livelli",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 70,
+     "modello": "Baiardi 2025 — adulti, trattamento prolungato, allometrico"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.0273,
+    "V1": 3.6,
+    "Q": 0.0225,
+    "V2": 6.4
+   },
+   "omega": {
+    "CL": 0.2174055943786043,
+    "V1": 0.1717261419434658,
+    "Q": 0.5214587607744111,
+    "V2": 0.2944977426668432
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 168.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 528.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 864.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 1200.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 1536.0,
+     "dose": 1500,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 50.0
+    },
+    {
+     "ore": 336.0,
+     "conc": 65.0
+    },
+    {
+     "ore": 504.0,
+     "conc": 40.0
+    },
+    {
+     "ore": 840.0,
+     "conc": 45.0
+    },
+    {
+     "ore": 1176.0,
+     "conc": 48.0
+    },
+    {
+     "ore": 1512.0,
+     "conc": 50.0
+    },
+    {
+     "ore": 1680.0,
+     "conc": 70.0
+    },
+    {
+     "ore": 2016.0,
+     "conc": 30.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 1536.0,
+    "len": 336.0,
+    "fattore": 0.07142857142857142,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 168.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 528.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 864.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 1200.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 1536.0,
+      "dose": 1500,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0369014512059319,
+     "V1": 3.34116759287603,
+     "Q": 0.0283895190995605,
+     "V2": 6.20947882424989
+    },
+    "AUC24": 2893.3857557297,
+    "Cmin": 43.8081072226701,
+    "t_sotto_soglia": 2293.27498552673
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 2016.0
+  },
+  {
+   "id": "B10",
+   "descr": "Baiardi, 50 kg, 1 livello g14",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 50,
+     "modello": "Baiardi 2025 — adulti, trattamento prolungato, allometrico"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.021211267465776906,
+    "V1": 2.5714285714285716,
+    "Q": 0.017481813845420524,
+    "V2": 4.571428571428572
+   },
+   "omega": {
+    "CL": 0.2174055943786043,
+    "V1": 0.1717261419434658,
+    "Q": 0.1702431267957352,
+    "V2": 0.13241629044447387
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1500,
+     "tinf": 0.5
+    },
+    {
+     "ore": 168.0,
+     "dose": 1500,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 336.0,
+     "conc": 70.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 168.0,
+    "len": 168.0,
+    "fattore": 0.14285714285714285,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1500,
+      "tinf": 0.5
+     },
+     {
+      "ore": 168.0,
+      "dose": 1500,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0292258167910659,
+     "V1": 2.36219598070953,
+     "Q": 0.0168023376085973,
+     "V2": 4.72374519270957
+    },
+    "AUC24": 5681.77998011812,
+    "Cmin": 51.9515295254389,
+    "t_sotto_soglia": 938.998438544184
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 336.0
+  },
+  {
+   "id": "B11",
+   "descr": "Mariani, livello molto alto (120 mg/L a g14)",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 35,
+     "modello": "Mariani — pediatrico, allometrico (Gaslini)"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.018135408503791497,
+    "V1": 2.405,
+    "Q": 0.00481628881576102,
+    "V2": 2.405
+   },
+   "omega": {
+    "CL": 0.198
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 630,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 336.0,
+     "conc": 120.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 630,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0115783086390113,
+     "V1": 2.405,
+     "Q": 0.00481628881576102,
+     "V2": 2.405
+    },
+    "AUC24": 5746.02461277148,
+    "Cmin": 0.0,
+    "t_sotto_soglia": 601.428677345524
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 336.0
+  },
+  {
+   "id": "B12",
+   "descr": "Baiardi, livello molto basso (5 mg/L a g7)",
+   "chiamata": {
+    "funzione": "prior_dalba",
+    "args": {
+     "peso": 72,
+     "modello": "Baiardi 2025 — adulti, trattamento prolungato, allometrico"
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.02788293519427548,
+    "V1": 3.7028571428571424,
+    "Q": 0.022980441094183086,
+    "V2": 6.582857142857143
+   },
+   "omega": {
+    "CL": 0.2174055943786043,
+    "V1": 0.1717261419434658,
+    "Q": 0.1702431267957352,
+    "V2": 0.13241629044447387
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1500,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 168.0,
+     "conc": 5.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1500,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.082684011132085,
+     "V1": 2.76072256782216,
+     "Q": 0.017567499123751,
+     "V2": 7.31637333291714
+    },
+    "AUC24": 8658.32738507245,
+    "Cmin": 0.0,
+    "t_sotto_soglia": 168.0
+   },
+   "soglia": 16.53273809523809,
+   "t_val": 168.0
+  },
+  {
+   "id": "A01",
+   "descr": "Llanos-Paez genta, 5 anni M 18 kg 108 cm, 1 livello a 10 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Gentamicina",
+     "modello": "Llanos-Paez 2017 — oncologia pediatrica",
+     "sesso": "Maschio",
+     "gg": 1826,
+     "peso": 18,
+     "altezza": 108,
+     "crea": 0.4,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 1.8336777467675456,
+    "V1": 4.524933123429568,
+    "Q": 0.19198199475047134,
+    "V2": 2.890929495524446
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.1789097607915247
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 126,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 10.0,
+     "conc": 0.9
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 126,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 1.6961019662623,
+     "V1": 4.68062431579277,
+     "Q": 0.191981994750471,
+     "V2": 2.88178903317877
+    },
+    "AUC24": 71.7260307494787,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A02",
+   "descr": "Llanos-Paez genta, 1 anno F 9,5 kg 75 cm, picco + 10 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Gentamicina",
+     "modello": "Llanos-Paez 2017 — oncologia pediatrica",
+     "sesso": "Femmina",
+     "gg": 365,
+     "peso": 9.5,
+     "altezza": 75,
+     "crea": 0.25,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 1.0085596663090293,
+    "V1": 2.3140704906829304,
+    "Q": 0.1161004262702631,
+    "V2": 1.4784339246029834
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.25781952158304944
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 67,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 1.0,
+     "conc": 14.0
+    },
+    {
+     "ore": 10.0,
+     "conc": 0.6
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 67,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 1.07105601716207,
+     "V1": 2.57347459678222,
+     "Q": 0.116100426270263,
+     "V2": 1.47739247464495
+    },
+    "AUC24": 60.9331707312662,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A03",
+   "descr": "Llanos-Paez genta, 14 anni M 50 kg 165 cm, 1 livello a 10 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Gentamicina",
+     "modello": "Llanos-Paez 2017 — oncologia pediatrica",
+     "sesso": "Maschio",
+     "gg": 5113,
+     "peso": 50,
+     "altezza": 165,
+     "crea": 0.7,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 4.022622884850454,
+    "V1": 12.845352125338135,
+    "Q": 0.419866172973005,
+    "V2": 8.206752746743808
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.1789097607915247
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 350,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 10.0,
+     "conc": 1.4
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 350,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 3.92366749563502,
+     "V1": 12.9883894838232,
+     "Q": 0.419866172973005,
+     "V2": 8.20102300856043
+    },
+    "AUC24": 85.2656695744426,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A04",
+   "descr": "Llanos-Paez genta, pretermine 20 gg EG 30 sett 1,3 kg 38 cm (fuori range)",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Gentamicina",
+     "modello": "Llanos-Paez 2017 — oncologia pediatrica",
+     "sesso": "Maschio",
+     "gg": 20,
+     "peso": 1.3,
+     "altezza": 38,
+     "crea": 0.8,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": 30
+    }
+   },
+   "prior_atteso": {
+    "CL": 0.03438698773783659,
+    "V1": 0.37942207198559635,
+    "Q": 0.029915297052089448,
+    "V2": 0.24240854599079767
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.1789097607915247
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 6.5,
+     "tinf": 0.5
+    },
+    {
+     "ore": 36.0,
+     "dose": 6.5,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 46.0,
+     "conc": 3.2
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 36.0,
+    "len": 36.0,
+    "fattore": 0.6666666666666666,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 6.5,
+      "tinf": 0.5
+     },
+     {
+      "ore": 36.0,
+      "dose": 6.5,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.0456417590237495,
+     "V1": 0.360030319149954,
+     "Q": 0.0299152970520894,
+     "V2": 0.247079812523592
+    },
+    "AUC24": 93.7688917063147,
+    "Cmin": 0.732124989564243,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A05",
+   "descr": "Llanos-Paez genta, creatinina 1,5 mg/dL, 8 anni 25 kg 128 cm, valle a 24 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Gentamicina",
+     "modello": "Llanos-Paez 2017 — oncologia pediatrica",
+     "sesso": "Femmina",
+     "gg": 2922,
+     "peso": 25,
+     "altezza": 128,
+     "crea": 1.5,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 1.2530113768290154,
+    "V1": 6.013427561060577,
+    "Q": 0.23762544268277166,
+    "V2": 3.8419120528998127
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.25781952158304944
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 175,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 1.0,
+     "conc": 16.0
+    },
+    {
+     "ore": 24.0,
+     "conc": 2.5
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 175,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 0.818094349626121,
+     "V1": 7.84506309583087,
+     "Q": 0.237625442682772,
+     "V2": 3.64372263348359
+    },
+    "AUC24": 176.007254421512,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A06",
+   "descr": "Llanos-Paez per amikacina, 10 anni F 32 kg 140 cm, 10 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Amikacina",
+     "modello": "Llanos-Paez 2017 (gentamicina) — per analogia di classe",
+     "sesso": "Femmina",
+     "gg": 3652,
+     "peso": 32,
+     "altezza": 140,
+     "crea": 0.5,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 2.8970578898912613,
+    "V1": 7.492523982165941,
+    "Q": 0.2802350689129356,
+    "V2": 4.78689032193935
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.1789097607915247
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 480,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 10.0,
+     "conc": 4.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 480,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 2.31002584253337,
+     "V1": 8.25255934839027,
+     "Q": 0.280235068912936,
+     "V2": 4.75375000929889
+    },
+    "AUC24": 198.253410150135,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A07",
+   "descr": "Llanos-Paez per tobramicina + CRRT (0,85 × 1,5), 6 anni 20 kg 115 cm",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Tobramicina",
+     "modello": "Llanos-Paez 2017 (gentamicina) — per analogia di classe",
+     "sesso": "Maschio",
+     "gg": 2191,
+     "peso": 20,
+     "altezza": 115,
+     "crea": 1.2,
+     "crrt": true,
+     "Sc": 0.85,
+     "Qef": 1.5,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 2.4199045675612467,
+    "V1": 5.061488294103329,
+    "Q": 0.2088142120388907,
+    "V2": 3.233728632343793
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.25781952158304944
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 140,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 1.0,
+     "conc": 12.0
+    },
+    {
+     "ore": 10.0,
+     "conc": 3.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 140,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 1.47107341866168,
+     "V1": 7.04630168874736,
+     "Q": 0.208814212038891,
+     "V2": 3.1327317699909
+    },
+    "AUC24": 89.6803794769187,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A08",
+   "descr": "Llanos-Paez genta, 19 anni 70 kg 175 cm (Janmahasatian, fuori range)",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Gentamicina",
+     "modello": "Llanos-Paez 2017 — oncologia pediatrica",
+     "sesso": "Maschio",
+     "gg": 6940,
+     "peso": 70,
+     "altezza": 175,
+     "crea": 0.9,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 5.621147495020921,
+    "V1": 17.235907525823908,
+    "Q": 0.5234521556649597,
+    "V2": 11.011829808165274
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.1789097607915247
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 490,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 10.0,
+     "conc": 1.1
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 490,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 5.71622033460665,
+     "V1": 17.1033458397869,
+     "Q": 0.52345215566496,
+     "V2": 11.0167585864826
+    },
+    "AUC24": 82.3860119558284,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A09",
+   "descr": "Alhadab amika, 8 anni 25 kg, picco + 10 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Amikacina",
+     "modello": "Alhadab 2018 — oncologia pediatrica",
+     "sesso": "Maschio",
+     "gg": 2922,
+     "peso": 25,
+     "altezza": null,
+     "crea": 0.4,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 5.128076027338035,
+    "V1": 10.785714285714286,
+    "Q": 1.9680724213027052,
+    "V2": 5.321428571428572
+   },
+   "omega": {
+    "CL": 0.3215097711999328,
+    "V1": 0.5789281489972984
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 500,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 1.0,
+     "conc": 40.0
+    },
+    {
+     "ore": 10.0,
+     "conc": 3.5
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 500,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 3.57770476386899,
+     "V1": 9.77053129012591,
+     "Q": 1.96807242130271,
+     "V2": 5.32142857142857
+    },
+    "AUC24": 138.388134861045,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A10",
+   "descr": "Alhadab amika, 16 anni 55 kg, 1 livello a 10 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Amikacina",
+     "modello": "Alhadab 2018 — oncologia pediatrica",
+     "sesso": "Femmina",
+     "gg": 5844,
+     "peso": 55,
+     "altezza": null,
+     "crea": 0.7,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 9.263422360131432,
+    "V1": 23.728571428571428,
+    "Q": 3.5551512841585495,
+    "V2": 11.707142857142857
+   },
+   "omega": {
+    "CL": 0.3215097711999328,
+    "V1": 0.5789281489972984
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 1100,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 10.0,
+     "conc": 6.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 1100,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 6.60332291544415,
+     "V1": 33.2220814855888,
+     "Q": 3.55515128415855,
+     "V2": 11.7071428571429
+    },
+    "AUC24": 159.699205387617,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A11",
+   "descr": "Alhadab amika, livello 0,3 mg/L (sotto l'errore additivo 0,5)",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Amikacina",
+     "modello": "Alhadab 2018 — oncologia pediatrica",
+     "sesso": "Maschio",
+     "gg": 4000,
+     "peso": 35,
+     "altezza": null,
+     "crea": 0.5,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 6.600099488265101,
+    "V1": 15.1,
+    "Q": 2.533011154955796,
+    "V2": 7.45
+   },
+   "omega": {
+    "CL": 0.3215097711999328,
+    "V1": 0.5789281489972984
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 700,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 18.0,
+     "conc": 0.3
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 700,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 6.71310470478296,
+     "V1": 14.7961176574407,
+     "Q": 2.5330111549558,
+     "V2": 7.45
+    },
+    "AUC24": 103.80227983499,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A12",
+   "descr": "Hennig tobra FC, 12 anni 35 kg, picco + 10 h",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Tobramicina",
+     "modello": "Hennig 2008 — fibrosi cistica",
+     "sesso": "Femmina",
+     "gg": 4383,
+     "peso": 35,
+     "altezza": null,
+     "crea": 0.5,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 3.7876246612836666,
+    "V1": 9.35,
+    "Q": 0.39,
+    "V2": 1.32
+   },
+   "omega": {
+    "CL": 0.1331060074701958,
+    "V1": 0.11620658152185043
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 350,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 1.0,
+     "conc": 25.0
+    },
+    {
+     "ore": 10.0,
+     "conc": 1.5
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 350,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 3.50536999151138,
+     "V1": 9.86105525952554,
+     "Q": 0.39,
+     "V2": 1.32
+    },
+    "AUC24": 99.6340659007395,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A13",
+   "descr": "Hennig tobra FC, 4 anni 15 kg, 1 livello",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Tobramicina",
+     "modello": "Hennig 2008 — fibrosi cistica",
+     "sesso": "Maschio",
+     "gg": 1461,
+     "peso": 15,
+     "altezza": null,
+     "crea": 0.3,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 2.0062467518387814,
+    "V1": 4.007142857142857,
+    "Q": 0.39,
+    "V2": 1.32
+   },
+   "omega": {
+    "CL": 0.1331060074701958,
+    "V1": 0.11620658152185043
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 150,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 10.0,
+     "conc": 0.8
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 150,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 1.99338646336708,
+     "V1": 4.01567172822129,
+     "Q": 0.39,
+     "V2": 1.32
+    },
+    "AUC24": 75.0886347547207,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A14",
+   "descr": "Hennig, valle molto alta (6 mg/L a 10 h)",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Tobramicina",
+     "modello": "Hennig 2008 — fibrosi cistica",
+     "sesso": "Maschio",
+     "gg": 3000,
+     "peso": 26,
+     "altezza": null,
+     "crea": 0.5,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 3.0307206864810845,
+    "V1": 6.945714285714286,
+    "Q": 0.39,
+    "V2": 1.32
+   },
+   "omega": {
+    "CL": 0.1331060074701958,
+    "V1": 0.11620658152185043
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 260,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 10.0,
+     "conc": 6.0
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 0.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 260,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 1.88022558149772,
+     "V1": 8.1907309041072,
+     "Q": 0.39,
+     "V2": 1.32
+    },
+    "AUC24": 136.359677536122,
+    "Cmin": 0.0,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  },
+  {
+   "id": "A15",
+   "descr": "Llanos-Paez genta q8h, 3 dosi, 3 livelli",
+   "chiamata": {
+    "funzione": "prior_amino",
+    "args": {
+     "farmaco": "Gentamicina",
+     "modello": "Llanos-Paez 2017 — oncologia pediatrica",
+     "sesso": "Femmina",
+     "gg": 2557,
+     "peso": 22,
+     "altezza": 120,
+     "crea": 0.4,
+     "crrt": false,
+     "Sc": 0.85,
+     "Qef": 2.0,
+     "eg_sett": null
+    }
+   },
+   "prior_atteso": {
+    "CL": 2.269593097095774,
+    "V1": 5.3101379922864895,
+    "Q": 0.21646153379286004,
+    "V2": 3.392588161738591
+   },
+   "omega": {
+    "CL": 0.257309277280599,
+    "V1": 0.21257574573186064,
+    "V2": 0.3367292823745741
+   },
+   "storia": [
+    {
+     "ore": 0.0,
+     "dose": 55,
+     "tinf": 0.5
+    },
+    {
+     "ore": 8.0,
+     "dose": 55,
+     "tinf": 0.5
+    },
+    {
+     "ore": 16.0,
+     "dose": 55,
+     "tinf": 0.5
+    }
+   ],
+   "livelli": [
+    {
+     "ore": 1.0,
+     "conc": 5.5
+    },
+    {
+     "ore": 16.5,
+     "conc": 6.0
+    },
+    {
+     "ore": 23.9,
+     "conc": 0.6
+    }
+   ],
+   "limiti_attivi_pigato": [],
+   "finestra": {
+    "start": 16.0,
+    "len": 24.0,
+    "fattore": 1.0,
+    "dosi": [
+     {
+      "ore": 0.0,
+      "dose": 55,
+      "tinf": 0.5
+     },
+     {
+      "ore": 8.0,
+      "dose": 55,
+      "tinf": 0.5
+     },
+     {
+      "ore": 16.0,
+      "dose": 55,
+      "tinf": 0.5
+     },
+     {
+      "ore": 24.0,
+      "dose": 55,
+      "tinf": 0.5
+     },
+     {
+      "ore": 32.0,
+      "dose": 55,
+      "tinf": 0.5
+     }
+    ]
+   },
+   "atteso_mapbayr": {
+    "par": {
+     "CL": 2.43662929476887,
+     "V1": 6.52713008843009,
+     "Q": 0.21646153379286,
+     "V2": 3.39755584613296
+    },
+    "AUC24": 66.4287571197448,
+    "Cmin": 0.501717453663571,
+    "t_sotto_soglia": null
+   },
+   "soglia": null,
+   "t_val": null
+  }
+ ]
+}

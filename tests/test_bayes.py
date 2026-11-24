@@ -152,3 +152,28 @@ def test_auc_a_regime_uguale_dose_su_cl(nome):
     tau = R['tau_med'] or 24
     assert R['auc24_ss'] == pytest.approx(R['storia'][-1]['dose'] * 24 / tau / R['par']['CL'], rel=0.01)
     assert R['auc24_ss'] >= R['auc24'] * 0.98
+
+
+def test_livello_zero_mostra_errore():
+    """Un livello di 0 mg/L (es. sotto il limite di quantificazione) non deve produrre una stima."""
+    from streamlit.testing.v1 import AppTest
+    caso = list(CASI['dapto_bambino'])
+    caso[8] = [(73, 95.0), (95.5, 0.0)]
+    at = AppTest.from_function(_harness, args=(str(RADICE), *caso), default_timeout=120)
+    at.run()
+    assert not at.exception
+    assert any("maggiori di zero" in e.value for e in at.error)
+    assert at.session_state['b_risultati'] is None if 'b_risultati' in at.session_state else True
+
+
+def test_avviso_parametro_al_limite_a_video_e_nel_referto():
+    """Livello incompatibile col modello (picco 1 mg/L contro ~60): avviso in pagina e nel referto."""
+    from streamlit.testing.v1 import AppTest
+    caso = list(CASI['dapto_bambino'])
+    caso[8] = [(73, 1.0)]
+    at = AppTest.from_function(_harness, args=(str(RADICE), *caso), default_timeout=120)
+    at.run()
+    assert not at.exception
+    assert any("limite superiore" in e.value for e in at.error)
+    referto = [c.value for c in at.code if 'Proposta' in c.value or 'Forecast' in c.value]
+    assert referto and "ATTENZIONE" in referto[-1]

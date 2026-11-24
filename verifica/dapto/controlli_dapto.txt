@@ -1,0 +1,9 @@
+1. bolo, scarto max %: 5.062383134912807e-06
+2. infusione, scarto max %: 0.0
+3. AUC24 ss (trapezi 400 pt) vs dose/CL: 699.946 vs 700.000, scarto %: -0.0078
+3b. Cmin ss scarto %: 0.00000
+4. livello = 0 (sotto LOQ inserito come 0) -> CL 1.4659 (x2.87 prior), V 1.836 (x0.56)
+4. livello 0,05 mg/L -> CL 0.8337 (x1.63 prior), V 2.569 (x0.78)
+4. livello prima della prima dose (ore -1) -> CL 0.5100 (x1.00 prior), V 3.300 (x1.00)
+4. livello durante l'infusione (0,25 h) -> CL 0.5208 (x1.02 prior), V 3.452 (x1.05)
+5. esiti ottimizzatore (caso livello 0): [(True, 'CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL'), (True, 'CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL'), (True, 'CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL')]
