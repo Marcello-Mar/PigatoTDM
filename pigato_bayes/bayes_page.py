@@ -30,7 +30,7 @@ FARMACI = {
 }
 AMINO = ('Gentamicina', 'Amikacina', 'Tobramicina')
 
-WIDGETS = ['eta_unita', 'eta_val', 'peso', 'altezza', 'crea', 'eg', 'mic', 'crrt', 'sc', 'qef',
+WIDGETS = ['eta_unita', 'eta_val', 'peso', 'altezza', 'crea', 'cys', 'muscolo', 'steroidi', 'eg', 'mic', 'crrt', 'sc', 'qef',
            'dialisi', 'modello', 'editor_dosi', 'editor_livelli', 'codice', 'sesso']
 
 
@@ -57,9 +57,11 @@ def _widget_da_json(dati):
         st.session_state[_k('eta_unita')] = 'Anni'
         st.session_state[_k('eta_val')] = round(ult['eta_giorni'] / 365.25, 2)
     for campo, w in (('peso', 'peso'), ('altezza', 'altezza'), ('creatinina', 'crea'), ('mic', 'mic'),
-                     ('eg_sett', 'eg')):
+                     ('eg_sett', 'eg'), ('cistatina', 'cys')):
         if ult.get(campo) is not None:
             st.session_state[_k(w)] = float(ult[campo])
+    for campo, w in (('muscolo_ridotto', 'muscolo'), ('glucocorticoidi', 'steroidi')):
+        st.session_state[_k(w)] = bool(ult.get(campo))
     validi = set(models.DALBA_MODELLI) | set(models.CIPRO_MODELLI) | {m for v in models.AMINO_MODELLI.values() for m in v}
     mod = ult.get('modello_scelto') or ult.get('modello_dalba')   # 'modello_dalba': file v6.0
     if mod in validi:
@@ -209,6 +211,7 @@ def render():
             Sc = a.number_input("Sieving coefficient", 0.01, 1.0, 0.2 if farmaco not in AMINO else 0.85, 0.01,
                                 key=_k('sc'))
             Qef = b.number_input("Flusso effluente (L/h)", 0.1, 6.0, 2.0, 0.1, key=_k('qef'))
+        cys, musc, ster = ui.campi_cistatina(_k)
         modello = None
         if farmaco == 'Dalbavancina':
             modello = st.selectbox("Modello PK", list(models.DALBA_MODELLI), key=_k('modello'))
@@ -222,11 +225,13 @@ def render():
 
     eg = None
     if eta is not None and crea:
-        eg = renal.egfr_scelta(eta, sesso, peso, altezza, crea, eg_sett)
+        eg = renal.egfr_scelta(eta, sesso, peso, altezza, crea, eg_sett, cys, musc, ster)
         with st.container(border=True):
             st.markdown("**Funzione renale stimata**")
             st.caption(eg['nota'])
             ui.schede(ui.schede_egfr(eg))
+            ui.avvisi_renali(eg)
+    crea_mod = eg['crea_modelli'] if eg else crea
 
     mancano = [n for n, v in (("età", gg), ("peso", peso), ("MIC", mic)) if v is None]
     if farmaco != 'Dalbavancina' and crea is None:
@@ -300,7 +305,7 @@ def render():
         st.warning("Righe incomplete o con data/ora non leggibile, escluse dal calcolo: " + ", ".join(scartate)
                    + ". Formato atteso GG/MM/AAAA e HH:MM.")
     firma_input = hashlib.md5(json.dumps(
-        [sesso, gg, peso, altezza, crea, eg_sett, mic, crrt, Sc, Qef, dialisi, modello,
+        [sesso, gg, peso, altezza, crea, cys, musc, ster, eg_sett, mic, crrt, Sc, Qef, dialisi, modello,
          [(str(x['dt']), x['dose'], x['tinf']) for x in storia], [(str(x['dt']), x['conc']) for x in livelli]],
         default=str).encode()).hexdigest()
 
@@ -312,7 +317,7 @@ def render():
         elif not livelli:
             st.error("Inserisci almeno un livello plasmatico.")
         else:
-            _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, mic, crrt, Sc, Qef,
+            _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea_mod, eg_sett, eg, mic, crrt, Sc, Qef,
                      dialisi, modello, storia, livelli, t_ult_storico)
             if st.session_state.get(_k('risultati')):
                 st.session_state[_k('risultati')]['firma_input'] = firma_input
@@ -426,7 +431,9 @@ def _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, 
         storia=storia, livelli=livelli, t0=t0.strftime('%Y-%m-%d %H:%M'), dt_val=dt_val,
         t_ult_storico=t_ult_storico, prior=pr, par=par, descr=descr, auc24=auc24, cmax24=cmax24, cmin24=cmin24,
         vss=vss, thalf=thalf, tau_med=tau_med, auc24_ss=auc24_ss, cmax_ss=cmax_ss, cmin_ss=cmin_ss,
-        registrato=False)
+        crea_misurata=(eg or {}).get('creatinina', crea), cistatina=(eg or {}).get('cistatina'),
+        muscolo_ridotto=(eg or {}).get('muscolo_ridotto', False), glucocorticoidi=(eg or {}).get('glucocorticoidi', False),
+        avvisi_renali=(eg or {}).get('avvisi', []), registrato=False)
 
 
 # ------------------------------------------------------------------
@@ -479,7 +486,13 @@ def _mostra_risultati(R, sto):
         f"Data: {datetime.strptime(R['dt_val'], '%Y-%m-%d %H:%M'):%d/%m/%Y %H:%M} | Codice: {R['codice']} | Sesso: {R['sesso']} | Età: {ui.n(R['eta'], 1)} anni | "
         f"Peso: {ui.n(R['peso'], 1)} kg | Altezza: {ui.n(R['altezza'], 0)} cm\n\n"
         f"Modello: {pr['nome']}\n"
-        f"Creatinina: {ui.n(R['crea'], 2)} mg/dL | eGFR: {eg_txt}"
+        f"Creatinina: {ui.n(R.get('crea_misurata', R['crea']), 2)} mg/dL"
+        + (f" | Cistatina C: {ui.n(R['cistatina'], 2)} mg/L" if R.get('cistatina') else "")
+        + (" | massa muscolare ridotta" if R.get('muscolo_ridotto') else "")
+        + (" | glucocorticoidi" if R.get('glucocorticoidi') else "")
+        + (f" (ai modelli creatinina equivalente {ui.n(R['crea'], 2)} mg/dL)"
+           if R.get('crea_misurata') and abs(R['crea'] - R['crea_misurata']) > 1e-6 else "")
+        + f" | eGFR: {eg_txt}"
         + (f" | CRRT Sc {ui.n(R['Sc'], 2)}, Qef {ui.n(R['Qef'], 1)} L/h" if R['crrt'] else "") + "\n"
         f"Dosi: {len(storia)} (ultima {ui.n(storia[-1]['dose'], 0)} mg = {ui.n(storia[-1]['dose'] / R['peso'], 1)} mg/kg; "
         f"intervallo mediano {tau_txt}) | Livelli: {len(livelli)} | MIC: {ui.n(mic, 4)} mg/L\n\n"
@@ -500,7 +513,9 @@ def _mostra_risultati(R, sto):
                      key=f"{P}_registra"):
             rec = {
                 'data_val': R['dt_val'], 'farmaco': farmaco, 'eta_giorni': R['gg'], 'peso': R['peso'],
-                'altezza': R['altezza'], 'creatinina': R['crea'], 'eg_sett': R['eg_sett'],
+                'altezza': R['altezza'], 'creatinina': R.get('crea_misurata', R['crea']), 'eg_sett': R['eg_sett'],
+                'cistatina': R.get('cistatina'), 'muscolo_ridotto': R.get('muscolo_ridotto', False),
+                'glucocorticoidi': R.get('glucocorticoidi', False), 'creatinina_modelli': R['crea'],
                 'egfr_valore': R['egfr_valore'], 'egfr_formula': R['egfr_formula'], 'egfr_tutte': R['egfr_tutte'],
                 'crrt': bool(R['crrt']), 'Sc': R['Sc'], 'Qef': R['Qef'], 'dialisi_tipo': R['dialisi'],
                 'mic': mic, 'modello_scelto': R['modello'], 'modello': pr['nome'],

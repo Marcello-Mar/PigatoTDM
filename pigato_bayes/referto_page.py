@@ -38,7 +38,8 @@ def _k(x):
 SEDE_PROSA = {'cns': 'SNC/liquor', 'lung': 'polmone', 'bone': 'osso', 'skin': 'cute e tessuti molli',
               'abdomen': 'addome/peritoneo', 'eye': 'occhio', 'urine': 'urine'}
 
-WIDGETS_PAZ =['eta_unita', 'eta_val', 'peso', 'altezza', 'crea', 'eg', 'rrt', 'codice', 'sesso']
+WIDGETS_PAZ =['eta_unita', 'eta_val', 'peso', 'altezza', 'crea', 'cys', 'muscolo', 'steroidi', 'eg', 'rrt',
+              'codice', 'sesso']
 
 
 def _pulisci(tutto=True):
@@ -58,9 +59,12 @@ def _widget_da_json(dati):
     if ult.get('eta_giorni') is not None:
         st.session_state[_k('eta_unita')] = 'Anni'
         st.session_state[_k('eta_val')] = round(ult['eta_giorni'] / 365.25, 2)
-    for campo, w in (('peso', 'peso'), ('altezza', 'altezza'), ('creatinina', 'crea'), ('eg_sett', 'eg')):
+    for campo, w in (('peso', 'peso'), ('altezza', 'altezza'), ('creatinina', 'crea'), ('eg_sett', 'eg'),
+                     ('cistatina', 'cys')):
         if ult.get(campo) is not None:
             st.session_state[_k(w)] = float(ult[campo])
+    for campo, w in (('muscolo_ridotto', 'muscolo'), ('glucocorticoidi', 'steroidi')):
+        st.session_state[_k(w)] = bool(ult.get(campo))
     for campo in ('sede', 'gruppo', 'modalita', 'rrt'):
         if ult.get(campo) is not None:
             st.session_state[_k(campo)] = ult[campo]
@@ -158,13 +162,15 @@ def render():
         eta = gg / 365.25 if gg is not None else None
         rrt = c.selectbox("Depurazione extrarenale", ["Nessuna", "CRRT", "Emodialisi intermittente",
                                                       "Dialisi peritoneale"], key=_k('rrt'))
+        cys, musc, ster = ui.campi_cistatina(_k)
         eg_sett = None
         if eta is not None and eta < 1:
             eg_sett = st.number_input("EG alla nascita (sett.)", 22.0, 42.0, value=None, key=_k('eg'))
-    eg = renal.egfr_scelta(eta, sesso, peso, altezza, crea, eg_sett) if (eta is not None and crea) else None
+    eg = renal.egfr_scelta(eta, sesso, peso, altezza, crea, eg_sett, cys, musc, ster) if (eta is not None and crea) else None
     if eg:
         ui.schede(ui.schede_egfr(eg))
         st.caption(eg['nota'])
+        ui.avvisi_renali(eg)
 
     # ---------------- Terapia ----------------
     ui.passo("Passo 3")
@@ -311,6 +317,7 @@ def render():
         sto['monitoraggi'].append({
             'data_val': datetime.now().strftime('%Y-%m-%d %H:%M'), 'farmaco': nome, 'id_farmaco': fid,
             'eta_giorni': gg, 'peso': peso, 'altezza': altezza, 'creatinina': crea, 'eg_sett': eg_sett,
+            'cistatina': cys, 'muscolo_ridotto': bool(musc), 'glucocorticoidi': bool(ster),
             'egfr_valore': eg['valore'] if eg else None, 'egfr_formula': eg.get('etichetta') if eg else None,
             'rrt': rrt, 'modalita': modalita, 'dose_die': dose_die, 'dose_somministrazione': dose_som,
             'intervallo_h': tau, 'infusione_h': tinf, 'carico': carico,
@@ -736,7 +743,12 @@ def _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, 
                + f" {mod_txt}" + (" previa dose carico" if carico else "")) if dose_die else "- Terapia in atto: N/D"
     righe = [titolo, "", r1, terapia]
     if eg and eg.get('valore'):
-        righe.append(f"- eGFR stimata: {ui.n(eg['valore'], 0)} mL/min/1,73 m² ({eg['etichetta']})"
+        righe.append(f"- eGFR stimata: {ui.n(eg['valore'], 0)} mL/min/1,73 m² ({eg['etichetta']}"
+                     + (f", cistatina C {ui.n(eg['cistatina'], 2)} mg/L" if eg['chiave'] in renal.CISTATINA else "")
+                     + ")"
+                     + ("; massa muscolare ridotta, creatinina non attendibile" if eg.get('muscolo_ridotto') else "")
+                     + ("; in corso glucocorticoidi, possibile sottostima" if eg.get('glucocorticoidi')
+                        and eg['chiave'] in renal.CISTATINA else "")
                      + (f"; {rrt}" if rrt != "Nessuna" else ""))
     elif rrt != "Nessuna":
         righe.append(f"- Depurazione extrarenale: {rrt}")
