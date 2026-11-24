@@ -307,3 +307,44 @@ def test_bibliografia_per_farmaco():
     assert any('ECPA' in agenti['linezolid']['tim'] for _ in [0]) and rules.bibliografia('linezolid', 'range', agenti['linezolid'])
     assert any('EUCAST' in x for x in rules.bibliografia('gentamicin', 'amino', agenti['gentamicin'], empirica=True))
     assert rules.bibliografia('gentamicin', 'amino', agenti['gentamicin']) == []
+
+
+def test_regole_identiche_a_gatti_2022_tabella1():
+    """Gatti M et al. Crit Care 2022;26:178, tabella 1."""
+    c = rules.classifica_fasce
+    for r, atteso in [(1.9, ('AUMENTA', 50)), (3, ('AUMENTA', 25)), (6, ('MANTIENI', 0)),
+                      (9, ('RIDUCI', -25)), (11, ('RIDUCI', -50))]:
+        assert c(r, rules.FASCE_CSS) == atteso
+    lzd = R['linezolid']['fasce']
+    assert [c(x, lzd) for x in (0.5, 1.5, 5, 10, 16)] == [('AUMENTA', 50), ('AUMENTA', 25), ('MANTIENI', 0),
+                                                         ('RIDUCI', -25), ('RIDUCI', -50)]
+    flu = R['fluconazole']['fasce']
+    assert [c(x, flu)[0] for x in (8, 25, 40, 60)] == ['AUMENTA', 'MANTIENI', 'RIDUCI', 'RIDUCI']
+    assert c(60, flu)[1] == -50
+    assert c(0.5, R['voriconazole']['fasce'])[0] == 'ACCORCIA INTERVALLO' and R['voriconazole']['tau_accorcia'] == 8
+    assert c(9, R['voriconazole']['fasce'])[0] == 'SOSPENDI'
+    assert c(0.5, R['posaconazole']['fasce'])[0] == 'ACCORCIA INTERVALLO' and R['posaconazole']['tau_accorcia'] == 12
+    assert c(0.3, R['aciclovir']['fasce'])[0] == 'ACCORCIA INTERVALLO' and R['aciclovir']['tau_accorcia'] == 6
+    assert c(0.3, R['ganciclovir-ganciclovir']['fasce'])[0] == 'ACCORCIA INTERVALLO'
+    assert c(5.05, R['isavuconazole']['fasce'])[0] == 'RIDUCI'
+    for f, tox in (('piperacillin-tazobactam', 361), ('meropenem', 64.2), ('cefepime', 36)):
+        assert R[f]['tox'] == tox
+
+
+@pytest.mark.parametrize("tau,azione,regime", [(12, "ACCORCIA INTERVALLO", "200 mg ogni 8 h (600 mg/die)"),
+                                               (8, "AUMENTA", "250 mg ogni 8 h (750 mg/die)")])
+def test_voriconazolo_cmin_bassa(tau, azione, regime):
+    from streamlit.testing.v1 import AppTest
+    at = AppTest.from_function(_harness, args=('voriconazole', [('23/11/2026', 0.6)], str(RADICE)), default_timeout=60)
+    at.run()
+    at.sidebar.text_input[0].input("TV")
+    [x for x in at.sidebar.selectbox if x.label == "Sesso biologico"][0].set_value("Maschio")
+    at.run()
+    for k, v in {"Età (anni)": 12.0, "Peso (kg)": 40.0, "Altezza (cm)": 150.0, "Creatinina (mg/dL)": 0.5,
+                 "Dose per somministrazione (mg)": 200.0, "Intervallo (h)": float(tau)}.items():
+        _imposta(at, k, v)
+    assert not at.exception
+    az = [s for s in at.selectbox if s.label.startswith("Azione")][0].value
+    assert az == azione
+    testo = at.code[0].value
+    assert regime in testo
