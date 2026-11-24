@@ -1,0 +1,15 @@
+[theme]
+base = "light"
+primaryColor = "#0E2C52"
+backgroundColor = "#F2F5FA"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#0E2C52"
+font = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+headingFont = "IBM Plex Serif:https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&display=swap"
+codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+
+[client]
+toolbarMode = "minimal"
+
+[server]
+maxUploadSize = 5
