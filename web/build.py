@@ -33,6 +33,14 @@ def main():
     # tema e opzioni da .streamlit/config.toml, in forma "sezione.chiave"
     cfg = tomllib.loads((RADICE / ".streamlit" / "config.toml").read_text())
     config = {f"{sez}.{k}": v for sez, voci in cfg.items() if sez in ("theme", "client") for k, v in voci.items()}
+    # stlite 1.12 va in errore (HelmetDispatcher) con i font del tema dati come "Nome:URL":
+    # al tema passa solo il nome, i fogli dei font li carica la pagina
+    link_font = []
+    for k in ("theme.font", "theme.headingFont", "theme.codeFont"):
+        if isinstance(config.get(k), str) and ":http" in config[k]:
+            nome, url = config[k].split(":", 1)
+            config[k] = nome
+            link_font.append(f'<link rel="stylesheet" href="{url}">')
 
     opzioni = {
         "entrypoint": "pigato.py",
@@ -41,7 +49,7 @@ def main():
         "streamlitConfig": config,
     }
     html = (RADICE / "web" / "index.template.html").read_text()
-    html = html.replace("{{STLITE}}", STLITE).replace("{{OPZIONI}}", json.dumps(opzioni, indent=2, ensure_ascii=False))
+    html = html.replace("{{FONT}}", "\n  ".join(link_font)).replace("{{STLITE}}", STLITE).replace("{{OPZIONI}}", json.dumps(opzioni, indent=2, ensure_ascii=False))
     (DIST / "index.html").write_text(html)
     print(f"web/dist pronto: {len(file_app)} file Python/JSON, stlite {STLITE}")
 
