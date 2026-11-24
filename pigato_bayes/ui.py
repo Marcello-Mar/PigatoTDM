@@ -21,15 +21,15 @@ CSS = """
 <style>
 /* Il font si imposta da .streamlit/config.toml (theme.font): qui niente regole
    globali su span/div, che sostituivano anche il font delle icone Material. */
-:root{--pg-ink:#0E2C52;--pg-ink-soft:#41607F;--pg-ink-faint:#6C86A5;--pg-line:#D3DEED;
-      --pg-wine:#AE7E22;--pg-tint:#E7EFF9;--pg-surface:#FFFFFF;}
+:root{--pg-ink:#0E2C52;--pg-ink-soft:#41607F;--pg-ink-faint:#516A88;--pg-line:#D3DEED;
+      --pg-wine:#8A6318;--pg-tint:#E7EFF9;--pg-surface:#FFFFFF;}
 .pg-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 6px 0}
 .pg-brand{display:flex;align-items:center;gap:12px;min-width:0}
 .pg-word{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:30px;letter-spacing:.06em;
          color:var(--pg-ink);line-height:1}
 .pg-tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
         color:var(--pg-wine);margin-top:4px}
-.pg-inst{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--pg-ink-faint);line-height:1.45;
+.pg-inst{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--pg-ink-faint);line-height:1.45;
          margin-left:auto;text-align:right}
 @media (max-width:640px){.pg-inst{margin-left:0;text-align:left;flex-basis:100%}.pg-word{font-size:26px}}
 .pg-step{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
@@ -47,6 +47,8 @@ CSS = """
 .pg-u{font-size:13px;font-weight:500;color:var(--pg-ink-soft);margin-left:3px}
 .pg-s{font-size:12px;color:var(--pg-ink-faint);margin-top:3px;line-height:1.3;overflow-wrap:anywhere}
 .pg-s.ok{color:#1F6E4A}.pg-s.ko{color:#B23A2E}
+/* didascalie: il grigio di Streamlit (testo al 60%) scende sotto 4,5:1 sullo sfondo */
+[data-testid="stCaptionContainer"]{color:var(--pg-ink-soft) !important;opacity:1 !important}
 /* blocchi di codice del referto: mai oltre il riquadro */
 [data-testid="stCode"] pre, [data-testid="stCode"] code{white-space:pre-wrap !important;overflow-wrap:anywhere}
 </style>
@@ -113,11 +115,12 @@ def n(x, dec=1):
         x = float(x)
     except (TypeError, ValueError):
         return str(x)
+    # niente separatore delle migliaia: "1.911" si leggerebbe come 1,9
     if dec == 0:
-        s = f"{x:,.0f}"
+        s = f"{x:.0f}"
     else:
-        s = f"{x:,.{dec}f}".rstrip('0').rstrip('.')
-    return s.replace(',', 'X').replace('.', ',').replace('X', '.')
+        s = f"{x:.{dec}f}".rstrip('0').rstrip('.')
+    return s.replace('.', ',')
 
 
 def n_semplice(x, dec=1):

@@ -8,6 +8,8 @@ esplicita nello storico (JSON per paziente × molecola).
 
 from datetime import datetime, timedelta
 
+import hashlib
+import json
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -47,7 +49,7 @@ def _pulisci_widget():
 def _widget_da_json(dati):
     _pulisci_widget()
     st.session_state[_k('codice')] = dati.get('codice_paziente', '') or ''
-    st.session_state[_k('sesso')] = dati.get('sesso', 'Maschio') or 'Maschio'
+    st.session_state[_k('sesso')] = dati.get('sesso') or None
     ult = dati['monitoraggi'][-1] if dati.get('monitoraggi') else None
     if not ult:
         return
@@ -149,8 +151,9 @@ def render():
         st.session_state.pop(f'{P}_ultimo_file', None)
         st.session_state.pop(f'{P}_msg', None)
         st.rerun()
-    if not codice:
-        st.warning("Inserisci un codice paziente nella barra laterale per procedere.")
+    if not codice or not sesso:
+        st.warning("Per procedere inserisci codice paziente e sesso biologico nella barra laterale "
+                   "(su telefono si apre con » in alto a sinistra).")
         return
 
     ult = sto['monitoraggi'][-1] if sto.get('monitoraggi') else None
@@ -271,18 +274,29 @@ def render():
     st.caption("Date nel formato GG/MM/AAAA, ore HH:MM. Le righe già registrate restano modificabili: "
                "correggile solo per errori di trascrizione.")
 
-    storia, livelli = [], []
-    for _, r in df_d.iterrows():
+    storia, livelli, scartate = [], [], []
+    for i, (_, r) in enumerate(df_d.iterrows(), start=1):
         dt = _parse_dt(r.get("Data"), r.get("Ora"))
         dose = _num(r.get("Dose (mg)"))
         tinf = _num(r.get("Inf. (h)")) or t_inf_def
         if dt and dose:
             storia.append({'dt': dt, 'dose': dose, 'tinf': tinf})
-    for _, r in df_l.iterrows():
+        elif dose or str(r.get("Data") or "").strip() or str(r.get("Ora") or "").strip():
+            scartate.append(f"somministrazione {i}")
+    for i, (_, r) in enumerate(df_l.iterrows(), start=1):
         dt = _parse_dt(r.get("Data"), r.get("Ora"))
         cc = _num(r.get("mg/L"))
         if dt and cc is not None:
             livelli.append({'dt': dt, 'conc': cc, 'nota': str(r.get("Nota") or "")})
+        elif cc is not None or str(r.get("Data") or "").strip() or str(r.get("Ora") or "").strip():
+            scartate.append(f"livello {i}")
+    if scartate:
+        st.warning("Righe incomplete o con data/ora non leggibile, escluse dal calcolo: " + ", ".join(scartate)
+                   + ". Formato atteso GG/MM/AAAA e HH:MM.")
+    firma_input = hashlib.md5(json.dumps(
+        [sesso, gg, peso, altezza, crea, eg_sett, mic, crrt, Sc, Qef, dialisi, modello,
+         [(str(x['dt']), x['dose'], x['tinf']) for x in storia], [(str(x['dt']), x['conc']) for x in livelli]],
+        default=str).encode()).hexdigest()
 
     if st.button("Avvia il calcolo bayesiano", type="primary", width="stretch", key=f"{P}_calcola"):
         if mancano:
@@ -294,10 +308,16 @@ def render():
         else:
             _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, mic, crrt, Sc, Qef,
                      dialisi, modello, storia, livelli, t_ult_storico)
+            if st.session_state.get(_k('risultati')):
+                st.session_state[_k('risultati')]['firma_input'] = firma_input
 
     R = st.session_state.get(_k('risultati'))
     if R and R['farmaco'] == farmaco and R['codice'] == codice:
-        _mostra_risultati(R, sto)
+        if R.get('firma_input') not in (None, firma_input):
+            st.warning("Dati modificati dopo l'ultimo calcolo: i risultati non sono aggiornati. "
+                       "Premi di nuovo «Avvia il calcolo bayesiano».")
+        else:
+            _mostra_risultati(R, sto)
 
     with st.expander(f"Storico di sessione — {farmaco}"):
         mon = sto.get('monitoraggi', [])
@@ -369,7 +389,13 @@ def _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, 
         while t_last + k * tau_med < t_last + 24 - 1e-6:
             proiez.append({'ore': t_last + k * tau_med, 'dose': storia[-1]['dose'], 'tinf': storia[-1]['tinf']})
             k += 1
-    auc24, cmax24, cmin24 = metriche_finestra(par, proiez, t_last, 24.0, pr['t_inf'])
+    if tau_med and tau_med > 24:
+        # intervalli > 24 h (es. daptomicina ogni 48 h in dialisi): AUC media giornaliera
+        # sull'intervallo e Cmin a fine intervallo, non le prime 24 h dopo la dose
+        auc_tau, cmax24, cmin24 = metriche_finestra(par, storia, t_last, tau_med, pr['t_inf'])
+        auc24 = auc_tau * 24.0 / tau_med
+    else:
+        auc24, cmax24, cmin24 = metriche_finestra(par, proiez, t_last, 24.0, pr['t_inf'])
     vss = par['V1'] + par.get('V2', 0)
     # emivita terminale
     if par.get('Q') and par.get('V2'):
@@ -433,7 +459,7 @@ def _mostra_risultati(R, sto):
     tau_txt = f"{ui.n(R['tau_med'], 1)} h" if R['tau_med'] else "una sola dose"
     referto = (
         f"TDM BAYESIANA — {farmaco.upper()}\n"
-        f"Data: {R['dt_val']} | Codice: {R['codice']} | Sesso: {R['sesso']} | Età: {ui.n(R['eta'], 1)} anni | "
+        f"Data: {datetime.strptime(R['dt_val'], '%Y-%m-%d %H:%M'):%d/%m/%Y %H:%M} | Codice: {R['codice']} | Sesso: {R['sesso']} | Età: {ui.n(R['eta'], 1)} anni | "
         f"Peso: {ui.n(R['peso'], 1)} kg | Altezza: {ui.n(R['altezza'], 0)} cm\n\n"
         f"Modello: {pr['nome']}\n"
         f"Creatinina: {ui.n(R['crea'], 2)} mg/dL | eGFR: {eg_txt}"
@@ -498,15 +524,23 @@ def _pannello_dapto(R):
         azione, f = "RIDUCI", max(f_max, f_min)
     else:
         azione, f = "MANTIENI", 1.0
+    nota_banda = ""
     if azione != "MANTIENI" and abs(f - 1) < 0.10 and f_min <= 1.0 / 0.9:
-        azione, f = "MANTIENI", 1.0   # correzioni < 10% non cliniche
+        # correzioni < 10% non cliniche: si mantiene, ma il motivo va scritto
+        nota_banda = (f" — correzione calcolata {'+' if f > 1 else '−'}{ui.n(abs(f - 1) * 100, 0)}% "
+                      f"(< 10%): mantenuta la dose nonostante "
+                      + (f"AUC24 {ui.n(auc, 0)} > 939" if auc > 939 else
+                         f"Cmin {ui.n(R['cmin24'], 1)} vicina a 24,3" if f < 1 else
+                         f"AUC24/MIC {ui.n(ratio, 0)} < 666"))
+        azione, f = "MANTIENI", 1.0
     dose_new = dose * f
     if f_min > f_max:
         st.warning("Con questa MIC il target AUC24/MIC 666 non è raggiungibile senza superare AUC 939 mg·h/L "
                    "o Cmin 24,3 mg/L: valutare alternativa terapeutica.")
     testo = (f"{azione}: {ui.n(dose_new, 0)} mg ({ui.n(dose_new / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h "
-             f"(AUC24 prevista {ui.n(auc * f, 0)} mg·h/L, Cmin {ui.n(R['cmin24'] * f, 1)} mg/L)")
-    (st.success if azione == "MANTIENI" else st.info)("Proposta — " + testo)
+             f"(AUC24 prevista {ui.n(auc * f, 0)} mg·h/L, Cmin {ui.n(R['cmin24'] * f, 1)} mg/L){nota_banda}")
+    (st.success if azione == "MANTIENI" and not nota_banda else st.warning if nota_banda else st.info)(
+        "Proposta — " + testo)
     return (f"AUC24/MIC {ui.n(ratio, 0)} (target ≥666 S. aureus; ≥143 E. faecium); AUC24 {ui.n(auc, 0)} mg·h/L "
             f"(limite 939); Cmin prevista {ui.n(R['cmin24'], 1)} mg/L (soglia CPK 24,3)\n"
             f"Proposta: {testo}\n")
@@ -567,7 +601,7 @@ def _pannello_dalba(R, t0):
         else:
             data_x = t0 + timedelta(hours=t_x)
             esito = f"sotto soglia il {data_x.strftime('%d/%m/%Y %H:%M')} (fra {ui.n((t_x - t_val) / 24, 1)} giorni)"
-            st.success(f"La concentrazione scende {esito}.")
+            st.warning(f"La concentrazione scende {esito}: pianificare la dose successiva entro questa data.")
         sim = st.checkbox("Simula una dose aggiuntiva", key=f"{P}_fc_sim")
         if sim:
             a, b, c = st.columns(3, vertical_alignment="bottom")
@@ -656,7 +690,10 @@ def _pannello_amino(R, t0):
                               "Valle": round(pk[1], 2), "AUC24": round(pk[2]), "OK": "sì" if ok else "no"})
                 if ok and scelta is None:
                     scelta = righe[-1]
-        st.dataframe(pd.DataFrame(righe), width="stretch", hide_index=True)
+        st.dataframe(pd.DataFrame(righe), width="stretch", hide_index=True,
+                     column_order=["Dose (mg)", "Ogni (h)", "Picco", "Valle", "OK", "Picco/MIC", "mg/kg", "AUC24"],
+                     column_config={c: st.column_config.NumberColumn(format="localized")
+                                    for c in ("Dose (mg)", "mg/kg", "Picco", "Picco/MIC", "Valle", "AUC24")})
         st.caption("Picco e valle in mg/L, AUC24 in mg·h/L, allo stato stazionario del regime indicato.")
         if scelta:
             st.success(f"Proposta: {ui.n(scelta['Dose (mg)'], 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni "
