@@ -38,3 +38,13 @@ oppure usa la variabile d'ambiente `PIGATO_PASSWORD`.
 - `pigato_bayes/ui.py`, `charts.py`: stile PIGATO, schede, grafici
 - `pigato_bayes/data/`: target TDM, penetrazione, breakpoint EUCAST
 - `.streamlit/config.toml`: tema e font IBM Plex
+
+## Test
+```bash
+pip install pytest
+python -m pytest tests -q
+```
+- `tests/test_calcoli.py`: eGFR, FFM, motore PK, MAP, prior di popolazione e regole contro valori calcolati a mano.
+- `tests/test_referto.py`: decisioni per tipo di regola, referto completo sui 32 farmaci (bambino e adulto con IR), JSON andata e ritorno.
+- `tests/test_bayes.py`: percorso completo dei 6 farmaci bayesiani, casi limite (neonato pretermine, CRRT, HD, IR).
+

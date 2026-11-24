@@ -51,7 +51,7 @@ def _pulisci(tutto=True):
 def _widget_da_json(dati):
     _pulisci()
     st.session_state[_k('codice')] = dati.get('codice_paziente', '') or ''
-    st.session_state[_k('sesso')] = dati.get('sesso', 'Maschio') or 'Maschio'
+    st.session_state[_k('sesso')] = dati.get('sesso') or None
     ult = dati['monitoraggi'][-1] if dati.get('monitoraggi') else None
     if not ult:
         return
@@ -61,7 +61,7 @@ def _widget_da_json(dati):
     for campo, w in (('peso', 'peso'), ('altezza', 'altezza'), ('creatinina', 'crea'), ('eg_sett', 'eg')):
         if ult.get(campo) is not None:
             st.session_state[_k(w)] = float(ult[campo])
-    for campo in ('sede', 'gruppo', 'modalita'):
+    for campo in ('sede', 'gruppo', 'modalita', 'rrt'):
         if ult.get(campo) is not None:
             st.session_state[_k(campo)] = ult[campo]
 
@@ -107,21 +107,28 @@ def render():
     nome = ag['it']
 
     st.info(f"Consulenza in corso: **{nome}** · {ag['g_it']}")
-    if st.sidebar.button("Cambia farmaco", width="stretch", key=f"{P}_cambia"):
+    def _cambia():
         _pulisci()
         st.session_state.pop(_k('farmaco'), None)
         storage.reset(MODULO)
-        st.rerun()
+
+    ui.conferma("cambia", "Cambiare farmaco?", ui.messaggio_perdita(
+            storage.get(MODULO), f"Si torna alla scelta del farmaco e si azzera il paziente in corso ({nome})."),
+               _cambia, st.sidebar.button("Cambia farmaco", width="stretch", key=f"{P}_cambia"))
 
     sto, codice, sesso = storage.sidebar_storico(MODULO, nome, P, _widget_da_json)
-    if st.sidebar.button("Nuovo paziente (stesso farmaco)", width="stretch", key=f"{P}_nuovo"):
+    def _nuovo():
         _pulisci()
         storage.reset(MODULO, nome)
         st.session_state.pop(f'{P}_ultimo_file', None)
         st.session_state.pop(f'{P}_msg', None)
-        st.rerun()
-    if not codice:
-        st.warning("Inserisci un codice paziente nella barra laterale per procedere.")
+
+    ui.conferma("nuovo", "Iniziare un nuovo paziente?", ui.messaggio_perdita(
+            sto, f"Si azzerano i dati del paziente '{codice or 'senza codice'}'; il farmaco resta {nome}."),
+               _nuovo, st.sidebar.button("Nuovo paziente (stesso farmaco)", width="stretch", key=f"{P}_nuovo"))
+    if not codice or not sesso:
+        st.warning("Per procedere inserisci codice paziente e sesso biologico nella barra laterale "
+                   "(su telefono si apre con » in alto a sinistra).")
         return
 
     with st.expander("Target e regole di aggiustamento (tdm_data.json)"):
@@ -241,10 +248,10 @@ def render():
     if val.get('errore'):
         st.info(val['errore'])
         return
-    _mostra_valutazione(val, regola)
-
     rene_txt = rules.descrivi_rene(eg['valore'] if eg else None)
     nuova_dose = rules.arrotonda_dose(dose_die * (1 + val['pct'] / 100)) if (dose_die and val['pct'] not in (None, -100)) else None
+    _mostra_valutazione(val, regola, _regime_default(nuova_dose, modalita, tau, unita_dose, val['azione'])
+                        if val['azione'] not in ('MANTIENI', 'DOSE AGGIUNTIVA') else "")
     firma = hashlib.md5(json.dumps([val['azione'], val['pct'], nuova_dose, mic, kp, sede, lv.get('conc'),
                                     dose_die, modalita], default=str).encode()).hexdigest()[:8]
     with st.container(border=True):
@@ -252,11 +259,21 @@ def render():
         azioni = ["RIDUCI", "MANTIENI", "AUMENTA", "SOSPENDI", "ALLUNGA INTERVALLO", "DOSE AGGIUNTIVA"]
         azione = a.selectbox("Azione (confermare o modificare)", azioni,
                              index=azioni.index(val['azione']) if val['azione'] in azioni else 1, key=_k(f'azione_{firma}'))
+        # la dose proposta segue l'azione scelta: se l'operatore cambia azione,
+        # non deve restare la dose calcolata per l'azione precedente
+        if azione == val['azione']:
+            nd_def = nuova_dose or dose_die
+        elif azione in ('AUMENTA', 'RIDUCI') and dose_die:
+            nd_def = rules.arrotonda_dose(dose_die * (1.25 if azione == 'AUMENTA' else 0.75))
+        elif azione == 'SOSPENDI':
+            nd_def = None
+        else:
+            nd_def = dose_die
         nd = b.number_input(f"Nuova dose giornaliera ({unita_dose}/die)", 0.0, 100000.0,
-                            value=float(nuova_dose) if nuova_dose else (float(dose_die) if dose_die else None),
-                            step=50.0, key=_k(f'nuova_{firma}'))
+                            value=float(nd_def) if nd_def else None,
+                            step=0.5 if unita_dose == "MUI" else 50.0, key=_k(f'nuova_{firma}_{azione}'))
         tim_def = _ricontrollo_default(ag, eta)
-        ricontrollo = st.text_input("Ricontrollo", value=tim_def, key=_k('ricontrollo'))
+        ricontrollo = st.text_input("Ricontrollo", value=tim_def, key=_k(f'ricontrollo_{tim_def}'))
         regime_txt = st.text_input("Nuovo regime (testo libero, facoltativo)",
                                    value=_regime_default(nd, modalita, tau, unita_dose, azione),
                                    key=_k(f'regime_{firma}_{azione}_{nd}'))
@@ -490,7 +507,10 @@ def _valuta(tipo, regola, lv, mic, kp, sede, dose_die, BP, gruppo, fid):
             if kp is not None and lv.get('conc') is not None:
                 v['c_sito'] = lv['conc'] * kp
                 v['r_sito'] = v['c_sito'] / mic
-            cmin = lv.get('cmin_est') if lv.get('cmin_est') is not None else (lv.get('valle') or lv.get('conc'))
+            # in infusione continua la Css non è una valle: la tossicità si giudica sull'AUC
+            continua = str(lv.get('mod', '')).startswith("Infusione continua")
+            cmin = None if continua else (lv.get('cmin_est') if lv.get('cmin_est') is not None
+                                          else (lv.get('valle') or lv.get('conc')))
             if regola.get('tox_valle') and cmin is not None and cmin >= regola['tox_valle']:
                 v['tox'] = f"Cmin {ui.n(cmin, 1)} mg/L ≥ {ui.n(regola['tox_valle'], 1)} mg/L"
                 if v['azione'] != 'RIDUCI':
@@ -570,7 +590,13 @@ def _valuta(tipo, regola, lv, mic, kp, sede, dose_die, BP, gruppo, fid):
     return v
 
 
-def _mostra_valutazione(v, regola):
+def _mostra_valutazione(v, regola, regime=""):
+    pct = f" {'+' if v['pct'] > 0 else '−'}{abs(v['pct'])}%" if v['pct'] not in (0, -100, None) else ""
+    motivi = []
+    if v.get('r_decisione') is not None and v.get('r_sito') is not None:
+        motivi.append(f"Decisione sul rapporto più basso ({v['base']}): ×{_fmt_ratio(v['r_decisione'])} la MIC")
+    ui.proposta(v['azione'] + pct, regime, motivi=motivi,
+                allerte=["Tossicità: " + v['tox']] if v.get('tox') else [])
     voci = []
     if v.get('r_plasma') is not None:
         lab = {"auc": "AUC24/MIC", "fauc": "fAUC24/MIC", "amino": "Picco/MIC", "fq": "Cmax/MIC"}.get(regola['tipo'], "C/MIC plasma")
@@ -580,14 +606,8 @@ def _mostra_valutazione(v, regola):
     if v.get('c_sito') is not None:
         voci.append({'k': "Concentrazione al sito", 'v': ui.n(v['c_sito'], 1), 'u': "mg/L"})
         voci.append({'k': "C sito/MIC", 'v': _fmt_ratio(v['r_sito'])})
-    pct = f" {'+' if v['pct'] > 0 else ''}{v['pct']}%" if v['pct'] not in (0, -100) else ""
-    voci.append({'k': "Proposta", 'v': v['azione'] + pct, 'sel': True,
-                 'stato': 'ok' if v['azione'] == 'MANTIENI' else None})
-    ui.schede(voci)
-    if v.get('r_decisione') is not None and v.get('r_sito') is not None:
-        st.caption(f"Decisione sul rapporto più basso ({v['base']}): ×{_fmt_ratio(v['r_decisione'])} la MIC.")
-    if v.get('tox'):
-        st.error("Tossicità: " + v['tox'])
+    if voci:
+        ui.schede(voci)
     if v.get('comp'):
         nome, c, ct, r = v['comp']
         (st.success if r >= 1 else st.warning)(f"{nome.capitalize()} {ui.n(c, 1)} mg/L: Css/CT {ui.n(r, 1)} (CT {ui.n(ct, 0)} mg/L).")
@@ -610,13 +630,14 @@ def _regime_default(nd, modalita, tau, unita, azione):
     if azione in ('SOSPENDI',) or not nd:
         return ""
     if modalita == "Infusione continua":
-        return f"{ui.n_semplice(nd, 0)} {unita}/die in infusione continua"
+        return f"{ui.n_semplice(nd, 0 if nd >= 10 else 1)} {unita}/die in infusione continua"
     if azione == 'ALLUNGA INTERVALLO' and tau:
         per = nd * tau / 24.0
         return f"{ui.n_semplice(rules.arrotonda_dose(per) if per >= 50 else per, 0)} {unita} ogni {ui.n(tau + 12, 0)} h"
     n_som = 24.0 / tau if tau else 1
     per = nd / n_som if n_som else nd
-    return f"{ui.n_semplice(rules.arrotonda_dose(per) if per >= 50 else per, 0 if per >= 10 else 1)} {unita} ogni {ui.n(tau, 0)} h ({ui.n_semplice(nd, 0)} {unita}/die)"
+    return (f"{ui.n_semplice(rules.arrotonda_dose(per) if per >= 50 else per, 0 if per >= 10 else 1)} {unita} ogni "
+            f"{ui.n(tau, 0)} h ({ui.n_semplice(nd, 0 if nd >= 10 else 1)} {unita}/die)")
 
 
 def _commento(v, azione, nome, regime, rene, regola, sede, etich):
@@ -631,9 +652,16 @@ def _commento(v, azione, nome, regime, rene, regola, sede, etich):
         base = f"fAUC24/MIC pari a {_fmt_ratio(v['r_plasma'])}"
     elif regola['tipo'] == 'amino' and v.get('r_plasma') is not None:
         base = f"Picco di {regola['analita']} pari a {_fmt_ratio(v['r_plasma'])} volte la MIC"
+    elif regola['tipo'] == 'fq' and v.get('r_plasma') is not None:
+        base = (f"Cmax di {regola['analita']} pari a {_fmt_ratio(v['r_plasma'])} volte la MIC "
+                f"(target ≥ {regola['cmax_mic']})")
     elif regola['tipo'] in ('range',):
         base = f"Livelli di {regola['analita']} pari a {ui.n(v.get('c'), 2)} mg/L (target {ui.n(regola['target'][0], 2)}" + \
                (f"–{ui.n(regola['target'][1], 2)} mg/L)" if regola['target'][1] else " mg/L)")
+    elif regola['tipo'] == 'info':
+        base = (f"Livelli di {regola['analita']} pari a ×{_fmt_ratio(r)} la MIC ({dove}); per questo farmaco non "
+                f"esiste una regola di aggiustamento validata sulle concentrazioni") if r is not None else \
+               f"Livelli di {regola['analita']} valutati; nessuna regola di aggiustamento validata"
     elif r is not None:
         base = f"Livelli nel range {'elevato' if azione == 'RIDUCI' else 'basso' if azione == 'AUMENTA' else 'target'} di concentrazione {dove} (×{_fmt_ratio(r)} la MIC)"
     else:
@@ -655,6 +683,9 @@ def _commento(v, azione, nome, regime, rene, regola, sede, etich):
     return t
 
 
+TIPO_PROSA = {'Cmin (valle)': 'valle', 'Cmin': 'valle'}
+
+
 def _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, dose_die, unita, carico, peso,
                      eg, rrt, kp, v, mic, mic_le, empirica, commento, ricontrollo, pen_mol, eta):
     sede_txt = etich[sede] if sede != 'sistemico' else "Sistemica"
@@ -665,7 +696,8 @@ def _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, 
         per_analita = {}
         for x in reg:
             per_analita.setdefault(x['analita'], []).append(
-                f"{ui.n(x['conc'], 1 if x['conc'] >= 1 else 2)} mg/L" + (f" {x['tipo']}" if x.get('tipo') and x['tipo'] not in ('Css',) else "")
+                f"{ui.n(x['conc'], 1 if x['conc'] >= 1 else 2)} mg/L"
+                + (f" {TIPO_PROSA.get(x['tipo'], x['tipo'])}" if x.get('tipo') and x['tipo'] not in ('Css',) else "")
                 + (f" del {x['data']}" if x.get('data') and sum(1 for y in reg if y['analita'] == x['analita']) > 1 else ""))
         visti = " e ".join(f"{a} ({', '.join(vv)})" for a, vv in per_analita.items())
         r1 = f"Visionati livelli di {visti}."
@@ -673,8 +705,10 @@ def _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, 
         r1 = "Livelli non inseriti."
     mod_txt = {"Infusione continua": "in infusione continua", "Infusione estesa": "in infusione estesa",
                "Intermittente": "in somministrazione intermittente"}[modalita]
-    terapia = (f"- Terapia in atto: {nome.lower()} {ui.n_semplice(dose_die, 0)} {unita}/die"
-               + (f" (pari a circa {ui.n(dose_die / peso, 0)} {unita}/kg/die)" if dose_die and peso else "")
+    dec_die = 0 if (dose_die or 0) >= 10 else 1
+    dec_kg = 0 if dose_die and peso and dose_die / peso >= 10 else (1 if dose_die and peso and dose_die / peso >= 1 else 2)
+    terapia = (f"- Terapia in atto: {nome.lower()} {ui.n_semplice(dose_die, dec_die)} {unita}/die"
+               + (f" (pari a circa {ui.n(dose_die / peso, dec_kg)} {unita}/kg/die)" if dose_die and peso else "")
                + f" {mod_txt}" + (" previa dose carico" if carico else "")) if dose_die else "- Terapia in atto: N/D"
     righe = [titolo, "", r1, terapia]
     if eg and eg.get('valore'):

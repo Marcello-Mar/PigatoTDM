@@ -1,5 +1,7 @@
 """Stile PIGATO (design system v7) e piccoli helper di formattazione."""
 
+import html
+
 import streamlit as st
 
 EMBLEMA_SVG = """<svg viewBox="0 0 200 200" width="44" height="44" role="img" aria-label="PIGATO" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--pg-ink);flex:none">
@@ -21,15 +23,15 @@ CSS = """
 <style>
 /* Il font si imposta da .streamlit/config.toml (theme.font): qui niente regole
    globali su span/div, che sostituivano anche il font delle icone Material. */
-:root{--pg-ink:#0E2C52;--pg-ink-soft:#41607F;--pg-ink-faint:#6C86A5;--pg-line:#D3DEED;
-      --pg-wine:#AE7E22;--pg-tint:#E7EFF9;--pg-surface:#FFFFFF;}
+:root{--pg-ink:#0E2C52;--pg-ink-soft:#41607F;--pg-ink-faint:#516A88;--pg-line:#D3DEED;
+      --pg-wine:#8A6318;--pg-tint:#E7EFF9;--pg-surface:#FFFFFF;}
 .pg-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 6px 0}
 .pg-brand{display:flex;align-items:center;gap:12px;min-width:0}
 .pg-word{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:30px;letter-spacing:.06em;
          color:var(--pg-ink);line-height:1}
 .pg-tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
         color:var(--pg-wine);margin-top:4px}
-.pg-inst{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--pg-ink-faint);line-height:1.45;
+.pg-inst{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--pg-ink-faint);line-height:1.45;
          margin-left:auto;text-align:right}
 @media (max-width:640px){.pg-inst{margin-left:0;text-align:left;flex-basis:100%}.pg-word{font-size:26px}}
 .pg-step{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
@@ -47,6 +49,22 @@ CSS = """
 .pg-u{font-size:13px;font-weight:500;color:var(--pg-ink-soft);margin-left:3px}
 .pg-s{font-size:12px;color:var(--pg-ink-faint);margin-top:3px;line-height:1.3;overflow-wrap:anywhere}
 .pg-s.ok{color:#1F6E4A}.pg-s.ko{color:#B23A2E}
+/* scheda della proposta: il colore segue l'azione (verde mantieni, ambra cambia, rosso sospendi/tossicità) */
+.pg-prop{border:1px solid var(--pg-p-line);border-radius:14px;background:var(--pg-p-bg);padding:14px 16px 12px;
+         margin:8px 0 16px;box-shadow:0 1px 2px rgba(14,44,82,.06)}
+.pg-prop-ok{--pg-p-bg:#EEF6F1;--pg-p-line:#B7D7C3;--pg-p-ink:#1A5E3F}
+.pg-prop-cambia{--pg-p-bg:#FBF4E3;--pg-p-line:#E3CC93;--pg-p-ink:#74500B}
+.pg-prop-stop{--pg-p-bg:#FBEDEB;--pg-p-line:#E5B3AC;--pg-p-ink:#952C22}
+.pg-prop-riga{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.pg-prop-az{font-size:21px;font-weight:700;color:var(--pg-p-ink);letter-spacing:.01em;white-space:nowrap}
+.pg-prop-reg{font-size:18px;font-weight:600;color:var(--pg-ink);font-variant-numeric:tabular-nums;
+             overflow-wrap:anywhere;min-width:0}
+.pg-prop ul{margin:8px 0 0;padding-left:18px}
+.pg-prop li{font-size:14.5px;color:var(--pg-ink);line-height:1.45;margin:1px 0;overflow-wrap:anywhere}
+.pg-prop li.pg-prop-allerta{color:var(--pg-p-ink);font-weight:600}
+@media (max-width:640px){.pg-prop-az{font-size:19px}.pg-prop-reg{font-size:16px}}
+/* didascalie: il grigio di Streamlit (testo al 60%) scende sotto 4,5:1 sullo sfondo */
+[data-testid="stCaptionContainer"]{color:var(--pg-ink-soft) !important;opacity:1 !important}
 /* blocchi di codice del referto: mai oltre il riquadro */
 [data-testid="stCode"] pre, [data-testid="stCode"] code{white-space:pre-wrap !important;overflow-wrap:anywhere}
 </style>
@@ -113,11 +131,12 @@ def n(x, dec=1):
         x = float(x)
     except (TypeError, ValueError):
         return str(x)
+    # niente separatore delle migliaia: "1.911" si leggerebbe come 1,9
     if dec == 0:
-        s = f"{x:,.0f}"
+        s = f"{x:.0f}"
     else:
-        s = f"{x:,.{dec}f}".rstrip('0').rstrip('.')
-    return s.replace(',', 'X').replace('.', ',').replace('X', '.')
+        s = f"{x:.{dec}f}".rstrip('0').rstrip('.')
+    return s.replace('.', ',')
 
 
 def n_semplice(x, dec=1):
@@ -133,3 +152,65 @@ AVVISO = ("Strumento a scopo educational, non validato né certificato come disp
           "ogni proposta va verificata dal medico, che resta l'unico responsabile della terapia. "
           "Nessun dato viene conservato sul server; lo storico esiste solo nel file JSON che scarichi. "
           "Non inserire nomi, cognomi o date di nascita: usa un codice paziente non identificativo.")
+
+
+def conferma(chiave, titolo, messaggio, esegui, cliccato):
+    """
+    Finestra di conferma per le azioni che cancellano i dati della sessione.
+    Lo stato "aperta" vive in session_state, così la finestra resta visibile
+    fra un rerun e l'altro e si chiude solo con Annulla o Conferma.
+    """
+    flag = f'_conferma_{chiave}'
+    if cliccato:
+        st.session_state[flag] = True
+    if not st.session_state.get(flag):
+        return
+
+    def _finestra():
+        st.markdown(messaggio)
+        a, b = st.columns(2)
+        if a.button("Annulla", width="stretch", key=f"{flag}_no"):
+            st.session_state.pop(flag, None)
+            st.rerun()
+        if b.button("Conferma", type="primary", width="stretch", key=f"{flag}_si"):
+            st.session_state.pop(flag, None)
+            esegui()
+            st.rerun()
+
+    try:
+        st.dialog(titolo, dismissible=False)(_finestra)()
+    except TypeError:            # Streamlit senza il parametro dismissible
+        st.dialog(titolo)(_finestra)()
+
+
+def messaggio_perdita(sto, cosa):
+    n = len(sto.get('monitoraggi', []))
+    perdita = (f"Le **{n} valutazioni registrate** in questa sessione andranno perse se non hai già scaricato "
+               "lo storico JSON." if n else "I dati inseriti e non registrati andranno persi.")
+    return f"{cosa}\n\n{perdita}"
+
+
+def tono_azione(azione, allerta=False):
+    if azione == 'SOSPENDI' or (azione or '').startswith('NESSUN'):
+        return 'stop'
+    if allerta:
+        return 'stop'
+    return 'ok' if azione == 'MANTIENI' else 'cambia'
+
+
+def proposta(azione, regime="", motivi=(), allerte=(), tono=None, dove=None):
+    """
+    Scheda della decisione: azione e regime in evidenza, motivi sotto.
+    `allerte` sono righe che richiedono attenzione (tossicità, banda < 10%, target irraggiungibile).
+    `dove` è il contenitore in cui scrivere (per metterla in cima ai risultati).
+    """
+    tono = tono or tono_azione(azione, bool(allerte))
+    esc = html.escape
+    righe = "".join(f'<li class="pg-prop-allerta">{esc(a)}</li>' for a in allerte if a)
+    righe += "".join(f"<li>{esc(m)}</li>" for m in motivi if m)
+    blocco = (f'<div class="pg-prop pg-prop-{tono}" role="status">'
+              f'<div class="pg-prop-riga"><span class="pg-prop-az">{esc(azione)}</span>'
+              + (f'<span class="pg-prop-reg">{esc(regime)}</span>' if regime else "")
+              + "</div>" + (f"<ul>{righe}</ul>" if righe else "") + "</div>")
+    (dove or st).markdown(blocco, unsafe_allow_html=True)
+

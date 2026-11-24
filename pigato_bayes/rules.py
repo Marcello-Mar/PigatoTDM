@@ -87,10 +87,11 @@ REGOLE = {
                           'rivalutare. Cmin 3–5: −25/−50%.'},
     'teicoplanin': {'tipo': 'range', 'analita': 'teicoplanina', 'livello': 'Cmin', 'target': (15, 30),
                     'fasce': [(0, 10, 'AUMENTA', +25), (10, 15, 'AUMENTA', +25), (15, 30, 'MANTIENI', 0),
-                              (30, 40, 'RIDUCI', -25), (40, math.inf, 'SOSPENDI', -100)],
+                              (30, math.inf, 'SOSPENDI', -100)],
                     'tox': 40, 'tox_txt': 'nefrotossicità',
                     'nota': 'Target 15–30 mg/L (MRSA grave), 20–40 mg/L (infezioni complicate); '
-                            'Cmin > 30: sospendere, ridosare quando 10–30 mg/L. Nell\'insufficienza '
+                            'Cmin > 30: sospendere, ridosare (a dose più bassa) quando 10–30 mg/L; target 20–40 '
+                            'nelle infezioni complicate: in quel caso valutare se mantenere. Nell\'insufficienza '
                             'renale preferire l\'allungamento dell\'intervallo.'},
     'colistin': {'tipo': 'range', 'analita': 'colistina', 'livello': 'Css', 'target': (2, 2.5),
                  'fasce': [(0, 2, 'AUMENTA', +25), (2, 2.5, 'MANTIENI', 0), (2.5, math.inf, 'RIDUCI', -25)],
@@ -114,8 +115,8 @@ REGOLE = {
     'tobramycin': {'tipo': 'amino', 'analita': 'tobramicina', 'picco_mic': 10, 'valle_max': 1.0,
                    'valle_tox': 2.0},
     # ---------------- fluorochinoloni ----------------
-    'levofloxacin': {'tipo': 'fq', 'analita': 'levofloxacina', 'cmax_mic': 10, 'auc_mic': 125, 'valle_max': 3,
-                     'nota': 'Valle > 2 mg/L: distanziare a ogni 36–48 h.'},
+    'levofloxacin': {'tipo': 'fq', 'analita': 'levofloxacina', 'cmax_mic': 10, 'auc_mic': 125, 'valle_max': 2,
+                     'nota': 'Valle > 2 mg/L: distanziare a ogni 36–48 h (tenere comunque < 3 mg/L).'},
     'ciprofloxacin': {'tipo': 'fq', 'analita': 'ciprofloxacina', 'cmax_mic': 10, 'auc_mic': 125, 'valle_max': 2},
     # ---------------- altri ----------------
     'fosfomycin': {'tipo': 'fauc', 'analita': 'fosfomicina', 'fu': 1.0,

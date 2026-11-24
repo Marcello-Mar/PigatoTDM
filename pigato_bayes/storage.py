@@ -15,7 +15,7 @@ VERSIONE_FORMATO = 2
 
 def storico_vuoto(modulo, farmaco=None):
     return {'formato': VERSIONE_FORMATO, 'modulo': modulo, 'codice_paziente': '',
-            'sesso': 'Maschio', 'farmaco': farmaco, 'monitoraggi': []}
+            'sesso': None, 'farmaco': farmaco, 'monitoraggi': []}
 
 
 def chiave(modulo):
@@ -128,7 +128,9 @@ def sidebar_storico(modulo, farmaco, key_prefix, widget_reset_cb=None):
         (st.sidebar.success if m[0] == 'ok' else st.sidebar.error)(m[1])
     sto = get(modulo)
     codice = st.sidebar.text_input("Codice paziente (non identificativo)", key=f"{key_prefix}_codice")
-    sesso = st.sidebar.selectbox("Sesso biologico", ["Maschio", "Femmina"], key=f"{key_prefix}_sesso")
+    # nessun valore di default: il sesso entra nell'eGFR e nei modelli, non va presunto
+    sesso = st.sidebar.selectbox("Sesso biologico", ["Maschio", "Femmina"], index=None,
+                                 placeholder="Scegli…", key=f"{key_prefix}_sesso")
     sto['codice_paziente'] = codice
     sto['sesso'] = sesso
     sto['farmaco'] = farmaco
