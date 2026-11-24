@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>PIGATO · TDM</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@{{STLITE}}/build/stlite.css">
+  <style>
+    html,body{margin:0;background:#F2F5FA;color:#0E2C52;font-family:system-ui,sans-serif}
+    #avvio{max-width:520px;margin:18vh auto 0;padding:0 16px}
+    #avvio h1{font-family:Georgia,serif;font-weight:600;letter-spacing:.06em;margin:0 0 8px}
+    #avvio p{line-height:1.5;color:#41607F;margin:0}
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div id="avvio">
+      <h1>PIGATO</h1>
+      <p>Avvio del motore di calcolo nel browser. Il primo caricamento scarica Python e le librerie
+         (alcune decine di MB) e richiede circa un minuto; i successivi sono più rapidi.
+         I dati inseriti restano su questo computer.</p>
+    </div>
+  </div>
+  <script type="module">
+    import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@{{STLITE}}/build/stlite.js";
+    mount({{OPZIONI}}, document.getElementById("root"));
+  </script>
+</body>
+</html>
