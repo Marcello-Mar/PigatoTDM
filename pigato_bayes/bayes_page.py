@@ -428,6 +428,7 @@ def _mostra_risultati(R, sto):
     t0 = datetime.strptime(R['t0'], '%Y-%m-%d %H:%M')
     st.markdown("---")
     ui.passo("Risultati")
+    cima = st.container()     # la proposta va qui, sopra parametri e grafico che la giustificano
     st.markdown("### Parametri individuali")
     st.caption(f"Modello: {pr['nome']}")
     st.caption(R['descr'])
@@ -452,13 +453,13 @@ def _mostra_risultati(R, sto):
 
     blocco = ""
     if farmaco == 'Daptomicina':
-        blocco = _pannello_dapto(R)
+        blocco = _pannello_dapto(R, cima)
     elif farmaco == 'Ciprofloxacina':
-        blocco = _pannello_cipro(R)
+        blocco = _pannello_cipro(R, cima)
     elif farmaco == 'Dalbavancina':
-        blocco = _pannello_dalba(R, t0)
+        blocco = _pannello_dalba(R, t0, cima)
     else:
-        blocco = _pannello_amino(R, t0)
+        blocco = _pannello_amino(R, t0, cima)
 
     eg_txt = (f"{ui.n(R['egfr_valore'], 0)} mL/min/1,73 m² ({R['egfr_formula']})"
               if R.get('egfr_valore') else "N/D")
@@ -503,7 +504,7 @@ def _mostra_risultati(R, sto):
             st.rerun()
 
 
-def _pannello_dapto(R):
+def _pannello_dapto(R, cima=None):
     mic, auc = R['mic'], R['auc24']
     ratio = auc / mic
     pd_ = models.PD_DAPTO
@@ -540,19 +541,28 @@ def _pannello_dapto(R):
                          f"AUC24/MIC {ui.n(ratio, 0)} < 666"))
         azione, f = "MANTIENI", 1.0
     dose_new = dose * f
-    if f_min > f_max:
-        st.warning("Con questa MIC il target AUC24/MIC 666 non è raggiungibile senza superare AUC 939 mg·h/L "
-                   "o Cmin 24,3 mg/L: valutare alternativa terapeutica.")
+    irraggiungibile = f_min > f_max
     testo = (f"{azione}: {ui.n(dose_new, 0)} mg ({ui.n(dose_new / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h "
              f"(AUC24 prevista {ui.n(auc * f, 0)} mg·h/L, Cmin {ui.n(R['cmin24'] * f, 1)} mg/L){nota_banda}")
-    (st.success if azione == "MANTIENI" and not nota_banda else st.warning if nota_banda else st.info)(
-        "Proposta — " + testo)
+    pct = f" {'+' if f > 1 else '−'}{ui.n(abs(f - 1) * 100, 0)}%" if azione != "MANTIENI" else ""
+    ui.proposta(
+        azione + pct, f"{ui.n(dose_new, 0)} mg ({ui.n(dose_new / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h",
+        motivi=[f"AUC24/MIC {ui.n(ratio, 0)} (target ≥ 666 S. aureus, ≥ 143 E. faecium)",
+                f"AUC24 {ui.n(auc, 0)} mg·h/L (limite 939)" + (f" → prevista {ui.n(auc * f, 0)}" if f != 1 else ""),
+                f"Cmin {ui.n(R['cmin24'], 1)} mg/L (soglia CPK 24,3)"
+                + (f" → prevista {ui.n(R['cmin24'] * f, 1)}" if f != 1 else "")],
+        allerte=[("C" + nota_banda.lstrip(" —")[1:]) if nota_banda else "",
+                 "Target AUC24/MIC 666 non raggiungibile senza superare AUC 939 o Cmin 24,3: valutare "
+                 "alternativa terapeutica" if irraggiungibile else "",
+                 "Cmin oltre la soglia CPK" if tox else ""],
+        tono='stop' if (tox or irraggiungibile) else ('cambia' if (azione != "MANTIENI" or nota_banda) else 'ok'),
+        dove=cima)
     return (f"AUC24/MIC {ui.n(ratio, 0)} (target ≥666 S. aureus; ≥143 E. faecium); AUC24 {ui.n(auc, 0)} mg·h/L "
             f"(limite 939); Cmin prevista {ui.n(R['cmin24'], 1)} mg/L (soglia CPK 24,3)\n"
             f"Proposta: {testo}\n")
 
 
-def _pannello_cipro(R):
+def _pannello_cipro(R, cima=None):
     mic, auc = R['mic'], R['auc24']
     ratio = auc / mic
     ok = ratio >= models.PD_CIPRO['AUC_MIC_target']
@@ -573,14 +583,20 @@ def _pannello_cipro(R):
         f, azione = 1.0, "MANTIENI"
     testo = (f"{azione}: {ui.n(dose * f, 0)} mg ({ui.n(dose * f / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h "
              f"(AUC24/MIC prevista {ui.n(ratio * f, 0)})")
-    (st.success if azione == "MANTIENI" else st.info)("Proposta — " + testo)
+    ui.proposta(
+        azione + (f" {'+' if f > 1 else '−'}{ui.n(abs(f - 1) * 100, 0)}%" if azione != "MANTIENI" else ""),
+        f"{ui.n(dose * f, 0)} mg ({ui.n(dose * f / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h",
+        motivi=[f"AUC24/MIC {ui.n(ratio, 0)} (target ≥ 125)" + (f" → prevista {ui.n(ratio * f, 0)}" if f != 1 else ""),
+                f"Cmax/MIC {ui.n(R['cmax24'] / mic, 1)} (≥ 10)",
+                f"Cmin {ui.n(R['cmin24'], 2)} mg/L (tenere < 2)"],
+        allerte=["Cmin ≥ 2 mg/L" if R['cmin24'] >= 2 else ""], dove=cima)
     st.caption("Nessuna soglia AUC di neurotossicità validata per i fluorochinoloni.")
     return (f"AUC24/MIC {ui.n(ratio, 0)} (target ≥125); Cmax {ui.n(R['cmax24'], 2)} mg/L "
             f"(Cmax/MIC {ui.n(R['cmax24'] / mic, 1)}); Cmin {ui.n(R['cmin24'], 2)} mg/L\n"
             f"Proposta: {testo}\n")
 
 
-def _pannello_dalba(R, t0):
+def _pannello_dalba(R, t0, cima=None):
     pr, par, storia, livelli = R['prior'], R['par'], R['storia'], R['livelli']
     with st.container(border=True):
         st.markdown("#### Forecast — prossima dose")
@@ -598,16 +614,20 @@ def _pannello_dalba(R, t0):
         t_val = max(livelli[-1]['ore'], storia[-1]['ore'])
         c_att = float(conc(par, storia, t_val, pr['t_inf'])[0])
         t_x = tempo_sotto_soglia(par, storia, soglia, t_val, t_val + 2400, passo=2.0, t_inf=pr['t_inf'])
+        motivi = [f"Soglia {ui.n(soglia, 2)} mg/L ({target.split(' (')[0]}, MIC {ui.n(mic_fc, 4)}, fu {ui.n(fu, 2)})",
+                  f"Concentrazione stimata all'ultimo livello: {ui.n(c_att, 1)} mg/L"]
         if t_x is None:
             esito = "soglia non raggiunta entro 100 giorni"
-            st.warning(esito)
+            ui.proposta("MANTIENI", "nessuna dose aggiuntiva prevista entro 100 giorni", motivi, dove=cima)
         elif t_x <= t_val + 0.5:
             esito = f"concentrazione già sotto soglia ({ui.n(c_att, 2)} mg/L)"
-            st.error(esito)
+            ui.proposta("DOSE AGGIUNTIVA", "ora: concentrazione già sotto soglia", motivi, tono='stop', dove=cima)
         else:
             data_x = t0 + timedelta(hours=t_x)
             esito = f"sotto soglia il {data_x.strftime('%d/%m/%Y %H:%M')} (fra {ui.n((t_x - t_val) / 24, 1)} giorni)"
-            st.warning(f"La concentrazione scende {esito}: pianificare la dose successiva entro questa data.")
+            ui.proposta("DOSE AGGIUNTIVA", f"entro il {data_x.strftime('%d/%m/%Y')}",
+                        motivi + [f"Sotto soglia il {data_x.strftime('%d/%m/%Y %H:%M')} "
+                                  f"(fra {ui.n((t_x - t_val) / 24, 1)} giorni)"], dove=cima)
         sim = st.checkbox("Simula una dose aggiuntiva", key=f"{P}_fc_sim")
         if sim:
             a, b, c = st.columns(3, vertical_alignment="bottom")
@@ -642,7 +662,7 @@ def _arrotonda_amino(mg, farmaco):
     return max(passo, round(mg / passo) * passo)
 
 
-def _pannello_amino(R, t0):
+def _pannello_amino(R, t0, cima=None):
     farmaco, par, storia = R['farmaco'], R['par'], R['storia']
     soglie = models.AMINO_SOGLIE[farmaco]
     mic = R['mic']
@@ -702,15 +722,28 @@ def _pannello_amino(R, t0):
                                     for c in ("Dose (mg)", "mg/kg", "Picco", "Picco/MIC", "Valle", "AUC24")})
         st.caption("Picco e valle in mg/L, AUC24 in mg·h/L, allo stato stazionario del regime indicato.")
         if scelta:
-            st.success(f"Proposta: {ui.n(scelta['Dose (mg)'], 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni "
-                       f"{scelta['Ogni (h)']} h, dalla prossima dose quando il livello è sotto "
-                       f"{ui.n(valle_max, 1)} mg/L.")
+            d_s, t_s = scelta['Dose (mg)'], scelta['Ogni (h)']
+            if d_s == dose_att and t_s == tau_att:
+                az = "MANTIENI"
+            elif d_s != dose_att:
+                az = ("AUMENTA" if d_s > dose_att else "RIDUCI") + f" {'+' if d_s > dose_att else '−'}" \
+                     f"{ui.n(abs(d_s / dose_att - 1) * 100, 0)}%" + (" E CAMBIA INTERVALLO" if t_s != tau_att else "")
+            else:
+                az = "ALLUNGA INTERVALLO" if t_s > tau_att else "ACCORCIA INTERVALLO"
+            ui.proposta(az, f"{ui.n(d_s, 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni {t_s} h",
+                        motivi=[f"Picco previsto {ui.n(scelta['Picco'], 1)} mg/L (obiettivo "
+                                f"{ui.n(lo_eff, 1)}–{ui.n(hi_eff, 1)}), picco/MIC {ui.n(scelta['Picco/MIC'], 1)}",
+                                f"Valle prevista {ui.n(scelta['Valle'], 2)} mg/L (< {ui.n(valle_max, 1)})",
+                                f"Prossima dose quando il livello è sotto {ui.n(valle_max, 1)} mg/L"
+                                + (f": dal {(t0 + timedelta(hours=t_lib)).strftime('%d/%m/%Y %H:%M')}" if t_lib else "")],
+                        dove=cima)
             prop = (f"Proposta: {ui.n(scelta['Dose (mg)'], 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni "
                     f"{scelta['Ogni (h)']} h (picco previsto {ui.n(scelta['Picco'], 1)} mg/L, "
                     f"picco/MIC {ui.n(scelta['Picco/MIC'], 1)}, valle {ui.n(scelta['Valle'], 2)} mg/L)")
         else:
-            st.warning("Nessuna combinazione soddisfa insieme picco/MIC e valle: valutare intervallo più lungo, "
-                       "obiettivo diverso o alternativa terapeutica.")
+            ui.proposta("NESSUN REGIME ADEGUATO", "",
+                        allerte=["Nessuna combinazione della tabella soddisfa insieme picco/MIC e valle: valutare "
+                                 "intervallo più lungo, obiettivo diverso o alternativa terapeutica"], dove=cima)
             prop = "Nessun regime della tabella soddisfa insieme i due criteri."
     return (f"Picco dopo l'ultima dose {ui.n(cmax_ult, 1)} mg/L (picco/MIC {ui.n(cmax_ult / mic, 1)}; obiettivo ≥ "
             f"{ui.n(obiettivo, 0)}); sotto {ui.n(valle_max, 1)} mg/L dopo "

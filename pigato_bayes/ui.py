@@ -1,5 +1,7 @@
 """Stile PIGATO (design system v7) e piccoli helper di formattazione."""
 
+import html
+
 import streamlit as st
 
 EMBLEMA_SVG = """<svg viewBox="0 0 200 200" width="44" height="44" role="img" aria-label="PIGATO" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--pg-ink);flex:none">
@@ -47,6 +49,20 @@ CSS = """
 .pg-u{font-size:13px;font-weight:500;color:var(--pg-ink-soft);margin-left:3px}
 .pg-s{font-size:12px;color:var(--pg-ink-faint);margin-top:3px;line-height:1.3;overflow-wrap:anywhere}
 .pg-s.ok{color:#1F6E4A}.pg-s.ko{color:#B23A2E}
+/* scheda della proposta: il colore segue l'azione (verde mantieni, ambra cambia, rosso sospendi/tossicità) */
+.pg-prop{border:1px solid var(--pg-p-line);border-radius:14px;background:var(--pg-p-bg);padding:14px 16px 12px;
+         margin:8px 0 16px;box-shadow:0 1px 2px rgba(14,44,82,.06)}
+.pg-prop-ok{--pg-p-bg:#EEF6F1;--pg-p-line:#B7D7C3;--pg-p-ink:#1A5E3F}
+.pg-prop-cambia{--pg-p-bg:#FBF4E3;--pg-p-line:#E3CC93;--pg-p-ink:#74500B}
+.pg-prop-stop{--pg-p-bg:#FBEDEB;--pg-p-line:#E5B3AC;--pg-p-ink:#952C22}
+.pg-prop-riga{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.pg-prop-az{font-size:21px;font-weight:700;color:var(--pg-p-ink);letter-spacing:.01em;white-space:nowrap}
+.pg-prop-reg{font-size:18px;font-weight:600;color:var(--pg-ink);font-variant-numeric:tabular-nums;
+             overflow-wrap:anywhere;min-width:0}
+.pg-prop ul{margin:8px 0 0;padding-left:18px}
+.pg-prop li{font-size:14.5px;color:var(--pg-ink);line-height:1.45;margin:1px 0;overflow-wrap:anywhere}
+.pg-prop li.pg-prop-allerta{color:var(--pg-p-ink);font-weight:600}
+@media (max-width:640px){.pg-prop-az{font-size:19px}.pg-prop-reg{font-size:16px}}
 /* didascalie: il grigio di Streamlit (testo al 60%) scende sotto 4,5:1 sullo sfondo */
 [data-testid="stCaptionContainer"]{color:var(--pg-ink-soft) !important;opacity:1 !important}
 /* blocchi di codice del referto: mai oltre il riquadro */
@@ -172,4 +188,29 @@ def messaggio_perdita(sto, cosa):
     perdita = (f"Le **{n} valutazioni registrate** in questa sessione andranno perse se non hai già scaricato "
                "lo storico JSON." if n else "I dati inseriti e non registrati andranno persi.")
     return f"{cosa}\n\n{perdita}"
+
+
+def tono_azione(azione, allerta=False):
+    if azione == 'SOSPENDI' or (azione or '').startswith('NESSUN'):
+        return 'stop'
+    if allerta:
+        return 'stop'
+    return 'ok' if azione == 'MANTIENI' else 'cambia'
+
+
+def proposta(azione, regime="", motivi=(), allerte=(), tono=None, dove=None):
+    """
+    Scheda della decisione: azione e regime in evidenza, motivi sotto.
+    `allerte` sono righe che richiedono attenzione (tossicità, banda < 10%, target irraggiungibile).
+    `dove` è il contenitore in cui scrivere (per metterla in cima ai risultati).
+    """
+    tono = tono or tono_azione(azione, bool(allerte))
+    esc = html.escape
+    righe = "".join(f'<li class="pg-prop-allerta">{esc(a)}</li>' for a in allerte if a)
+    righe += "".join(f"<li>{esc(m)}</li>" for m in motivi if m)
+    blocco = (f'<div class="pg-prop pg-prop-{tono}" role="status">'
+              f'<div class="pg-prop-riga"><span class="pg-prop-az">{esc(azione)}</span>'
+              + (f'<span class="pg-prop-reg">{esc(regime)}</span>' if regime else "")
+              + "</div>" + (f"<ul>{righe}</ul>" if righe else "") + "</div>")
+    (dove or st).markdown(blocco, unsafe_allow_html=True)
 

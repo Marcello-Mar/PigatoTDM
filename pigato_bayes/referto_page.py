@@ -248,10 +248,10 @@ def render():
     if val.get('errore'):
         st.info(val['errore'])
         return
-    _mostra_valutazione(val, regola)
-
     rene_txt = rules.descrivi_rene(eg['valore'] if eg else None)
     nuova_dose = rules.arrotonda_dose(dose_die * (1 + val['pct'] / 100)) if (dose_die and val['pct'] not in (None, -100)) else None
+    _mostra_valutazione(val, regola, _regime_default(nuova_dose, modalita, tau, unita_dose, val['azione'])
+                        if val['azione'] not in ('MANTIENI', 'DOSE AGGIUNTIVA') else "")
     firma = hashlib.md5(json.dumps([val['azione'], val['pct'], nuova_dose, mic, kp, sede, lv.get('conc'),
                                     dose_die, modalita], default=str).encode()).hexdigest()[:8]
     with st.container(border=True):
@@ -590,7 +590,13 @@ def _valuta(tipo, regola, lv, mic, kp, sede, dose_die, BP, gruppo, fid):
     return v
 
 
-def _mostra_valutazione(v, regola):
+def _mostra_valutazione(v, regola, regime=""):
+    pct = f" {'+' if v['pct'] > 0 else '−'}{abs(v['pct'])}%" if v['pct'] not in (0, -100, None) else ""
+    motivi = []
+    if v.get('r_decisione') is not None and v.get('r_sito') is not None:
+        motivi.append(f"Decisione sul rapporto più basso ({v['base']}): ×{_fmt_ratio(v['r_decisione'])} la MIC")
+    ui.proposta(v['azione'] + pct, regime, motivi=motivi,
+                allerte=["Tossicità: " + v['tox']] if v.get('tox') else [])
     voci = []
     if v.get('r_plasma') is not None:
         lab = {"auc": "AUC24/MIC", "fauc": "fAUC24/MIC", "amino": "Picco/MIC", "fq": "Cmax/MIC"}.get(regola['tipo'], "C/MIC plasma")
@@ -600,14 +606,8 @@ def _mostra_valutazione(v, regola):
     if v.get('c_sito') is not None:
         voci.append({'k': "Concentrazione al sito", 'v': ui.n(v['c_sito'], 1), 'u': "mg/L"})
         voci.append({'k': "C sito/MIC", 'v': _fmt_ratio(v['r_sito'])})
-    pct = f" {'+' if v['pct'] > 0 else ''}{v['pct']}%" if v['pct'] not in (0, -100) else ""
-    voci.append({'k': "Proposta", 'v': v['azione'] + pct, 'sel': True,
-                 'stato': 'ok' if v['azione'] == 'MANTIENI' else None})
-    ui.schede(voci)
-    if v.get('r_decisione') is not None and v.get('r_sito') is not None:
-        st.caption(f"Decisione sul rapporto più basso ({v['base']}): ×{_fmt_ratio(v['r_decisione'])} la MIC.")
-    if v.get('tox'):
-        st.error("Tossicità: " + v['tox'])
+    if voci:
+        ui.schede(voci)
     if v.get('comp'):
         nome, c, ct, r = v['comp']
         (st.success if r >= 1 else st.warning)(f"{nome.capitalize()} {ui.n(c, 1)} mg/L: Css/CT {ui.n(r, 1)} (CT {ui.n(ct, 0)} mg/L).")
