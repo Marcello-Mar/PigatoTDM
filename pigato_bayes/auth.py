@@ -11,6 +11,7 @@ Se non è configurata l'app resta chiusa.
 
 import hmac
 import os
+import sys
 import time
 
 import streamlit as st
@@ -25,6 +26,10 @@ def _password_configurata():
 
 
 def richiedi_accesso():
+    if sys.platform == "emscripten":
+        # versione nel browser (stlite su Cloudflare Pages): l'accesso è già filtrato
+        # dalla parola d'ordine di Cloudflare (functions/_middleware.js), qui non c'è server
+        return True
     if st.session_state.get("_accesso_ok"):
         return True
     attesa = _password_configurata()

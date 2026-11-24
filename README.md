@@ -39,6 +39,18 @@ oppure usa la variabile d'ambiente `PIGATO_PASSWORD`.
 - `pigato_bayes/data/`: target TDM, penetrazione, breakpoint EUCAST
 - `.streamlit/config.toml`: tema e font IBM Plex
 
+## Versione nel browser (Cloudflare Pages)
+Il codice Python gira nel browser con [stlite](https://github.com/whitphx/stlite) (Pyodide): nessun dato
+passa da un server. Pensata per PC; il primo caricamento scarica circa 30–50 MB, poi resta in cache.
+
+Impostazione su Cloudflare (Workers & Pages → Create → Pages → Connect to Git → questo repository):
+- Build command: `python3 web/build.py`
+- Build output directory: `web/dist`
+- Settings → Variables and Secrets: `PIGATO_PASSWORD` (tipo Secret); facoltativo `PIGATO_UTENTE`
+
+La parola d'ordine la chiede il browser prima di caricare qualsiasi file (`functions/_middleware.js`,
+HTTP Basic). In locale: `python3 web/build.py && npx wrangler pages dev web/dist --binding PIGATO_PASSWORD=...`.
+
 ## Test
 ```bash
 pip install pytest
