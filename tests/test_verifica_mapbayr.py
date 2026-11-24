@@ -2,9 +2,9 @@
 Regressione contro mapbayr (R): 72 casi di daptomicina, ciprofloxacina, dalbavancina e aminoglicosidi.
 
 I valori attesi in tests/dati/riferimento_mapbayr.json sono stati calcolati il 24/11/2026 con
-mrgsolve/mapbayr, con i modelli scritti come equazioni differenziali e l'AUC per integrazione.
+mrgsolve 2.0.1 e mapbayr 0.10.2 (CRAN), con i modelli scritti come equazioni differenziali e l'AUC per integrazione.
 I prior attesi coincidono con quelli ricalcolati in R dalle formule delle fonti.
-Gli omega sono quelli che l'app passa allo stimatore (Q e V2 eventualmente ridotti in bayes_page).
+Gli omega sono quelli pubblicati, passati allo stimatore senza modifiche come fa l'app.
 
 Tolleranze: parametri 0,01% (scarto osservato ≤ 0,0005%); AUC24 0,5% (errore dei trapezi su
 400 punti, osservato ≤ 0,19%); Cmin 0,2%; tempo sotto soglia della dalbavancina 0,01 h.

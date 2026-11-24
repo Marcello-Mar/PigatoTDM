@@ -1,7 +1,9 @@
 # Verifica PIGATO TDM contro mrgsolve/mapbayr (24/11/2026)
-PIGATO: Marcello-Mar/PigatoTDM rev. bcad55f; numpy 2.5.3, scipy 1.18.1
-Riferimento: R 4.3.3; mrgsolve 2.1.0.9000 (GitHub c529f2d); mapbayr 0.10.2.9002 (GitHub 0412b46)
-  (CRAN non raggiungibile dal container: versioni di sviluppo da GitHub; da ripetere con le versioni CRAN)
+PIGATO: Marcello-Mar/PigatoTDM, branch verifica-mapbayr (PR #9, base bcad55f); numpy 2.5.3, scipy 1.18.1
+Riferimento: R 4.3.3; mrgsolve 2.0.1 e mapbayr 0.10.2 da CRAN (tarball SHA-256 e07ca06a…8ebd e 63e64f7d…f978).
+  Prima prova con le versioni di sviluppo GitHub (mrgsolve 2.1.0.9000, mapbayr 0.10.2.9002): stessi risultati.
+  I modelli dichiarano ETA1…ETAn in $PARAM, come richiede mapbayr 0.10.x.
+Omega: quelli pubblicati, senza la riduzione di Q e V2 (tolta dall'app il 24/11/2026).
 
 comune/prior_indipendenti.R  prior, omega, sigma ricalcolati dalle formule delle fonti (senza codice PIGATO)
 comune/mapbayr_2cmt.R        MAP a 2 compartimenti (ODE), errore log-additivo o combinato

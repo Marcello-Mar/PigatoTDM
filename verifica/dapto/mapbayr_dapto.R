@@ -7,7 +7,6 @@
 #
 # Uso: Rscript mapbayr_dapto.R casi_dapto.json mapbayr_dapto.csv
 
-.libPaths(c("~/Rlib", .libPaths()))  # libreria locale facoltativa
 suppressPackageStartupMessages({
   library(jsonlite)
   library(mrgsolve)
@@ -21,14 +20,17 @@ $PROB Daptomicina 1 cmt, infusione, errore log-additivo
 $PARAM @annotated @covariates
 TVCL : 1  : CL tipica del prior (L/h)
 TVV  : 10 : V tipico del prior (L)
+$PARAM @annotated
+ETA1 : 0 : ETA su CL (convenzione mapbayr <= 0.10.x)
+ETA2 : 0 : ETA su V
 $OMEGA 0.1 0.1
 $SIGMA 0 0.01
 $CMT @annotated
 CENT : Compartimento centrale (mg) [ADM, OBS]
 AUC  : AUC (mg*h/L) []
 $MAIN
-double CL = TVCL * exp(ETA(1));
-double V  = TVV  * exp(ETA(2));
+double CL = TVCL * exp(ETA(1) + ETA1);
+double V  = TVV  * exp(ETA(2) + ETA2);
 $ODE
 dxdt_CENT = -CL / V * CENT;
 dxdt_AUC  = CENT / V;

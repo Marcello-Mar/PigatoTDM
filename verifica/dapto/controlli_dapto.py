@@ -30,7 +30,10 @@ for lab, liv in [('livello = 0 (sotto LOQ inserito come 0)', [{'ore': 71.8, 'con
                  ('livello 0,05 mg/L', [{'ore': 71.8, 'conc': 0.05}]),
                  ('livello prima della prima dose (ore -1)', [{'ore': -1.0, 'conc': 5.0}]),
                  ('livello durante l\'infusione (0,25 h)', [{'ore': 48.25, 'conc': 40.0}])]:
-    p, d = mappa_bayesiana(pr['par'], pr['omega'], st, liv, pr['sigma_prop'], 0, pr['t_inf'])
+    try:
+        p, d = mappa_bayesiana(pr['par'], pr['omega'], st, liv, pr['sigma_prop'], 0, pr['t_inf'])
+    except ValueError as e:
+        print('4.', lab, '-> rifiutato:', str(e)[:60]); continue
     print('4.', lab, '-> CL %.4f (x%.2f prior), V %.3f (x%.2f)' % (p['CL'], p['CL'] / pr['par']['CL'], p['V1'], p['V1'] / pr['par']['V1']))
 
 # 5. convergenza: l'esito di minimize (success) viene scartato?
@@ -38,5 +41,5 @@ orig = so.minimize; esiti = []
 def spia(*a, **k):
     r = orig(*a, **k); esiti.append((r.success, r.message)); return r
 import pigato_bayes.pk_engine as pe; pe.minimize = spia
-pe.mappa_bayesiana(pr['par'], pr['omega'], st, [{'ore': 71.8, 'conc': 0.0}], pr['sigma_prop'], 0, pr['t_inf'])
-print('5. esiti ottimizzatore (caso livello 0):', esiti)
+pe.mappa_bayesiana(pr['par'], pr['omega'], st, [{'ore': 71.8, 'conc': 0.05}], pr['sigma_prop'], 0, pr['t_inf'])
+print('5. esiti ottimizzatore (caso livello 0,05 mg/L):', esiti)

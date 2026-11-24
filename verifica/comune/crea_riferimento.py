@@ -37,8 +37,7 @@ for farm, js, cs in [('Daptomicina', 'dapto/casi_dapto.json', 'dapto/mapbayr_dap
                          atteso_mapbayr=dict(par=att, AUC24=float(r['AUC24']), Cmin=float(r['Cmin']),
                                              t_sotto_soglia=float(r['t_sotto_soglia']) if r.get('t_sotto_soglia') not in (None, '', 'NA') else None),
                          soglia=c.get('soglia'), t_val=c.get('t_val')))
-meta = dict(descrizione="Valori di riferimento calcolati con R 4.3.3, mrgsolve 2.1.0.9000 (c529f2d), mapbayr 0.10.2.9002 "
-            "(0412b46) il 24/11/2026; modelli scritti come ODE, AUC per integrazione. Script in verifica/ del rapporto.",
+meta = dict(descrizione="Valori di riferimento calcolati con R 4.3.3, mrgsolve 2.0.1 e mapbayr 0.10.2 (CRAN) il 24/11/2026, omega pubblicati senza riduzione; modelli scritti come ODE, AUC per integrazione. Script in verifica/ del rapporto.",
             casi=casi)
 json.dump(meta, open(sys.argv[2], 'w'), indent=1, ensure_ascii=False)
 print(len(casi), 'casi')

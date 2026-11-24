@@ -9,7 +9,6 @@
 #
 # Uso: Rscript mapbayr_2cmt.R casi.json risultati.csv
 
-.libPaths(c("~/Rlib", .libPaths()))  # libreria locale facoltativa
 suppressPackageStartupMessages({
   library(jsonlite)
   library(mrgsolve)
@@ -24,6 +23,11 @@ TVCL : 1  : CL (L/h)
 TVV1 : 10 : V1 (L)
 TVQ  : 1  : Q (L/h)
 TVV2 : 10 : V2 (L)
+$PARAM @annotated
+ETA1 : 0 : ETA su CL (convenzione mapbayr <= 0.10.x)
+ETA2 : 0 : ETA su V1
+ETA3 : 0 : ETA su Q
+ETA4 : 0 : ETA su V2
 $OMEGA 0.1 0.1 0.1 0.1
 $SIGMA 0.01 0.01
 $CMT @annotated
@@ -31,10 +35,10 @@ CENT : Centrale (mg) [ADM, OBS]
 PERI : Periferico (mg) []
 AUC  : AUC (mg*h/L) []
 $MAIN
-double CL = TVCL * exp(ETA(1));
-double V1 = TVV1 * exp(ETA(2));
-double Q  = TVQ  * exp(ETA(3));
-double V2 = TVV2 * exp(ETA(4));
+double CL = TVCL * exp(ETA(1) + ETA1);
+double V1 = TVV1 * exp(ETA(2) + ETA2);
+double Q  = TVQ  * exp(ETA(3) + ETA3);
+double V2 = TVV2 * exp(ETA(4) + ETA4);
 $ODE
 dxdt_CENT = -(CL + Q) / V1 * CENT + Q / V2 * PERI;
 dxdt_PERI =  Q / V1 * CENT - Q / V2 * PERI;

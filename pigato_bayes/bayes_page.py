@@ -384,12 +384,9 @@ def _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, 
     except ValueError as exc:
         st.error(str(exc))
         return
+    # Omega pubblicati senza modifiche: con pochi livelli il prior trattiene già Q e V2
+    # (stima MAP, Sheiner & Beal 1982). Un parametro fisso si dichiara con omega 0 nel modello.
     om = dict(pr['omega'])
-    n = len(livelli)
-    # Q e V2 non identificabili con pochi campioni: ancorati al prior (come v5–v6)
-    for k in ('Q', 'V2'):
-        if om.get(k, 0) > 0:
-            om[k] = 0.10 + (om[k] - 0.10) * min(1.0, n / 6.0)
     with st.spinner("Stima MAP in corso…"):
         try:
             par, descr, avvisi_map = mappa_bayesiana(pr['par'], om, storia, livelli, pr['sigma_prop'],

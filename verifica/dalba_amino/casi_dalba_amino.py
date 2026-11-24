@@ -1,6 +1,6 @@
 """
 Verifica PIGATO TDM, dalbavancina e aminoglicosidi: casi e risultati PIGATO.
-Riproduce _calcola di bayes_page (omega di Q e V2 ridotti con pochi livelli; AUC24/Cmin
+Riproduce _calcola di bayes_page (omega pubblicati; AUC24/Cmin
 nella finestra dell'app) e, per la dalbavancina, il tempo sotto soglia del pannello forecast.
 Uso: python casi_dalba_amino.py <repo> <cartella_uscita>
 """
@@ -89,11 +89,8 @@ AMINO = [  # id, descr, farmaco, modello, sesso, gg, peso, altezza, crea, eg_set
 
 
 def omega_app(om, n):
-    om = dict(om)
-    for k in ('Q', 'V2'):
-        if om.get(k, 0) > 0:
-            om[k] = 0.10 + (om[k] - 0.10) * min(1.0, n / 6.0)
-    return om
+    """Come bayes_page._calcola: omega pubblicati senza modifiche (riduzione di Q e V2 tolta il 24/11/2026)."""
+    return dict(om)
 
 
 def metriche_app(par, storia, t_inf):

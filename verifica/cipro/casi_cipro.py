@@ -1,6 +1,6 @@
 """
 Verifica PIGATO TDM, ciprofloxacina: casi e risultati PIGATO.
-Riproduce _calcola di bayes_page: omega di Q e V2 ridotti in base al numero di livelli.
+Riproduce _calcola di bayes_page (omega pubblicati).
 L'eGFR entra come covariata già calcolata (le formule renali si verificano a parte).
 Uso: python casi_cipro.py <repo> <cartella_uscita>
 """
@@ -84,12 +84,8 @@ caso('C21', 'Forrest, valle molto alta (6 mg/L)', F, 'Maschio', 25567, 70.0,
 
 
 def omega_app(om, n):
-    """Come bayes_page._calcola: Q e V2 ancorati al prior con pochi livelli."""
-    om = dict(om)
-    for k in ('Q', 'V2'):
-        if om.get(k, 0) > 0:
-            om[k] = 0.10 + (om[k] - 0.10) * min(1.0, n / 6.0)
-    return om
+    """Come bayes_page._calcola: omega pubblicati senza modifiche (riduzione di Q e V2 tolta il 24/11/2026)."""
+    return dict(om)
 
 
 def metriche_app(par, storia, t_inf):
