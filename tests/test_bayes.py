@@ -140,3 +140,15 @@ def test_pagina_bayes_si_apre_e_chiede_i_dati():
     [b for b in at.button if b.label.startswith("Avvia")][0].click()
     at.run()
     assert not at.exception and any("Compila prima" in e.value for e in at.error)
+
+
+@pytest.mark.parametrize("nome", ['dapto_bambino', 'dapto_HD_adolescente', 'cipro_hirt', 'genta_10h_bambino'])
+def test_auc_a_regime_uguale_dose_su_cl(nome):
+    """A regime AUC24 = dose × (24/τ) / CL, qualunque sia l'accumulo."""
+    from streamlit.testing.v1 import AppTest
+    at = AppTest.from_function(_harness, args=(str(RADICE), *CASI[nome]), default_timeout=120)
+    at.run()
+    R = at.session_state['b_risultati']
+    tau = R['tau_med'] or 24
+    assert R['auc24_ss'] == pytest.approx(R['storia'][-1]['dose'] * 24 / tau / R['par']['CL'], rel=0.01)
+    assert R['auc24_ss'] >= R['auc24'] * 0.98

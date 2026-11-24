@@ -411,13 +411,22 @@ def _calcola(farmaco, codice, sesso, gg, eta, peso, altezza, crea, eg_sett, eg, 
         thalf = float(np.log(2) / beta)
     else:
         thalf = float(np.log(2) * par['V1'] / par['CL'])
+    # a regime: si prosegue con l'ultima dose all'intervallo mediano finché l'accumulo è completo
+    # (almeno 5 emivite) e si misura l'ultimo intervallo
+    tau_ss = tau_med or 24.0
+    n_ss = int(min(80, max(5, np.ceil(5 * thalf / tau_ss) + 1)))
+    s_ss = list(storia) + [{'ore': t_last + i * tau_ss, 'dose': storia[-1]['dose'], 'tinf': storia[-1]['tinf']}
+                           for i in range(1, n_ss + 1)]
+    auc_tau_ss, cmax_ss, cmin_ss = metriche_finestra(par, s_ss, t_last + n_ss * tau_ss, tau_ss, pr['t_inf'])
+    auc24_ss = auc_tau_ss * 24.0 / tau_ss
     st.session_state[_k('risultati')] = dict(
         farmaco=farmaco, codice=codice, sesso=sesso, gg=gg, eta=eta, peso=peso, altezza=altezza, crea=crea,
         eg_sett=eg_sett, egfr_valore=eg['valore'] if eg else None, egfr_formula=eg.get('etichetta') if eg else None,
         egfr_tutte=eg['tutte'] if eg else {}, mic=mic, crrt=crrt, Sc=Sc, Qef=Qef, dialisi=dialisi, modello=modello,
         storia=storia, livelli=livelli, t0=t0.strftime('%Y-%m-%d %H:%M'), dt_val=dt_val,
         t_ult_storico=t_ult_storico, prior=pr, par=par, descr=descr, auc24=auc24, cmax24=cmax24, cmin24=cmin24,
-        vss=vss, thalf=thalf, tau_med=tau_med, registrato=False)
+        vss=vss, thalf=thalf, tau_med=tau_med, auc24_ss=auc24_ss, cmax_ss=cmax_ss, cmin_ss=cmin_ss,
+        registrato=False)
 
 
 # ------------------------------------------------------------------
@@ -442,7 +451,8 @@ def _mostra_risultati(R, sto):
         {'k': "Volume (Vss)", 'v': ui.n(R['vss'], 2), 'u': "L",
          's': f"prior {ui.n(pr['par']['V1'] + pr['par'].get('V2', 0), 2)} L"},
         {'k': "Emivita terminale", 'v': ui.n(R['thalf'], 1), 'u': "h"},
-        {'k': "AUC 24 h dopo l'ultima dose", 'v': ui.n(R['auc24'], 0), 'u': "mg·h/L"},
+        {'k': "AUC24 con le dosi già somministrate", 'v': ui.n(R['auc24'], 0), 'u': "mg·h/L",
+         's': f"a regime {ui.n(R['auc24_ss'], 0)}" if R.get('auc24_ss') else None},
     ])
 
     soglie = []
@@ -496,7 +506,8 @@ def _mostra_risultati(R, sto):
                 'mic': mic, 'modello_scelto': R['modello'], 'modello': pr['nome'],
                 'dose_mg': storia[-1]['dose'], 'tau_h': R['tau_med'], 'n_dosi': len(storia), 'n_livelli': len(livelli),
                 'CL_ind': par['CL'], 'V1_ind': par['V1'], 'Q_ind': par.get('Q'), 'V2_ind': par.get('V2'),
-                'Vss': R['vss'], 'AUC24': R['auc24'], 'Cmin24': R['cmin24'], 'referto': referto,
+                'Vss': R['vss'], 'AUC24': R['auc24'], 'Cmin24': R['cmin24'],
+                'AUC24_regime': R.get('auc24_ss'), 'Cmin_regime': R.get('cmin_ss'), 'Cmax_regime': R.get('cmax_ss'), 'referto': referto,
                 'storia_dosi': storia, 'livelli': livelli, 'data_prima_dose': R['t0'],
             }
             sto['monitoraggi'].append(rec)
@@ -505,18 +516,20 @@ def _mostra_risultati(R, sto):
 
 
 def _pannello_dapto(R, cima=None):
-    mic, auc = R['mic'], R['auc24']
+    # decisione sui valori a regime; quelli con le dosi già somministrate restano come riferimento
+    mic = R['mic']
+    auc, cmin = R.get('auc24_ss', R['auc24']), R.get('cmin_ss', R['cmin24'])
     ratio = auc / mic
     pd_ = models.PD_DAPTO
-    tox = R['cmin24'] >= pd_['Cmin_tox']
+    tox = cmin >= pd_['Cmin_tox']
     ok_s = ratio >= pd_['AUC_MIC_staph']
     ok_e = ratio >= pd_['AUC_MIC_entero']
     ui.schede([
-        {'k': "AUC24/MIC · S. aureus (≥ 666)", 'v': ui.n(ratio, 0),
+        {'k': "AUC24/MIC a regime · S. aureus (≥ 666)", 'v': ui.n(ratio, 0),
          's': "target raggiunto" if ok_s else "sotto target", 'stato': 'ok' if ok_s else 'ko'},
-        {'k': "AUC24/MIC · E. faecium (≥ 143)", 'v': ui.n(ratio, 0),
+        {'k': "AUC24/MIC a regime · E. faecium (≥ 143)", 'v': ui.n(ratio, 0),
          's': "target raggiunto" if ok_e else "sotto target", 'stato': 'ok' if ok_e else 'ko'},
-        {'k': "Cmin prevista (soglia CPK 24,3)", 'v': ui.n(R['cmin24'], 1), 'u': "mg/L",
+        {'k': "Cmin a regime (soglia CPK 24,3)", 'v': ui.n(cmin, 1), 'u': "mg/L",
          's': "rischio CPK" if tox else "sotto soglia", 'stato': 'ko' if tox else 'ok'},
     ])
     dose = R['storia'][-1]['dose']
@@ -524,7 +537,7 @@ def _pannello_dapto(R, cima=None):
     # Finestra tdm_data.json: AUC24/MIC ≥ 666 (S. aureus); AUC24 > 939 mg·h/L e
     # Cmin ≥ 24,3 mg/L come limiti di sicurezza. PK lineare: dose ∝ AUC e Cmin.
     f_min = pd_['AUC_MIC_staph'] * mic / auc
-    f_max = min(939.0 / auc, 0.9 * pd_['Cmin_tox'] / max(R['cmin24'], 1e-6))
+    f_max = min(939.0 / auc, 0.9 * pd_['Cmin_tox'] / max(cmin, 1e-6))
     if f_min > 1:
         azione, f = "AUMENTA", f_min
     elif f_max < 1:
@@ -537,62 +550,68 @@ def _pannello_dapto(R, cima=None):
         nota_banda = (f" — correzione calcolata {'+' if f > 1 else '−'}{ui.n(abs(f - 1) * 100, 0)}% "
                       f"(< 10%): mantenuta la dose nonostante "
                       + (f"AUC24 {ui.n(auc, 0)} > 939" if auc > 939 else
-                         f"Cmin {ui.n(R['cmin24'], 1)} vicina a 24,3" if f < 1 else
+                         f"Cmin {ui.n(cmin, 1)} vicina a 24,3" if f < 1 else
                          f"AUC24/MIC {ui.n(ratio, 0)} < 666"))
         azione, f = "MANTIENI", 1.0
     dose_new = dose * f
     irraggiungibile = f_min > f_max
     testo = (f"{azione}: {ui.n(dose_new, 0)} mg ({ui.n(dose_new / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h "
-             f"(AUC24 prevista {ui.n(auc * f, 0)} mg·h/L, Cmin {ui.n(R['cmin24'] * f, 1)} mg/L){nota_banda}")
+             f"(a regime AUC24 {ui.n(auc * f, 0)} mg·h/L, Cmin {ui.n(cmin * f, 1)} mg/L){nota_banda}")
     pct = f" {'+' if f > 1 else '−'}{ui.n(abs(f - 1) * 100, 0)}%" if azione != "MANTIENI" else ""
     ui.proposta(
         azione + pct, f"{ui.n(dose_new, 0)} mg ({ui.n(dose_new / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h",
-        motivi=[f"AUC24/MIC {ui.n(ratio, 0)} (target ≥ 666 S. aureus, ≥ 143 E. faecium)",
-                f"AUC24 {ui.n(auc, 0)} mg·h/L (limite 939)" + (f" → prevista {ui.n(auc * f, 0)}" if f != 1 else ""),
-                f"Cmin {ui.n(R['cmin24'], 1)} mg/L (soglia CPK 24,3)"
-                + (f" → prevista {ui.n(R['cmin24'] * f, 1)}" if f != 1 else "")],
+        motivi=[f"AUC24/MIC a regime {ui.n(ratio, 0)} (target ≥ 666 S. aureus, ≥ 143 E. faecium)",
+                f"AUC24 a regime {ui.n(auc, 0)} mg·h/L (limite 939)"
+                + (f" → con la nuova dose {ui.n(auc * f, 0)}" if f != 1 else ""),
+                f"Cmin a regime {ui.n(cmin, 1)} mg/L (soglia CPK 24,3)"
+                + (f" → con la nuova dose {ui.n(cmin * f, 1)}" if f != 1 else ""),
+                f"Con le dosi già somministrate: AUC24 {ui.n(R['auc24'], 0)} mg·h/L, Cmin {ui.n(R['cmin24'], 1)} mg/L"],
         allerte=[("C" + nota_banda.lstrip(" —")[1:]) if nota_banda else "",
                  "Target AUC24/MIC 666 non raggiungibile senza superare AUC 939 o Cmin 24,3: valutare "
                  "alternativa terapeutica" if irraggiungibile else "",
                  "Cmin oltre la soglia CPK" if tox else ""],
         tono='stop' if (tox or irraggiungibile) else ('cambia' if (azione != "MANTIENI" or nota_banda) else 'ok'),
         dove=cima)
-    return (f"AUC24/MIC {ui.n(ratio, 0)} (target ≥666 S. aureus; ≥143 E. faecium); AUC24 {ui.n(auc, 0)} mg·h/L "
-            f"(limite 939); Cmin prevista {ui.n(R['cmin24'], 1)} mg/L (soglia CPK 24,3)\n"
+    return (f"A regime: AUC24/MIC {ui.n(ratio, 0)} (target ≥666 S. aureus; ≥143 E. faecium); AUC24 {ui.n(auc, 0)} mg·h/L "
+            f"(limite 939); Cmin {ui.n(cmin, 1)} mg/L (soglia CPK 24,3). Con le dosi già somministrate: AUC24 "
+            f"{ui.n(R['auc24'], 0)} mg·h/L, Cmin {ui.n(R['cmin24'], 1)} mg/L\n"
             f"Proposta: {testo}\n")
 
 
 def _pannello_cipro(R, cima=None):
-    mic, auc = R['mic'], R['auc24']
+    mic = R['mic']
+    auc, cmax, cmin = (R.get('auc24_ss', R['auc24']), R.get('cmax_ss', R['cmax24']), R.get('cmin_ss', R['cmin24']))
     ratio = auc / mic
     ok = ratio >= models.PD_CIPRO['AUC_MIC_target']
     ui.schede([
-        {'k': "AUC24/MIC (≥ 125)", 'v': ui.n(ratio, 0), 's': "target raggiunto" if ok else "sotto target",
+        {'k': "AUC24/MIC a regime (≥ 125)", 'v': ui.n(ratio, 0), 's': "target raggiunto" if ok else "sotto target",
          'stato': 'ok' if ok else 'ko'},
-        {'k': "Cmax/MIC (≥ 10)", 'v': ui.n(R['cmax24'] / mic, 1), 's': f"Cmax {ui.n(R['cmax24'], 2)} mg/L"},
-        {'k': "Cmin (tenere < 2)", 'v': ui.n(R['cmin24'], 2), 'u': "mg/L",
-         'stato': 'ko' if R['cmin24'] >= 2 else 'ok', 's': "oltre 2 mg/L" if R['cmin24'] >= 2 else "sotto 2 mg/L"},
+        {'k': "Cmax/MIC a regime (≥ 10)", 'v': ui.n(cmax / mic, 1), 's': f"Cmax {ui.n(cmax, 2)} mg/L"},
+        {'k': "Cmin a regime (tenere < 2)", 'v': ui.n(cmin, 2), 'u': "mg/L",
+         'stato': 'ko' if cmin >= 2 else 'ok', 's': "oltre 2 mg/L" if cmin >= 2 else "sotto 2 mg/L"},
     ])
     dose = R['storia'][-1]['dose']
     tau = R['tau_med'] or 24
     if not ok:
         f, azione = 125 * mic / auc, "AUMENTA"
-    elif R['cmin24'] > 2:
+    elif cmin > 2:
         f, azione = 0.75, "RIDUCI"
     else:
         f, azione = 1.0, "MANTIENI"
     testo = (f"{azione}: {ui.n(dose * f, 0)} mg ({ui.n(dose * f / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h "
-             f"(AUC24/MIC prevista {ui.n(ratio * f, 0)})")
+             f"(AUC24/MIC a regime {ui.n(ratio * f, 0)})")
     ui.proposta(
         azione + (f" {'+' if f > 1 else '−'}{ui.n(abs(f - 1) * 100, 0)}%" if azione != "MANTIENI" else ""),
         f"{ui.n(dose * f, 0)} mg ({ui.n(dose * f / R['peso'], 1)} mg/kg) ogni {ui.n(tau, 0)} h",
-        motivi=[f"AUC24/MIC {ui.n(ratio, 0)} (target ≥ 125)" + (f" → prevista {ui.n(ratio * f, 0)}" if f != 1 else ""),
-                f"Cmax/MIC {ui.n(R['cmax24'] / mic, 1)} (≥ 10)",
-                f"Cmin {ui.n(R['cmin24'], 2)} mg/L (tenere < 2)"],
-        allerte=["Cmin ≥ 2 mg/L" if R['cmin24'] >= 2 else ""], dove=cima)
+        motivi=[f"AUC24/MIC a regime {ui.n(ratio, 0)} (target ≥ 125)"
+                + (f" → con la nuova dose {ui.n(ratio * f, 0)}" if f != 1 else ""),
+                f"Cmax/MIC a regime {ui.n(cmax / mic, 1)} (≥ 10)",
+                f"Cmin a regime {ui.n(cmin, 2)} mg/L (tenere < 2)",
+                f"Con le dosi già somministrate: AUC24/MIC {ui.n(R['auc24'] / mic, 0)}, Cmin {ui.n(R['cmin24'], 2)} mg/L"],
+        allerte=["Cmin ≥ 2 mg/L" if cmin >= 2 else ""], dove=cima)
     st.caption("Nessuna soglia AUC di neurotossicità validata per i fluorochinoloni.")
-    return (f"AUC24/MIC {ui.n(ratio, 0)} (target ≥125); Cmax {ui.n(R['cmax24'], 2)} mg/L "
-            f"(Cmax/MIC {ui.n(R['cmax24'] / mic, 1)}); Cmin {ui.n(R['cmin24'], 2)} mg/L\n"
+    return (f"A regime: AUC24/MIC {ui.n(ratio, 0)} (target ≥125); Cmax {ui.n(cmax, 2)} mg/L "
+            f"(Cmax/MIC {ui.n(cmax / mic, 1)}); Cmin {ui.n(cmin, 2)} mg/L\n"
             f"Proposta: {testo}\n")
 
 
