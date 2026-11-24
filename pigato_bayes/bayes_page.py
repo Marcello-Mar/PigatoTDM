@@ -692,13 +692,13 @@ def _pannello_amino(R, t0, cima=None):
         pk_att = _simula_regime(par, storia, dose_att, tau_att, tinf, t_last + tau_att)
         cmax_ult = float(conc(par, storia, t_last + tinf + 0.5, tinf)[0])
         ui.schede([
-            {'k': "Picco dopo l'ultima dose", 'v': ui.n(cmax_ult, 1), 'u': "mg/L",
-             's': "30 min dopo la fine dell'infusione"},
-            {'k': "Picco/MIC", 'v': ui.n(cmax_ult / mic, 1), 'stato': 'ok' if cmax_ult / mic >= obiettivo else 'ko',
+            {'k': "Picco con le dosi già somministrate", 'v': ui.n(cmax_ult, 1), 'u': "mg/L",
+             's': "dopo l'ultima dose, 30 min dalla fine dell'infusione"},
+            {'k': "Picco/MIC con le dosi già somministrate", 'v': ui.n(cmax_ult / mic, 1), 'stato': 'ok' if cmax_ult / mic >= obiettivo else 'ko',
              's': f"obiettivo ≥ {ui.n(obiettivo, 0)}"},
             {'k': f"Sotto {ui.n(valle_max, 1)} mg/L dopo", 'v': ui.n(t_lib - t_last, 1) if t_lib else "> 240", 'u': "h",
              's': (t0 + timedelta(hours=t_lib)).strftime('%d/%m/%Y %H:%M') if t_lib else None},
-            {'k': "AUC24 allo stato stazionario", 'v': ui.n(pk_att[2], 0), 'u': "mg·h/L", 's': "regime attuale"},
+            {'k': "AUC24 a regime", 'v': ui.n(pk_att[2], 0), 'u': "mg·h/L", 's': "continuando con la dose attuale"},
         ])
 
         if lo_eff <= pk_att[0] <= hi_eff:
@@ -720,7 +720,8 @@ def _pannello_amino(R, t0, cima=None):
                      column_order=["Dose (mg)", "Ogni (h)", "Picco", "Valle", "OK", "Picco/MIC", "mg/kg", "AUC24"],
                      column_config={c: st.column_config.NumberColumn(format="localized")
                                     for c in ("Dose (mg)", "mg/kg", "Picco", "Picco/MIC", "Valle", "AUC24")})
-        st.caption("Picco e valle in mg/L, AUC24 in mg·h/L, allo stato stazionario del regime indicato.")
+        st.caption("Valori previsti a regime (stato stazionario, dopo più dosi uguali): picco e valle in mg/L, "
+                   "AUC24 in mg·h/L. Rispetto alla prima dose includono il piccolo accumulo da una dose all'altra.")
         if scelta:
             d_s, t_s = scelta['Dose (mg)'], scelta['Ogni (h)']
             if d_s == dose_att and t_s == tau_att:
@@ -731,20 +732,21 @@ def _pannello_amino(R, t0, cima=None):
             else:
                 az = "ALLUNGA INTERVALLO" if t_s > tau_att else "ACCORCIA INTERVALLO"
             ui.proposta(az, f"{ui.n(d_s, 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni {t_s} h",
-                        motivi=[f"Picco previsto {ui.n(scelta['Picco'], 1)} mg/L (obiettivo "
+                        motivi=[f"Picco previsto a regime {ui.n(scelta['Picco'], 1)} mg/L (obiettivo "
                                 f"{ui.n(lo_eff, 1)}–{ui.n(hi_eff, 1)}), picco/MIC {ui.n(scelta['Picco/MIC'], 1)}",
-                                f"Valle prevista {ui.n(scelta['Valle'], 2)} mg/L (< {ui.n(valle_max, 1)})",
+                                f"Valle prevista a regime {ui.n(scelta['Valle'], 2)} mg/L (< {ui.n(valle_max, 1)})",
+                                f"Con le dosi già somministrate: picco {ui.n(cmax_ult, 1)} mg/L",
                                 f"Prossima dose quando il livello è sotto {ui.n(valle_max, 1)} mg/L"
                                 + (f": dal {(t0 + timedelta(hours=t_lib)).strftime('%d/%m/%Y %H:%M')}" if t_lib else "")],
                         dove=cima)
             prop = (f"Proposta: {ui.n(scelta['Dose (mg)'], 0)} mg ({ui.n(scelta['mg/kg'], 1)} mg/kg) ogni "
-                    f"{scelta['Ogni (h)']} h (picco previsto {ui.n(scelta['Picco'], 1)} mg/L, "
-                    f"picco/MIC {ui.n(scelta['Picco/MIC'], 1)}, valle {ui.n(scelta['Valle'], 2)} mg/L)")
+                    f"{scelta['Ogni (h)']} h (picco previsto a regime {ui.n(scelta['Picco'], 1)} mg/L, "
+                    f"picco/MIC {ui.n(scelta['Picco/MIC'], 1)}, valle a regime {ui.n(scelta['Valle'], 2)} mg/L)")
         else:
             ui.proposta("NESSUN REGIME ADEGUATO", "",
                         allerte=["Nessuna combinazione della tabella soddisfa insieme picco/MIC e valle: valutare "
                                  "intervallo più lungo, obiettivo diverso o alternativa terapeutica"], dove=cima)
             prop = "Nessun regime della tabella soddisfa insieme i due criteri."
-    return (f"Picco dopo l'ultima dose {ui.n(cmax_ult, 1)} mg/L (picco/MIC {ui.n(cmax_ult / mic, 1)}; obiettivo ≥ "
+    return (f"Picco con le dosi già somministrate {ui.n(cmax_ult, 1)} mg/L (picco/MIC {ui.n(cmax_ult / mic, 1)}; obiettivo ≥ "
             f"{ui.n(obiettivo, 0)}); sotto {ui.n(valle_max, 1)} mg/L dopo "
             f"{ui.n(t_lib - t_last, 1) + ' h' if t_lib else '> 240 h'}\n{prop}\n")
