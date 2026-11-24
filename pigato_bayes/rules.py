@@ -178,3 +178,38 @@ def descrivi_rene(egfr):
     if egfr <= 130:
         return "funzionalità renale nella norma"
     return "clearance renale aumentata (ARC)"
+
+
+# ------------------------------------------------------------------
+# Bibliografia del referto (verificata su PubMed, 24/11/2026)
+BIB = {
+    'ecpa_cc': ("Gatti M, Cojutti PG, Bartoletti M, et al. Expert clinical pharmacological advice may make an "
+                "antimicrobial TDM program for emerging candidates more clinically useful in tailoring therapy of "
+                "critically ill patients. Crit Care. 2022;26:178. doi:10.1186/s13054-022-04050-9"),
+    'ecpa_rev': ("Gatti M, Pea F. The expert clinical pharmacological advice program for tailoring on real-time "
+                 "antimicrobial therapies with emerging TDM candidates in special populations: how the ugly duckling "
+                 "turned into a swan. Expert Rev Clin Pharmacol. 2023;16(11):1035-1051. "
+                 "doi:10.1080/17512433.2023.2274984"),
+    'vanco': ("Rybak MJ, Le J, Lodise TP, et al. Therapeutic monitoring of vancomycin for serious methicillin-resistant "
+              "Staphylococcus aureus infections: a revised consensus guideline and review by ASHP, IDSA, PIDS and SIDP. "
+              "Am J Health Syst Pharm. 2020;77(11):835-864. doi:10.1093/ajhp/zxaa036"),
+    'dapto_cpk': ("Bhavnani SM, Rubino CM, Ambrose PG, Drusano GL. Daptomycin exposure and the probability of "
+                  "elevations in the creatine phosphokinase level: data from a randomized trial of patients with "
+                  "bacteremia and endocarditis. Clin Infect Dis. 2010;50(12):1568-74. doi:10.1086/652767"),
+    'eucast': ("EUCAST. Breakpoint tables for interpretation of MICs and zone diameters, version 16.1 "
+               "(valida dal 24/06/2026). https://www.eucast.org"),
+}
+
+
+def bibliografia(fid, tipo, ag, empirica=False):
+    """Voci di bibliografia pertinenti al farmaco e al tipo di regola."""
+    voci = []
+    if tipo == 'css' or 'ECPA' in (ag.get('tim') or ''):
+        voci += [BIB['ecpa_cc'], BIB['ecpa_rev']]
+    if fid == 'vancomycin':
+        voci.append(BIB['vanco'])
+    if fid == 'daptomycin':
+        voci.append(BIB['dapto_cpk'])
+    if empirica:
+        voci.append(BIB['eucast'])
+    return voci

@@ -281,8 +281,12 @@ def render():
                                 value=_commento(val, azione, nome, regime_txt, rene_txt, regola, sede, etich),
                                 key=_k(f'commento_{firma}_{azione}_{nd}_{regime_txt}'))
 
+    bib = rules.bibliografia(fid, tipo, ag, empirica=empirica and gruppo != "—")
+    con_bib = st.checkbox("Aggiungi la bibliografia al referto", value=True, key=_k('bibliografia'),
+                          disabled=not bib, help="Fonti delle regole applicate (ECPA, linee guida, EUCAST).")
     referto = _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, dose_die, unita_dose,
-                               carico, peso, eg, rrt, kp, val, mic, mic_le, empirica, commento, ricontrollo, pen_mol, eta)
+                               carico, peso, eg, rrt, kp, val, mic, mic_le, empirica, commento, ricontrollo, pen_mol, eta,
+                               bibliografia=bib if con_bib else ())
     st.markdown("### Referto")
     st.code(referto, language='text', wrap_lines=True)
     st.download_button("Scarica il referto (.txt)", data=referto.encode('utf-8'),
@@ -687,7 +691,7 @@ TIPO_PROSA = {'Cmin (valle)': 'valle', 'Cmin': 'valle'}
 
 
 def _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, dose_die, unita, carico, peso,
-                     eg, rrt, kp, v, mic, mic_le, empirica, commento, ricontrollo, pen_mol, eta):
+                     eg, rrt, kp, v, mic, mic_le, empirica, commento, ricontrollo, pen_mol, eta, bibliografia=()):
     sede_txt = etich[sede] if sede != 'sistemico' else "Sistemica"
     titolo = " — ".join(x for x in (nome.upper(), sede_txt, patogeno or None, azione) if x)
     # livelli
@@ -737,4 +741,6 @@ def _componi_referto(nome, etich, sede, patogeno, azione, regola, lv, modalita, 
     righe += ["", "Commento:", "", commento.strip(), ""]
     if ricontrollo:
         righe.append(f"Ricontrolla dosaggio {ricontrollo}.")
+    if bibliografia:
+        righe += ["", "Bibliografia:"] + [f"{i}. {b}" for i, b in enumerate(bibliografia, 1)]
     return "\n".join(righe)

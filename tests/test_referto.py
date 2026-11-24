@@ -176,7 +176,10 @@ def test_referto_tutti_i_farmaci(fid, paziente):
     assert referti, f"nessun referto per {fid}: {[i.value for i in at.info]}"
     testo = referti[0]
     assert "Commento:" in testo and "Ricontrolla dosaggio" in testo
-    assert "None" not in testo and "nan" not in testo.lower().replace("nanna", "")
+    if tipo == "css":
+        assert "Bibliografia:" in testo and "doi:10.1186/s13054-022-04050-9" in testo
+    import re
+    assert not re.search(r"\bNone\b|\bnan\b", testo)
     # registrazione nello storico e JSON
     [b for b in at.button if b.label.startswith("Registra")][0].click()
     at.run()
@@ -293,3 +296,14 @@ def test_cambio_farmaco_chiede_conferma():
     at.run()
     assert not at.exception
     assert 'r_farmaco' not in at.session_state
+
+
+def test_bibliografia_per_farmaco():
+    agenti = {a['id']: a for a in json.loads((RADICE / 'pigato_bayes/data/tdm_targets.json').read_text())['agents']}
+    b = rules.bibliografia('meropenem', 'css', agenti['meropenem'])
+    assert len(b) == 2 and 'Crit Care. 2022;26:178' in b[0] and 'Expert Rev Clin Pharmacol' in b[1]
+    assert any('Rybak' in x for x in rules.bibliografia('vancomycin', 'auc', agenti['vancomycin']))
+    assert any('Bhavnani' in x for x in rules.bibliografia('daptomycin', 'auc', agenti['daptomycin']))
+    assert any('ECPA' in agenti['linezolid']['tim'] for _ in [0]) and rules.bibliografia('linezolid', 'range', agenti['linezolid'])
+    assert any('EUCAST' in x for x in rules.bibliografia('gentamicin', 'amino', agenti['gentamicin'], empirica=True))
+    assert rules.bibliografia('gentamicin', 'amino', agenti['gentamicin']) == []
