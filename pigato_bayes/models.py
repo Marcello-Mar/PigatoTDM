@@ -185,7 +185,11 @@ def prior_cipro(sesso, gg, peso, crea, crrt, Sc, Qef, altezza=None, egfr=None, m
             note.append("Età oltre la popolazione del modello (0–18 anni).")
     elif modello.startswith('Forrest'):
         clcr = egfr if egfr else (renal.ckd_epi_2021(eta, crea, sesso) or 90.0)
-        bsa = renal.bsa_mosteller(peso, altezza) or 1.73
+        bsa = renal.bsa_mosteller(peso, altezza)
+        if not bsa:
+            bsa = 1.73
+            note.append("Altezza non disponibile: BSA assunta 1,73 m² per la clearance intercompartimentale "
+                        "(Forrest la riporta per 1,73 m²).")
         CL = (0.00145 * clcr + 0.167) * peso
         par = {'CL': CL, 'V1': FORREST['V1'] * peso, 'Q': FORREST['CLd_173'] * bsa / 1.73,
                'V2': FORREST['Vp'] * peso}

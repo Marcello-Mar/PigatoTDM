@@ -27,7 +27,7 @@ def conc_1cmt(CL, V, storia, t, t_inf=0.5):
         dt = t - s['ore']
         k0 = s['dose'] / ti
         dur = np.clip(dt, 0, ti)
-        fase = (k0 / CL) * (1.0 - np.exp(-ke * dur))
+        fase = (k0 / CL) * -np.expm1(-ke * dur)   # 1 − e^(−x) senza cancellazione per x piccolo
         post = np.where(dt > ti, np.exp(-ke * (dt - ti)), 1.0)
         C += np.where(dt > 0, fase * post, 0.0)
     return np.maximum(C, 0.0)
@@ -42,7 +42,9 @@ def conc_2cmt(CL, V1, Q, V2, storia, t, t_inf=0.5):
     s_ = k10 + k12 + k21
     d_ = max(s_ ** 2 - 4 * k10 * k21, 0.0)
     a = (s_ + np.sqrt(d_)) / 2
-    b = (s_ - np.sqrt(d_)) / 2
+    # β = k10·k21/α (prodotto delle radici): evita la cancellazione numerica di (s − √d)/2
+    # quando k10·k21 << s², che con parametri estremi dava β = 0 e divisione per zero
+    b = k10 * k21 / a
     if abs(a - b) < 1e-12:
         return conc_1cmt(CL, V1 + V2, storia, t, t_inf)
     A = (k21 - a) / ((b - a) * V1)
@@ -53,8 +55,8 @@ def conc_2cmt(CL, V1, Q, V2, storia, t, t_inf=0.5):
         k0 = s['dose'] / ti
         dur = np.clip(dt, 0, ti)
         rest = np.clip(dt - ti, 0, None)
-        c = k0 * ((A / a) * (1 - np.exp(-a * dur)) * np.exp(-a * rest)
-                  + (B / b) * (1 - np.exp(-b * dur)) * np.exp(-b * rest))
+        c = k0 * ((A / a) * -np.expm1(-a * dur) * np.exp(-a * rest)
+                  + (B / b) * -np.expm1(-b * dur) * np.exp(-b * rest))
         C += np.where(dt > 0, c, 0.0)
     return np.maximum(C, 0.0)
 
@@ -95,7 +97,7 @@ def tempo_sotto_soglia(par, storia, soglia, t_partenza, t_max, passo=0.25, t_inf
 
 
 def mappa_bayesiana(prior, omega, storia, livelli, sigma_prop, sigma_add=0.0, t_inf=0.5,
-                    limiti=(0.05, 10.0)):
+                    limiti=(0.05, 10.0), con_avvisi=False):
     """
     MAP con prior log-normali.
 
@@ -104,10 +106,23 @@ def mappa_bayesiana(prior, omega, storia, livelli, sigma_prop, sigma_add=0.0, t_
     sigma_prop: errore residuo proporzionale (SD); sigma_add: additivo (mg/L)
     Con sigma_add = 0 il residuo è log-normale (come nelle versioni precedenti);
     con sigma_add > 0 si usa l'errore combinato su scala lineare.
+
+    Un livello ≤ 0 mg/L solleva ValueError: il valore sotto il limite di
+    quantificazione non è gestito (con il residuo log-normale diventerebbe 1e-6 mg/L
+    e sposterebbe la stima senza avviso).
+    con_avvisi=True: restituisce (parametri, descrizione, avvisi), dove avvisi segnala
+    mancata convergenza dell'ottimizzatore e parametri fermi ai limiti.
     """
+    bassi = [l for l in livelli if not (l['conc'] > 0)]
+    if bassi:
+        raise ValueError(
+            "Livello di " + ", ".join(f"{l['conc']:g}" for l in bassi) + " mg/L: la stima bayesiana richiede "
+            "concentrazioni maggiori di zero. Un valore sotto il limite di quantificazione non è gestito "
+            "dal modello: togli la riga oppure riporta il valore misurato.")
     stimati = [k for k in ('CL', 'V1', 'Q', 'V2') if omega.get(k, 0) > 0 and prior.get(k, 0) > 0]
     if not livelli or not stimati:
-        return dict(prior), "Prior di popolazione (nessun livello inserito)"
+        out = (dict(prior), "Prior di popolazione (nessun livello inserito)")
+        return out + ([],) if con_avvisi else out
 
     t_obs = np.array([l['ore'] for l in livelli], dtype=float)
     y = np.array([max(l['conc'], 1e-6) for l in livelli], dtype=float)
@@ -144,7 +159,23 @@ def mappa_bayesiana(prior, omega, storia, livelli, sigma_prop, sigma_add=0.0, t_
              f"stimati: {', '.join(stimati)}"
              + (f"; fissi al prior: {', '.join(k for k in ('Q', 'V2', 'V1') if k in prior and prior.get(k) and k not in stimati)}"
                 if any(k not in stimati and prior.get(k) for k in ('V1', 'Q', 'V2')) else ""))
-    return {k: float(v) for k, v in p.items()}, descr
+    p = {k: float(v) for k, v in p.items()}
+    if not con_avvisi:
+        return p, descr
+    avvisi = []
+    if not best.success:
+        avvisi.append(f"L'ottimizzatore non ha raggiunto la convergenza ({best.message}): "
+                      "la stima non è affidabile.")
+    nomi = {'CL': "La clearance stimata è ferma", 'V1': "Il volume centrale stimato è fermo",
+            'Q': "La clearance intercompartimentale stimata è ferma", 'V2': "Il volume periferico stimato è fermo"}
+    for k, x, (lo, hi) in zip(stimati, best.x, bnd):
+        lato = 'inferiore' if x - lo < 1e-6 else ('superiore' if hi - x < 1e-6 else None)
+        if lato:
+            f = limiti[0] if lato == 'inferiore' else limiti[1]
+            avvisi.append(f"{nomi[k]} al limite {lato} ({f:g}× il valore di popolazione): "
+                          "i livelli sono incompatibili con il modello. Controlla orari, dosi e unità di misura; "
+                          "il risultato non va usato.")
+    return p, descr, avvisi
 
 
 def omega_da_cv(cv_percent):

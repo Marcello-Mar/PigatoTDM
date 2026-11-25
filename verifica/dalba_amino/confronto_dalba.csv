@@ -1,0 +1,13 @@
+id,modello,stimati,dCL%,dV1%,dQ%,dV2%,dAUC24%,dCmin%,limiti_PIGATO_attivi,scarto_curva_pop,diff_tempo_sotto_soglia
+B01,Modello Mariani (IRCCS Gaslini,CL,+0.0000,+nan,+nan,+nan,-0.0037,+0.0000,,1.69489795891297e-10,+0.000 h (PIGATO 336.0 h; ultimo dato 336 h)
+B02,Modello Mariani (IRCCS Gaslini,CL,+0.0000,+nan,+nan,+nan,-0.0038,+0.0000,,1.69548570662091e-10,-0.000 h (PIGATO 265.1 h; ultimo dato 168 h)
+B03,Modello Mariani (IRCCS Gaslini,CL,+0.0000,+nan,+nan,+nan,-0.0235,-0.0000,,1.58178767555424e-10,+0.000 h (PIGATO 1344.0 h; ultimo dato 1344 h)
+B04,Modello Mariani (IRCCS Gaslini,CL,+0.0000,+nan,+nan,+nan,-0.0039,+0.0000,,1.68605586800771e-10,-0.000 h (PIGATO 239.4 h; ultimo dato 168 h)
+B05,Modello Mariani (IRCCS Gaslini,CL,+0.0000,+nan,+nan,+nan,-0.1101,-0.0000,,1.4727541324827e-10,+0.000 h (PIGATO 1680.0 h; ultimo dato 1680 h)
+B06,Cojutti PG,CL;V1;V2,-0.0000,-0.0002,+nan,-0.0001,-0.0184,+0.0001,,8.48576025330876e-11,-0.000 h (PIGATO 849.8 h; ultimo dato 672 h)
+B07,Cojutti PG,CL;V1;V2,+0.0000,+0.0001,+nan,-0.0000,-0.0038,+0.0000,,9.26285480026844e-11,-0.000 h (PIGATO 421.4 h; ultimo dato 168 h)
+B08,Cojutti PG,CL;V1;V2,+0.0001,+0.0001,+nan,+0.0000,-0.0359,-0.0000,,8.51861361777556e-11,-0.000 h (PIGATO 1047.4 h; ultimo dato 864 h)
+B09,Baiardi G,CL;V1;Q;V2,+0.0002,+0.0005,+0.0003,+0.0001,-0.1898,-0.0000,,1.03345149468475e-10,-0.000 h (PIGATO 2293.3 h; ultimo dato 2016 h)
+B10,Baiardi G,CL;V1;Q;V2,+0.0001,+0.0000,+0.0001,-0.0001,-0.0418,-0.0001,,1.06623372404747e-10,-0.001 h (PIGATO 974.0 h; ultimo dato 336 h)
+B11,Modello Mariani (IRCCS Gaslini,CL,+0.0000,+nan,+nan,+nan,-0.0036,+0.0000,,1.69868192417654e-10,-0.000 h (PIGATO 601.4 h; ultimo dato 336 h)
+B12,Baiardi G,CL;V1;Q;V2,+0.0002,+0.0003,+0.0002,-0.0000,-0.0049,+0.0000,,1.16433209407975e-10,+0.000 h (PIGATO 168.0 h; ultimo dato 168 h)

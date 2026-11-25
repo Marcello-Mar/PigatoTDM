@@ -1,0 +1,22 @@
+"id","modello","max_scarto_prior_pct","max_scarto_omega_pct","scarto_sigma_prop_pct","scarto_sigma_add_pct","tinf_uguale"
+"C01","Hirt D",0,0,0,0,TRUE
+"C02","Hirt D",0,0,0,0,TRUE
+"C03","Hirt D",0,0,0,0,TRUE
+"C04","Hirt D",0,0,0,0,TRUE
+"C05","Hirt D",0,0,0,0,TRUE
+"C06","Hirt D",0,0,0,0,TRUE
+"C07","Rajagopalan P",0,0,0,0,TRUE
+"C08","Rajagopalan P",0,0,0,0,TRUE
+"C09","Rajagopalan P",0,0,0,0,TRUE
+"C10","Rajagopalan P",0,0,0,0,TRUE
+"C11","Rajagopalan P",0,0,0,0,TRUE
+"C12","Rajagopalan P",0,0,0,0,TRUE
+"C13","Forrest A",0,0,0,0,TRUE
+"C14","Forrest A",0,0,0,0,TRUE
+"C15","Forrest A",0,0,0,0,TRUE
+"C16","Forrest A",0,0,0,0,TRUE
+"C17","Forrest A",0,0,0,0,TRUE
+"C18","Hirt D",0,0,0,0,TRUE
+"C19","Hirt D",0,0,0,0,TRUE
+"C20","Rajagopalan P",0,0,0,0,TRUE
+"C21","Forrest A",0,0,0,0,TRUE
